@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>地铁站名猜谜游戏</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="encrypted_data.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         * {
@@ -1164,21 +1165,34 @@
             return result;
         }
 
-        async function loadCSVFromFile() {
+        
+
+        function decryptData(encryptedBase64, key) {
+            const encrypted = Uint8Array.from(atob(encryptedBase64), c => c.charCodeAt(0));
+            const keyBytes = new TextEncoder().encode(key);
+            const decrypted = new Uint8Array(encrypted.length);
+            for (let i = 0; i < encrypted.length; i++) {
+                decrypted[i] = encrypted[i] ^ keyBytes[i % keyBytes.length];
+            }
+            return new TextDecoder().decode(decrypted);
+        }
+
+        function loadEncryptedData() {
             try {
-                const response = await fetch('subway_stations.csv');
-                if (response.ok) {
-                    const text = await response.text();
-                    const parsed = parseCSV(text);
-                    if (parsed.length > 0) {
-                        stationDatabase = parsed;
-                        console.log(`Loaded ${parsed.length} stations from CSV file`);
-                        updateCitySelect();
-                    }
+                const decrypted = decryptData(ENCRYPTED_DATA, DECRYPT_KEY);
+                const parsed = parseCSV(decrypted);
+                if (parsed.length > 0) {
+                    stationDatabase = parsed;
+                    console.log(`Loaded ${parsed.length} stations from encrypted data`);
+                    updateCitySelect();
                 }
             } catch (e) {
-                console.log('Using embedded data');
+                console.log('Failed to decrypt data:', e);
             }
+        }
+
+        async function loadCSVFromFile() {
+            loadEncryptedData();
         }
 
         function updateCitySelect() {

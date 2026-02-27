@@ -4,10 +4,13 @@ __pycache__/
 *$py.class
 *.py
 
+# Data files (use encrypted version instead)
+subway_stations.csv
+subway_stations_temp.csv
+
 # Temporary files
 *.tmp
 *.temp
-subway_stations_temp.csv
 
 # IDE
 .vscode/
