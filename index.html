@@ -11,6 +11,20 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-auth-compat.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --primary-color: #2563eb;
+            --primary-light: #3b82f6;
+            --success-color: #22c55e;
+            --warning-color: #f97316;
+            --hint-color: #8b5cf6;
+            --error-color: #ef4444;
+            --transition-fast: 0.2s ease;
+            --transition-normal: 0.3s ease;
+            --shadow-sm: 0 4px 12px;
+            --radius-lg: 0.75rem;
+            --radius-xl: 1rem;
+        }
+        
         * {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
         }
@@ -24,17 +38,17 @@
         .station-card {
             background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
             border: 2px solid #e2e8f0;
-            transition: all 0.3s ease;
+            transition: all var(--transition-normal);
         }
         
         .station-card:hover {
-            border-color: #3b82f6;
+            border-color: var(--primary-light);
             box-shadow: 0 4px 20px rgba(59, 130, 246, 0.15);
         }
         
         .station-card.solved {
             background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
-            border-color: #22c55e;
+            border-color: var(--success-color);
         }
         
         .letter-display {
@@ -43,84 +57,83 @@
         }
         
         .btn-primary {
-            background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);
-            transition: all 0.2s ease;
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-light) 100%);
+            transition: all var(--transition-fast);
         }
         
         .btn-primary:hover {
             transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+            box-shadow: var(--shadow-sm) rgba(37, 99, 235, 0.3);
         }
         
         .btn-secondary {
-            background: linear-gradient(135deg, #f97316 0%, #fb923c 100%);
-            transition: all 0.2s ease;
+            background: linear-gradient(135deg, var(--warning-color) 0%, #fb923c 100%);
+            transition: all var(--transition-fast);
         }
         
         .btn-secondary:hover {
             transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(249, 115, 22, 0.3);
+            box-shadow: var(--shadow-sm) rgba(249, 115, 22, 0.3);
         }
         
         .btn-hint {
-            background: linear-gradient(135deg, #8b5cf6 0%, #a78bfa 100%);
-            transition: all 0.2s ease;
+            background: linear-gradient(135deg, var(--hint-color) 0%, #a78bfa 100%);
+            transition: all var(--transition-fast);
         }
         
         .btn-hint:hover {
             transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+            box-shadow: var(--shadow-sm) rgba(139, 92, 246, 0.3);
         }
         
-        .mode-btn {
-            transition: all 0.3s ease;
+        .mode-btn, .difficulty-btn {
+            transition: all var(--transition-normal);
+            background-color: white;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .mode-btn:hover, .difficulty-btn:hover {
+            background-color: #f1f5f9;
         }
         
         .mode-btn.active {
-            background: #2563eb;
+            background: var(--primary-color);
             color: white;
-        }
-        
-        .difficulty-btn {
-            transition: all 0.3s ease;
+            border-color: var(--primary-color);
         }
         
         .difficulty-btn.active {
             background: #059669;
             color: white;
-        }
-        
-        .guess-history-item {
-            animation: slideIn 0.3s ease;
+            border-color: #059669;
         }
         
         @keyframes slideIn {
-            from {
-                opacity: 0;
-                transform: translateX(-10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateX(0);
-            }
-        }
-        
-        .letter-reveal {
-            animation: popIn 0.4s ease;
+            from { opacity: 0; transform: translateX(-10px); }
+            to { opacity: 1; transform: translateX(0); }
         }
         
         @keyframes popIn {
-            0% {
-                transform: scale(0.5);
-                opacity: 0;
-            }
-            50% {
-                transform: scale(1.2);
-            }
-            100% {
-                transform: scale(1);
-                opacity: 1;
-            }
+            0% { transform: scale(0.5); opacity: 0; }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .guess-history-item, .leaderboard-item { animation: slideIn 0.3s ease; }
+        .letter-reveal { animation: popIn 0.4s ease; }
+        .score-popup { animation: popIn 0.5s ease; }
+        .achievement-badge { animation: badgeShine 2s ease infinite; }
+        .toast { animation: fadeInUp 0.3s ease; }
+        .toast-exit { animation: toastExit 0.3s ease forwards; }
+        
+        @keyframes badgeShine {
+            0%, 100% { filter: brightness(1); }
+            50% { filter: brightness(1.2); }
         }
         
         .crt-overlay {
@@ -145,7 +158,7 @@
         }
         
         .letter-key {
-            transition: all 0.2s ease;
+            transition: all var(--transition-fast);
         }
         
         .letter-key:hover {
@@ -158,12 +171,12 @@
         }
         
         .letter-key.found {
-            background: #22c55e;
+            background: var(--success-color);
             color: white;
         }
         
         .letter-key.not-found {
-            background: #ef4444;
+            background: var(--error-color);
             color: white;
         }
         
@@ -171,59 +184,17 @@
             font-variant-numeric: tabular-nums;
         }
         
-        .score-popup {
-            animation: scorePopup 0.5s ease;
-        }
-        
-        @keyframes scorePopup {
-            0% {
-                transform: scale(0);
-                opacity: 0;
-            }
-            50% {
-                transform: scale(1.2);
-            }
-            100% {
-                transform: scale(1);
-                opacity: 1;
-            }
-        }
-        
-        .achievement-badge {
-            animation: badgeShine 2s ease infinite;
-        }
-        
-        @keyframes badgeShine {
-            0%, 100% {
-                filter: brightness(1);
-            }
-            50% {
-                filter: brightness(1.2);
-            }
-        }
-        
-        .leaderboard-item {
-            animation: fadeInUp 0.3s ease;
-        }
-        
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-        
         .progress-bar {
-            background: linear-gradient(90deg, #22c55e, #16a34a);
+            background: linear-gradient(90deg, var(--success-color), #16a34a);
             transition: width 0.5s ease;
         }
         
-        .shake {
-            animation: shake 0.5s ease;
+        .shake { animation: shake 0.5s ease; }
+        .pulse-success { animation: pulseSuccess 0.5s ease; }
+        .combo-display { animation: comboPop 0.3s ease; }
+        .float-score {
+            animation: floatScore 1s ease forwards;
+            pointer-events: none;
         }
         
         @keyframes shake {
@@ -232,30 +203,25 @@
             40%, 80% { transform: translateX(5px); }
         }
         
-        .pulse-success {
-            animation: pulseSuccess 0.5s ease;
-        }
-        
         @keyframes pulseSuccess {
             0% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7); }
             70% { box-shadow: 0 0 0 15px rgba(34, 197, 94, 0); }
             100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
         }
         
-        .float-score {
-            animation: floatScore 1s ease forwards;
-            pointer-events: none;
+        @keyframes floatScore {
+            0% { opacity: 1; transform: translateY(0) scale(1); }
+            100% { opacity: 0; transform: translateY(-50px) scale(1.5); }
         }
         
-        @keyframes floatScore {
-            0% {
-                opacity: 1;
-                transform: translateY(0) scale(1);
-            }
-            100% {
-                opacity: 0;
-                transform: translateY(-50px) scale(1.5);
-            }
+        @keyframes comboPop {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.3); }
+            100% { transform: scale(1); }
+        }
+        
+        @keyframes toastExit {
+            to { opacity: 0; transform: translateY(-20px); }
         }
         
         .particle {
@@ -265,14 +231,8 @@
         }
         
         @keyframes particleFall {
-            0% {
-                opacity: 1;
-                transform: translateY(0) rotate(0deg);
-            }
-            100% {
-                opacity: 0;
-                transform: translateY(100px) rotate(360deg);
-            }
+            0% { opacity: 1; transform: translateY(0) rotate(0deg); }
+            100% { opacity: 0; transform: translateY(100px) rotate(360deg); }
         }
         
         .firework {
@@ -289,50 +249,8 @@
         }
         
         @keyframes fireworkExplode {
-            0% {
-                opacity: 1;
-                transform: translate(0, 0) scale(1);
-            }
-            100% {
-                opacity: 0;
-                transform: var(--end-pos) scale(0);
-            }
-        }
-        
-        .combo-display {
-            animation: comboPop 0.3s ease;
-        }
-        
-        @keyframes comboPop {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.3); }
-            100% { transform: scale(1); }
-        }
-        
-        .toast {
-            animation: toastSlide 0.3s ease;
-        }
-        
-        @keyframes toastSlide {
-            from {
-                opacity: 0;
-                transform: translateY(-20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-        
-        .toast-exit {
-            animation: toastExit 0.3s ease forwards;
-        }
-        
-        @keyframes toastExit {
-            to {
-                opacity: 0;
-                transform: translateY(-20px);
-            }
+            0% { opacity: 1; transform: translate(0, 0) scale(1); }
+            100% { opacity: 0; transform: var(--end-pos) scale(0); }
         }
         
         .tooltip {
@@ -365,6 +283,10 @@
                 letter-spacing: 0.08em;
                 font-size: 0.875rem;
             }
+        }
+        
+        .hidden {
+            display: none !important;
         }
         
         .sound-toggle {
@@ -404,64 +326,21 @@
         
         .dark .station-card.solved {
             background: linear-gradient(135deg, #14532d 0%, #166534 100%);
-            border-color: #22c55e;
+            border-color: var(--success-color);
         }
         
-        .dark h1 {
-            color: #f1f5f9;
-        }
-        
-        .dark h2, .dark h3, .dark h4 {
-            color: #e2e8f0;
-        }
-        
-        .dark .text-slate-900 {
-            color: #f1f5f9;
-        }
-        
-        .dark .text-slate-800 {
-            color: #e2e8f0;
-        }
-        
-        .dark .text-slate-700 {
-            color: #cbd5e1;
-        }
-        
-        .dark .text-slate-600 {
-            color: #94a3b8;
-        }
-        
-        .dark .text-slate-500 {
-            color: #64748b;
-        }
-        
-        .dark .bg-slate-200 {
-            background-color: #334155;
-        }
-        
-        .dark .bg-slate-100 {
-            background-color: #1e293b;
-        }
-        
-        .dark .bg-slate-50 {
-            background-color: #1e293b;
-        }
-        
-        .dark .bg-white {
-            background-color: #1e293b;
-        }
-        
-        .dark .border-slate-200 {
-            border-color: #475569;
-        }
-        
-        .dark .hover\:bg-slate-300:hover {
-            background-color: #475569;
-        }
-        
-        .dark .hover\:bg-slate-200:hover {
-            background-color: #334155;
-        }
+        .dark h1 { color: #f1f5f9; }
+        .dark h2, .dark h3, .dark h4 { color: #e2e8f0; }
+        .dark .text-slate-900 { color: #f1f5f9; }
+        .dark .text-slate-800 { color: #e2e8f0; }
+        .dark .text-slate-700 { color: #cbd5e1; }
+        .dark .text-slate-600 { color: #94a3b8; }
+        .dark .text-slate-500 { color: #64748b; }
+        .dark .bg-slate-200 { background-color: #334155; }
+        .dark .bg-slate-100, .dark .bg-slate-50, .dark .bg-white { background-color: #1e293b; }
+        .dark .border-slate-200 { border-color: #475569; }
+        .dark .hover\:bg-slate-300:hover { background-color: #475569; }
+        .dark .hover\:bg-slate-200:hover { background-color: #334155; }
         
         .dark input[type="text"],
         .dark input[type="number"],
@@ -480,33 +359,24 @@
         .dark input[type="text"]:focus,
         .dark input[type="number"]:focus,
         .dark select:focus {
-            border-color: #3b82f6;
+            border-color: var(--primary-light);
             box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
         }
         
-        .dark .mode-btn {
+        .dark .mode-btn, .dark .difficulty-btn, .dark .leaderboard-tab, .dark .mp-mode-btn {
             background-color: #1e293b;
             border-color: #475569;
             color: #cbd5e1;
         }
         
-        .dark .mode-btn:hover {
+        .dark .mode-btn:hover, .dark .difficulty-btn:hover, 
+        .dark .leaderboard-tab:hover, .dark .mp-mode-btn:hover {
             background-color: #334155;
         }
         
-        .dark .mode-btn.active {
-            background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);
+        .dark .mode-btn.active, .dark .leaderboard-tab.active, .dark .mp-mode-btn.active {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-light) 100%);
             color: white;
-        }
-        
-        .dark .difficulty-btn {
-            background-color: #1e293b;
-            border-color: #475569;
-            color: #cbd5e1;
-        }
-        
-        .dark .difficulty-btn:hover {
-            background-color: #334155;
         }
         
         .dark .difficulty-btn.active {
@@ -514,43 +384,12 @@
             color: white;
         }
         
-        .dark .leaderboard-tab {
-            background-color: #1e293b;
-            border-color: #475569;
-            color: #cbd5e1;
-        }
-        
-        .dark .leaderboard-tab:hover {
-            background-color: #334155;
-        }
-        
-        .dark .leaderboard-tab.active {
-            background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);
-            color: white;
-        }
-        
-        .dark .mp-mode-btn {
-            background-color: #1e293b;
-            border-color: #475569;
-            color: #cbd5e1;
-        }
-        
-        .dark .mp-mode-btn:hover {
-            background-color: #334155;
-        }
-        
-        .dark .mp-mode-btn.active {
-            background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);
-        }
-        
         .dark #btn-theme {
             background-color: #334155;
             color: #fbbf24;
         }
         
-        .dark #btn-theme:hover {
-            background-color: #475569;
-        }
+        .dark #btn-theme:hover { background-color: #475569; }
         
         .dark .letter-key {
             background-color: #334155;
@@ -585,110 +424,60 @@
         }
         
         .dark .progress-bar {
-            background: linear-gradient(90deg, #22c55e, #4ade80);
+            background: linear-gradient(90deg, var(--success-color), #4ade80);
             box-shadow: 0 0 10px rgba(34, 197, 94, 0.5);
         }
         
-        .dark #chat-messages {
-            background-color: #0f172a;
-        }
+        .dark #chat-messages { background-color: #0f172a; }
         
         .dark #victory-modal > div {
             background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
             border: 1px solid #475569;
         }
         
-        .dark #victory-modal h2 {
-            color: #f1f5f9;
-        }
-        
-        .dark #victory-modal p {
-            color: #94a3b8;
-        }
-        
-        .dark #victory-modal .bg-slate-100 {
-            background-color: #0f172a;
-        }
-        
-        .dark .tooltip::after {
-            background: #f1f5f9;
-            color: #1e293b;
-        }
+        .dark #victory-modal h2 { color: #f1f5f9; }
+        .dark #victory-modal p { color: #94a3b8; }
+        .dark #victory-modal .bg-slate-100 { background-color: #0f172a; }
+        .dark .tooltip::after { background: #f1f5f9; color: #1e293b; }
         
         .dark .sound-toggle {
             background: rgba(15, 23, 42, 0.95);
             border: 1px solid rgba(71, 85, 105, 0.5);
         }
         
-        .dark a {
-            color: #60a5fa;
-        }
+        .dark a { color: #60a5fa; }
+        .dark a:hover { color: #93c5fd; }
         
-        .dark a:hover {
-            color: #93c5fd;
-        }
+        .dark ::-webkit-scrollbar { width: 8px; height: 8px; }
+        .dark ::-webkit-scrollbar-track { background: #1e293b; }
+        .dark ::-webkit-scrollbar-thumb { background: #475569; border-radius: 4px; }
+        .dark ::-webkit-scrollbar-thumb:hover { background: #64748b; }
         
-        .dark ::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
-        }
-        
-        .dark ::-webkit-scrollbar-track {
-            background: #1e293b;
-        }
-        
-        .dark ::-webkit-scrollbar-thumb {
-            background: #475569;
-            border-radius: 4px;
-        }
-        
-        .dark ::-webkit-scrollbar-thumb:hover {
-            background: #64748b;
-        }
-        
-        .dark .bg-green-50 {
-            background-color: rgba(34, 197, 94, 0.1);
-        }
-        
-        .dark .border-green-200 {
-            border-color: rgba(34, 197, 94, 0.3);
-        }
-        
-        .dark .text-green-700 {
-            color: #4ade80;
-        }
-        
-        .dark .bg-blue-100 {
-            background-color: rgba(59, 130, 246, 0.2);
-        }
-        
-        .dark .text-blue-700 {
-            color: #60a5fa;
-        }
-        
-        .dark .bg-blue-50 {
-            background-color: rgba(59, 130, 246, 0.1);
-        }
+        .dark .bg-green-50 { background-color: rgba(34, 197, 94, 0.1); }
+        .dark .border-green-200 { border-color: rgba(34, 197, 94, 0.3); }
+        .dark .text-green-700 { color: #4ade80; }
+        .dark .bg-blue-100 { background-color: rgba(59, 130, 246, 0.2); }
+        .dark .text-blue-700 { color: #60a5fa; }
+        .dark .bg-blue-50 { background-color: rgba(59, 130, 246, 0.1); }
     </style>
 </head>
 <body class="bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 min-h-screen text-slate-800 transition-colors duration-300">
 
+    <div id="toast-container" class="fixed top-4 right-4 z-50 space-y-2" role="alert" aria-live="polite"></div>
     
-    <div id="toast-container" class="fixed top-4 right-4 z-50 space-y-2"></div>
+    <div id="floating-scores" class="fixed inset-0 pointer-events-none z-40" aria-hidden="true"></div>
     
-    <div id="floating-scores" class="fixed inset-0 pointer-events-none z-40"></div>
-    
-    <button id="sound-toggle" class="sound-toggle glass-panel shadow-lg" title="切换音效">
+    <button id="sound-toggle" class="sound-toggle glass-panel shadow-lg" title="切换音效" aria-label="切换音效">
         🔊
     </button>
     
-    <div class="relative z-10 container mx-auto px-4 py-6 max-w-6xl">
+    <main class="relative z-10 container mx-auto px-4 py-6 max-w-6xl">
         <header class="text-center mb-6">
             <div class="flex justify-center items-center gap-4 mb-2">
                 <h1 class="text-3xl md:text-4xl font-bold text-slate-900 neon-glow">
                     地铁站名猜谜游戏
                 </h1>
-                <button id="btn-theme" class="p-2 rounded-lg bg-slate-200 hover:bg-slate-300 transition-all cursor-pointer" title="切换主题 (T)">
+                <button id="btn-theme" class="p-2 rounded-lg bg-slate-200 hover:bg-slate-300 transition-all cursor-pointer" title="切换主题 (T)" aria-label="切换主题">
                     <span id="theme-icon">🌙</span>
                 </button>
             </div>
@@ -697,19 +486,19 @@
             </p>
         </header>
         
-        <div class="glass-panel rounded-2xl p-4 mb-4 shadow-lg">
+        <section class="glass-panel rounded-2xl p-4 mb-4 shadow-lg" aria-label="游戏设置">
             <div class="flex flex-col md:flex-row gap-4 items-center justify-between">
                 <div class="flex flex-col md:flex-row gap-4 items-center">
                     <div class="flex items-center gap-2">
                         <span class="text-sm font-medium text-slate-700">难度:</span>
                         <div class="flex gap-2">
-                            <button data-difficulty="easy" class="difficulty-btn px-3 py-1.5 rounded-lg text-sm font-medium border border-slate-200 bg-white text-slate-700 cursor-pointer">
+                            <button data-difficulty="easy" class="difficulty-btn px-3 py-1.5 rounded-lg text-sm font-medium text-slate-700 cursor-pointer">
                                 简单
                             </button>
-                            <button data-difficulty="normal" class="difficulty-btn active px-3 py-1.5 rounded-lg text-sm font-medium border border-slate-200 bg-white text-slate-700 cursor-pointer">
+                            <button data-difficulty="normal" class="difficulty-btn active px-3 py-1.5 rounded-lg text-sm font-medium text-slate-700 cursor-pointer">
                                 普通
                             </button>
-                            <button data-difficulty="hard" class="difficulty-btn px-3 py-1.5 rounded-lg text-sm font-medium border border-slate-200 bg-white text-slate-700 cursor-pointer">
+                            <button data-difficulty="hard" class="difficulty-btn px-3 py-1.5 rounded-lg text-sm font-medium text-slate-700 cursor-pointer">
                                 困难
                             </button>
                         </div>
@@ -754,24 +543,24 @@
                     <div id="progress-bar" class="progress-bar h-full rounded-full" style="width: 0%"></div>
                 </div>
             </div>
-        </div>
+        </section>
         
-        <div class="flex justify-center gap-3 mb-4 flex-wrap">
-            <button id="mode-normal" class="mode-btn active px-4 py-2 rounded-lg font-medium text-sm border border-slate-200 bg-white text-slate-700 cursor-pointer">
+        <nav class="flex justify-center gap-3 mb-4 flex-wrap" aria-label="游戏模式">
+            <button id="mode-normal" class="mode-btn active px-4 py-2 rounded-lg font-medium text-sm text-slate-700 cursor-pointer">
                 普通模式
             </button>
-            <button id="mode-multiplayer" class="mode-btn px-4 py-2 rounded-lg font-medium text-sm border border-slate-200 bg-white text-slate-700 cursor-pointer">
+            <button id="mode-multiplayer" class="mode-btn px-4 py-2 rounded-lg font-medium text-sm text-slate-700 cursor-pointer">
                 联机对战
             </button>
-            <button id="mode-reverse" class="mode-btn px-4 py-2 rounded-lg font-medium text-sm border border-slate-200 bg-white text-slate-700 cursor-pointer hidden">
+            <button id="mode-reverse" class="mode-btn px-4 py-2 rounded-lg font-medium text-sm text-slate-700 cursor-pointer hidden">
                 逆向模式
             </button>
-            <button id="mode-leaderboard" class="mode-btn px-4 py-2 rounded-lg font-medium text-sm border border-slate-200 bg-white text-slate-700 cursor-pointer">
+            <button id="mode-leaderboard" class="mode-btn px-4 py-2 rounded-lg font-medium text-sm text-slate-700 cursor-pointer">
                 排行榜
             </button>
-        </div>
+        </nav>
         
-        <div class="glass-panel rounded-2xl p-4 md:p-6 mb-4 shadow-lg">
+        <div id="game-controls" class="glass-panel rounded-2xl p-4 md:p-6 mb-4 shadow-lg">
             <div class="flex flex-col md:flex-row gap-4 items-center justify-between">
                 <div class="flex gap-3 flex-wrap justify-center">
                     <button id="btn-new-game" class="btn-primary px-5 py-2.5 rounded-lg text-white font-medium text-sm cursor-pointer tooltip" data-tooltip="快捷键: N">
@@ -1102,9 +891,9 @@
         </div>
         
         <footer class="text-center mt-6 text-sm text-slate-500">
-            <p>制作者：<a href="https://space.bilibili.com/1944366810" target="_blank" class="text-blue-600 hover:text-blue-700 font-medium">bilibili@lvshu</a></p>
+            <p>制作者：<a href="https://space.bilibili.com/1944366810" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:text-blue-700 font-medium">bilibili@lvshu</a></p>
         </footer>
-    </div>
+    </main>
     
     <div id="victory-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl p-6 md:p-8 max-w-md w-full shadow-2xl transform scale-100 transition-transform">
@@ -1160,6 +949,26 @@
             rare: ['k', 'v', 'x', 'z', 'j', 'q']
         };
 
+        const ACHIEVEMENTS = [
+            { id: 'first_win', name: '初次胜利', desc: '完成第一局游戏', icon: '🏅' },
+            { id: 'speed_demon', name: '速度恶魔', desc: '60秒内完成游戏', icon: '⚡' },
+            { id: 'perfect', name: '完美猜测', desc: '不使用提示完成游戏', icon: '💯' },
+            { id: 'explorer', name: '探索者', desc: '解锁所有城市', icon: '🗺️' },
+            { id: 'master', name: '地铁大师', desc: '累计得分超过10000', icon: '👑' },
+            { id: 'streak_3', name: '三连胜', desc: '连续获胜3局', icon: '🔥' },
+            { id: 'streak_5', name: '五连胜', desc: '连续获胜5局', icon: '💎' },
+            { id: 'collector', name: '收藏家', desc: '猜对100个站名', icon: '🎯' }
+        ];
+
+        const $ = id => document.getElementById(id);
+        const $all = sel => document.querySelectorAll(sel);
+        const createEl = (tag, className, innerHTML) => {
+            const el = document.createElement(tag);
+            if (className) el.className = className;
+            if (innerHTML) el.innerHTML = innerHTML;
+            return el;
+        };
+
         function calculateStationDifficulty(station) {
             const name = station.station_en.toLowerCase();
             let score = 0;
@@ -1206,17 +1015,6 @@
             return classified;
         }
 
-        const ACHIEVEMENTS = [
-            { id: 'first_win', name: '初次胜利', desc: '完成第一局游戏', icon: '🏅' },
-            { id: 'speed_demon', name: '速度恶魔', desc: '60秒内完成游戏', icon: '⚡' },
-            { id: 'perfect', name: '完美猜测', desc: '不使用提示完成游戏', icon: '💯' },
-            { id: 'explorer', name: '探索者', desc: '解锁所有城市', icon: '🗺️' },
-            { id: 'master', name: '地铁大师', desc: '累计得分超过10000', icon: '👑' },
-            { id: 'streak_3', name: '三连胜', desc: '连续获胜3局', icon: '🔥' },
-            { id: 'streak_5', name: '五连胜', desc: '连续获胜5局', icon: '💎' },
-            { id: 'collector', name: '收藏家', desc: '猜对100个站名', icon: '🎯' }
-        ];
-
         let gameState = {
             mode: 'normal',
             difficulty: 'normal',
@@ -1260,64 +1058,62 @@
         };
 
         const elements = {
-            stationsContainer: document.getElementById('stations-container'),
-            guessInput: document.getElementById('guess-input'),
-            reverseInput: document.getElementById('reverse-input'),
-            revealedLettersInput: document.getElementById('revealed-letters-input'),
-            btnSubmit: document.getElementById('btn-submit'),
-            btnReverseGuess: document.getElementById('btn-reverse-guess'),
-            btnReverseClear: document.getElementById('btn-reverse-clear'),
-            btnNewGame: document.getElementById('btn-new-game'),
-            btnSave: document.getElementById('btn-save'),
-            btnLoad: document.getElementById('btn-load'),
-            btnCloudSync: document.getElementById('btn-cloud-sync'),
-            btnHint: document.getElementById('btn-hint'),
-            btnTheme: document.getElementById('btn-theme'),
-            btnPlayAgain: document.getElementById('btn-play-again'),
-            btnSaveScore: document.getElementById('btn-save-score'),
-            modeNormal: document.getElementById('mode-normal'),
-            modeReverse: document.getElementById('mode-reverse'),
-            modeLeaderboard: document.getElementById('mode-leaderboard'),
-            normalModeArea: document.getElementById('normal-mode-area'),
-            reverseModeArea: document.getElementById('reverse-mode-area'),
-            leaderboardArea: document.getElementById('leaderboard-area'),
-            reverseResults: document.getElementById('reverse-results'),
-            reverseResultsList: document.getElementById('reverse-results-list'),
-            guessHistory: document.getElementById('guess-history'),
-            victoryModal: document.getElementById('victory-modal'),
-            solvedCount: document.getElementById('solved-count'),
-            totalCount: document.getElementById('total-count'),
-            guessCount: document.getElementById('guess-count'),
-            timer: document.getElementById('timer'),
-            score: document.getElementById('score'),
-            hintsLeft: document.getElementById('hints-left'),
-            letterKeyboard: document.getElementById('letter-keyboard'),
-            citySelect: document.getElementById('city-select'),
-            leaderboardList: document.getElementById('leaderboard-list'),
-            achievementsList: document.getElementById('achievements-list'),
-            themeIcon: document.getElementById('theme-icon'),
-            playerName: document.getElementById('player-name'),
-            finalTime: document.getElementById('final-time'),
-            finalScore: document.getElementById('final-score'),
-            finalGuesses: document.getElementById('final-guesses'),
-            finalHints: document.getElementById('final-hints'),
-            progressBar: document.getElementById('progress-bar'),
-            progressText: document.getElementById('progress-text'),
-            combo: document.getElementById('combo'),
-            toastContainer: document.getElementById('toast-container'),
-            floatingScores: document.getElementById('floating-scores'),
-            soundToggle: document.getElementById('sound-toggle'),
-            modeMultiplayer: document.getElementById('mode-multiplayer'),
-            multiplayerArea: document.getElementById('multiplayer-area'),
-            mpLobby: document.getElementById('mp-lobby'),
-            mpRoom: document.getElementById('mp-room'),
-            mpGame: document.getElementById('mp-game'),
-            roomCodeInput: document.getElementById('room-code-input'),
-            roomCodeDisplay: document.getElementById('room-code-display'),
-            onlineRooms: document.getElementById('online-rooms'),
-            roomPlayers: document.getElementById('room-players'),
-            chatMessages: document.getElementById('chat-messages'),
-            chatInput: document.getElementById('chat-input')
+            stationsContainer: $('stations-container'),
+            guessInput: $('guess-input'),
+            reverseInput: $('reverse-input'),
+            revealedLettersInput: $('revealed-letters-input'),
+            btnSubmit: $('btn-submit'),
+            btnReverseGuess: $('btn-reverse-guess'),
+            btnReverseClear: $('btn-reverse-clear'),
+            btnNewGame: $('btn-new-game'),
+            btnSave: $('btn-save'),
+            btnLoad: $('btn-load'),
+            btnHint: $('btn-hint'),
+            btnTheme: $('btn-theme'),
+            btnPlayAgain: $('btn-play-again'),
+            btnSaveScore: $('btn-save-score'),
+            modeNormal: $('mode-normal'),
+            modeReverse: $('mode-reverse'),
+            modeLeaderboard: $('mode-leaderboard'),
+            normalModeArea: $('normal-mode-area'),
+            reverseModeArea: $('reverse-mode-area'),
+            leaderboardArea: $('leaderboard-area'),
+            reverseResults: $('reverse-results'),
+            reverseResultsList: $('reverse-results-list'),
+            guessHistory: $('guess-history'),
+            victoryModal: $('victory-modal'),
+            guessCount: $('guess-count'),
+            timer: $('timer'),
+            score: $('score'),
+            hintsLeft: $('hints-left'),
+            letterKeyboard: $('letter-keyboard'),
+            citySelect: $('city-select'),
+            leaderboardList: $('leaderboard-list'),
+            achievementsList: $('achievements-list'),
+            themeIcon: $('theme-icon'),
+            playerName: $('player-name'),
+            finalTime: $('final-time'),
+            finalScore: $('final-score'),
+            finalGuesses: $('final-guesses'),
+            finalHints: $('final-hints'),
+            progressBar: $('progress-bar'),
+            progressText: $('progress-text'),
+            combo: $('combo'),
+            toastContainer: $('toast-container'),
+            floatingScores: $('floating-scores'),
+            soundToggle: $('sound-toggle'),
+            modeMultiplayer: $('mode-multiplayer'),
+            gameControls: $('game-controls'),
+            multiplayerArea: $('multiplayer-area'),
+            mpLobby: $('mp-lobby'),
+            mpRoom: $('mp-room'),
+            mpGame: $('mp-game'),
+            roomCodeInput: $('room-code-input'),
+            roomCodeDisplay: $('room-code-display'),
+            onlineRooms: $('online-rooms'),
+            roomPlayers: $('room-players'),
+            chatMessages: $('chat-messages'),
+            chatInput: $('chat-input')
         };
 
         const csvData = `city_cn,city_en,station_cn,station_en
@@ -1595,8 +1391,7 @@
                 let current = '';
                 let inQuotes = false;
                 
-                for (let j = 0; j < line.length; j++) {
-                    const char = line[j];
+                for (const char of line) {
                     if (char === '"') {
                         inQuotes = !inQuotes;
                     } else if (char === ',' && !inQuotes) {
@@ -1654,10 +1449,8 @@
             const cities = [...new Set(stationDatabase.map(s => s.city_cn))].sort();
             elements.citySelect.innerHTML = '<option value="all">全部城市</option>';
             cities.forEach(city => {
-                const option = document.createElement('option');
-                option.value = city;
-                option.textContent = city;
-                elements.citySelect.appendChild(option);
+                elements.citySelect.appendChild(createEl('option')).textContent = city;
+                elements.citySelect.lastChild.value = city;
             });
         }
 
@@ -1810,6 +1603,8 @@
         let roomRef = null;
         let playersRef = null;
         let chatRef = null;
+        let leaderboardRef = null;
+        let cloudLeaderboards = { easy: [], normal: [], hard: [] };
 
         function initFirebase() {
             try {
@@ -1823,12 +1618,32 @@
                     localStorage.setItem('mp_player_id', mpState.playerId);
                     console.log('Firebase initialized successfully');
                     loadOnlineRooms();
+                    initLeaderboardListener();
                 } else {
                     console.log('Firebase SDK not loaded');
                 }
             } catch (e) {
                 console.log('Firebase init failed, running in offline mode:', e);
             }
+        }
+
+        function initLeaderboardListener() {
+            if (!db) return;
+            
+            leaderboardRef = db.ref('leaderboards');
+            leaderboardRef.on('value', (snapshot) => {
+                if (snapshot.exists()) {
+                    const data = snapshot.val();
+                    cloudLeaderboards = {
+                        easy: data.easy ? Object.values(data.easy).sort((a, b) => b.score - a.score).slice(0, 10) : [],
+                        normal: data.normal ? Object.values(data.normal).sort((a, b) => b.score - a.score).slice(0, 10) : [],
+                        hard: data.hard ? Object.values(data.hard).sort((a, b) => b.score - a.score).slice(0, 10) : []
+                    };
+                    if (elements.leaderboardArea && !elements.leaderboardArea.classList.contains('hidden')) {
+                        renderLeaderboard(gameState.difficulty);
+                    }
+                }
+            });
         }
 
         function generatePlayerId() {
@@ -2086,8 +1901,42 @@
             elements.mpGame.classList.add('hidden');
         }
 
+        const ROOM_EXPIRE_TIME = 2 * 60 * 60 * 1000;
+
+        async function cleanupExpiredRooms() {
+            if (!db) return;
+            
+            try {
+                const roomsRef = db.ref('rooms');
+                const snapshot = await roomsRef.once('value');
+                const rooms = snapshot.val() || {};
+                const now = Date.now();
+                const expiredRooms = [];
+
+                for (const [roomCode, roomData] of Object.entries(rooms)) {
+                    const createdAt = roomData.createdAt || 0;
+                    
+                    if (now - createdAt > ROOM_EXPIRE_TIME) {
+                        expiredRooms.push(roomCode);
+                    }
+                }
+
+                if (expiredRooms.length > 0) {
+                    const deletePromises = expiredRooms.map(code => 
+                        db.ref('rooms/' + code).remove()
+                    );
+                    await Promise.all(deletePromises);
+                    console.log(`已清理 ${expiredRooms.length} 个过期房间:`, expiredRooms);
+                }
+            } catch (e) {
+                console.error('清理过期房间失败:', e);
+            }
+        }
+
         async function loadOnlineRooms() {
             if (!db) return;
+            
+            await cleanupExpiredRooms();
             
             const roomsRef = db.ref('rooms');
             roomsRef.orderByChild('status').equalTo('waiting').limitToLast(10).on('value', (snapshot) => {
@@ -2845,6 +2694,14 @@
             const card = document.createElement('div');
             card.className = `station-card rounded-xl p-4 ${isSolved ? 'solved' : ''}`;
             card.id = `station-${index}`;
+            
+            const stationInfoHtml = (isSolved || gameState.devMode) ? `
+                <div class="station-info text-center text-sm">
+                    <p class="text-slate-800 font-medium dark:text-slate-200 station-cn">${station.station_cn}</p>
+                    <p class="text-slate-500 text-xs">${station.city_cn} · ${station.city_en}</p>
+                </div>
+            ` : '';
+            
             card.innerHTML = `
                 <div class="flex items-center justify-between mb-2">
                     <span class="text-xs font-medium text-slate-500">#${index + 1}</span>
@@ -2856,10 +2713,7 @@
                 <div class="letter-display text-lg md:text-xl font-bold text-slate-800 mb-3 text-center py-2 bg-white/50 rounded-lg dark:bg-slate-700/50 dark:text-slate-200">
                     ${displayText}
                 </div>
-                <div class="station-info text-center text-sm ${isSolved || gameState.devMode ? '' : 'hidden'}">
-                    <p class="text-slate-800 font-medium dark:text-slate-200 station-cn">${station.station_cn}</p>
-                    <p class="text-slate-500 text-xs">${station.city_cn} · ${station.city_en}</p>
-                </div>
+                ${stationInfoHtml}
             `;
             return card;
         }
@@ -2877,8 +2731,20 @@
             const solvedBadge = card.querySelector('.solved-badge');
             if (solvedBadge) solvedBadge.classList.toggle('hidden', !isSolved);
             
-            const stationInfo = card.querySelector('.station-info');
-            if (stationInfo) stationInfo.classList.toggle('hidden', !(isSolved || gameState.devMode));
+            const existingInfo = card.querySelector('.station-info');
+            const shouldShowInfo = isSolved || gameState.devMode;
+            
+            if (shouldShowInfo && !existingInfo) {
+                const infoDiv = document.createElement('div');
+                infoDiv.className = 'station-info text-center text-sm';
+                infoDiv.innerHTML = `
+                    <p class="text-slate-800 font-medium dark:text-slate-200 station-cn">${station.station_cn}</p>
+                    <p class="text-slate-500 text-xs">${station.city_cn} · ${station.city_en}</p>
+                `;
+                card.appendChild(infoDiv);
+            } else if (!shouldShowInfo && existingInfo) {
+                existingInfo.remove();
+            }
         }
 
         function getDisplayText(stationName, revealedLetters, isSolved, devMode = false, revealedSpecialChars = null) {
@@ -3445,6 +3311,7 @@
             elements.reverseModeArea.classList.add('hidden');
             elements.leaderboardArea.classList.add('hidden');
             elements.multiplayerArea.classList.add('hidden');
+            elements.gameControls.classList.remove('hidden');
             
             if (mode === 'normal') {
                 elements.modeNormal.classList.add('active');
@@ -3462,11 +3329,15 @@
             } else if (mode === 'multiplayer') {
                 elements.modeMultiplayer.classList.add('active');
                 elements.multiplayerArea.classList.remove('hidden');
+                elements.gameControls.classList.add('hidden');
             }
         }
 
         function renderLeaderboard(difficulty) {
-            const board = stats.leaderboards[difficulty] || [];
+            let board = cloudLeaderboards[difficulty] && cloudLeaderboards[difficulty].length > 0 
+                ? cloudLeaderboards[difficulty] 
+                : (stats.leaderboards[difficulty] || []);
+            
             elements.leaderboardList.innerHTML = '';
             
             document.querySelectorAll('.leaderboard-tab').forEach(tab => {
@@ -3507,7 +3378,7 @@
             });
         }
 
-        function saveScore() {
+        async function saveScore() {
             const name = elements.playerName.value.trim() || '匿名玩家';
             const entry = {
                 name,
@@ -3515,7 +3386,8 @@
                 time: gameState.elapsedTime,
                 guesses: gameState.guessCount,
                 hints: gameState.hintsUsed,
-                date: new Date().toLocaleDateString('zh-CN')
+                date: new Date().toLocaleDateString('zh-CN'),
+                timestamp: Date.now()
             };
             
             if (!stats.leaderboards[gameState.difficulty]) {
@@ -3528,11 +3400,41 @@
             
             saveStats();
             
-            if (mpState.connected && db) {
-                syncToCloud();
+            if (db) {
+                try {
+                    if (!mpState.connected) {
+                        initFirebase();
+                        await new Promise(resolve => setTimeout(resolve, 500));
+                    }
+                    
+                    if (db) {
+                        const difficultyRef = db.ref('leaderboards/' + gameState.difficulty);
+                        const newEntryRef = difficultyRef.push();
+                        await newEntryRef.set(entry);
+                        
+                        const snapshot = await difficultyRef.orderByChild('score').once('value');
+                        const allEntries = [];
+                        snapshot.forEach(child => {
+                            allEntries.push({ key: child.key, ...child.val() });
+                        });
+                        allEntries.sort((a, b) => b.score - a.score);
+                        
+                        if (allEntries.length > 50) {
+                            const toRemove = allEntries.slice(50);
+                            for (const item of toRemove) {
+                                await db.ref('leaderboards/' + gameState.difficulty + '/' + item.key).remove();
+                            }
+                        }
+                        
+                        showToast('成绩已保存到云端排行榜！', 'success');
+                    }
+                } catch (e) {
+                    console.error('Failed to save to cloud leaderboard:', e);
+                    showToast('成绩已保存到本地！', 'success');
+                }
+            } else {
+                showToast('成绩已保存！', 'success');
             }
-            
-            showToast('成绩已保存！', 'success');
             
             elements.victoryModal.classList.add('hidden');
             switchMode('leaderboard');
@@ -3632,7 +3534,6 @@
             
             if (elements.btnSave) elements.btnSave.addEventListener('click', saveGameState);
             if (elements.btnLoad) elements.btnLoad.addEventListener('click', loadGameState);
-            if (elements.btnCloudSync) elements.btnCloudSync.addEventListener('click', handleCloudSync);
             elements.btnHint.addEventListener('click', useHint);
             elements.btnTheme.addEventListener('click', toggleTheme);
             elements.soundToggle.addEventListener('click', toggleSound);
@@ -3649,37 +3550,34 @@
             elements.modeLeaderboard.addEventListener('click', () => switchMode('leaderboard'));
             elements.modeMultiplayer.addEventListener('click', () => switchMode('multiplayer'));
             
-            document.getElementById('mode-battle').addEventListener('click', () => {
+            $('mode-battle').addEventListener('click', () => {
                 mpState.gameMode = 'battle';
-                document.getElementById('mode-battle').className = 'mp-mode-btn active px-4 py-2 rounded-lg font-medium text-sm bg-blue-500 text-white cursor-pointer';
-                document.getElementById('mode-coop').className = 'mp-mode-btn px-4 py-2 rounded-lg font-medium text-sm border border-slate-200 bg-white text-slate-700 cursor-pointer';
-                document.getElementById('coop-info').classList.add('hidden');
+                $('mode-battle').className = 'mp-mode-btn active px-4 py-2 rounded-lg font-medium text-sm bg-blue-500 text-white cursor-pointer';
+                $('mode-coop').className = 'mp-mode-btn px-4 py-2 rounded-lg font-medium text-sm border border-slate-200 bg-white text-slate-700 cursor-pointer';
+                $('coop-info').classList.add('hidden');
             });
             
-            document.getElementById('mode-coop').addEventListener('click', () => {
+            $('mode-coop').addEventListener('click', () => {
                 mpState.gameMode = 'coop';
-                document.getElementById('mode-coop').className = 'mp-mode-btn active px-4 py-2 rounded-lg font-medium text-sm bg-green-500 text-white cursor-pointer';
-                document.getElementById('mode-battle').className = 'mp-mode-btn px-4 py-2 rounded-lg font-medium text-sm border border-slate-200 bg-white text-slate-700 cursor-pointer';
-                document.getElementById('coop-info').classList.remove('hidden');
+                $('mode-coop').className = 'mp-mode-btn active px-4 py-2 rounded-lg font-medium text-sm bg-green-500 text-white cursor-pointer';
+                $('mode-battle').className = 'mp-mode-btn px-4 py-2 rounded-lg font-medium text-sm border border-slate-200 bg-white text-slate-700 cursor-pointer';
+                $('coop-info').classList.remove('hidden');
             });
             
-            document.getElementById('btn-create-room').addEventListener('click', createRoom);
-            document.getElementById('btn-quick-match').addEventListener('click', quickMatch);
-            document.getElementById('btn-join-room').addEventListener('click', () => {
-                joinRoom(elements.roomCodeInput.value);
-            });
-            document.getElementById('btn-ready').addEventListener('click', toggleReady);
-            document.getElementById('btn-leave-room').addEventListener('click', leaveRoom);
-            document.getElementById('btn-start-game').addEventListener('click', startGame);
-            document.getElementById('mp-submit-btn').addEventListener('click', submitMpGuess);
-            document.getElementById('mp-hint-btn').addEventListener('click', useMpHint);
-            document.getElementById('mp-skip-btn').addEventListener('click', skipStation);
-            document.getElementById('mp-play-again').addEventListener('click', playAgain);
-            document.getElementById('mp-guess-input').addEventListener('keypress', (e) => {
+            $('btn-create-room').addEventListener('click', createRoom);
+            $('btn-quick-match').addEventListener('click', quickMatch);
+            $('btn-join-room').addEventListener('click', () => joinRoom(elements.roomCodeInput.value));
+            $('btn-ready').addEventListener('click', toggleReady);
+            $('btn-leave-room').addEventListener('click', leaveRoom);
+            $('btn-start-game').addEventListener('click', startGame);
+            $('mp-submit-btn').addEventListener('click', submitMpGuess);
+            $('mp-hint-btn').addEventListener('click', useMpHint);
+            $('mp-play-again').addEventListener('click', playAgain);
+            $('mp-guess-input').addEventListener('keypress', (e) => {
                 if (e.key === 'Enter') submitMpGuess();
             });
-            document.getElementById('btn-copy-room').addEventListener('click', copyRoomCode);
-            document.getElementById('btn-send-chat').addEventListener('click', sendChatMessage);
+            $('btn-copy-room').addEventListener('click', copyRoomCode);
+            $('btn-send-chat').addEventListener('click', sendChatMessage);
             elements.chatInput.addEventListener('keypress', (e) => {
                 if (e.key === 'Enter') sendChatMessage();
             });
@@ -3689,7 +3587,7 @@
             
             document.querySelectorAll('.difficulty-btn').forEach(btn => {
                 btn.addEventListener('click', () => {
-                    document.querySelectorAll('.difficulty-btn').forEach(b => b.classList.remove('active'));
+                    $all('.difficulty-btn').forEach(b => b.classList.remove('active'));
                     btn.classList.add('active');
                     gameState.difficulty = btn.dataset.difficulty;
                     stats.currentStreak = 0;
@@ -3705,7 +3603,7 @@
                 showToast(`城市已切换到${e.target.options[e.target.selectedIndex].text}`, 'info');
             });
             
-            document.getElementById('station-count').addEventListener('change', (e) => {
+            $('station-count').addEventListener('change', (e) => {
                 const count = parseInt(e.target.value);
                 if (count >= 1 && count <= 20) {
                     stats.currentStreak = 0;
@@ -3714,61 +3612,37 @@
                 }
             });
             
-            document.querySelectorAll('.leaderboard-tab').forEach(tab => {
-                tab.addEventListener('click', () => {
-                    renderLeaderboard(tab.dataset.board);
-                });
-            });
-            
-            document.addEventListener('keydown', (e) => {
-                if (gameState.mode !== 'normal' || gameState.gameWon) return;
-                
-                if (document.activeElement === elements.guessInput) return;
-                
-                if (e.key.length === 1 && /[a-zA-Z]/.test(e.key)) {
-                    e.preventDefault();
-                    revealLetter(e.key.toLowerCase());
-                }
+            $all('.leaderboard-tab').forEach(tab => {
+                tab.addEventListener('click', () => renderLeaderboard(tab.dataset.board));
             });
             
             document.addEventListener('keydown', (e) => {
                 if (e.ctrlKey || e.metaKey || e.altKey) return;
                 
-                if (e.key === 'n' || e.key === 'N') {
-                    if (document.activeElement.tagName !== 'INPUT') {
-                        e.preventDefault();
-                        stats.currentStreak = 0;
-                        startNewGame();
-                        showToast('新游戏开始！', 'success');
-                    }
+                const isInputFocused = document.activeElement.tagName === 'INPUT';
+                
+                if (gameState.mode === 'normal' && !gameState.gameWon && 
+                    document.activeElement !== elements.guessInput &&
+                    e.key.length === 1 && /[a-zA-Z]/.test(e.key)) {
+                    e.preventDefault();
+                    revealLetter(e.key.toLowerCase());
+                    return;
                 }
                 
-                if (e.key === 's' || e.key === 'S') {
-                    if (document.activeElement.tagName !== 'INPUT') {
-                        e.preventDefault();
-                        saveGameState();
-                    }
-                }
+                if (isInputFocused) return;
                 
-                if (e.key === 'l' || e.key === 'L') {
-                    if (document.activeElement.tagName !== 'INPUT') {
-                        e.preventDefault();
-                        loadGameState();
-                    }
-                }
+                const keyActions = {
+                    'n': () => { stats.currentStreak = 0; startNewGame(); showToast('新游戏开始！', 'success'); },
+                    's': saveGameState,
+                    'l': loadGameState,
+                    'h': useHint,
+                    't': toggleTheme
+                };
                 
-                if (e.key === 'h' || e.key === 'H') {
-                    if (document.activeElement.tagName !== 'INPUT') {
-                        e.preventDefault();
-                        useHint();
-                    }
-                }
-                
-                if (e.key === 't' || e.key === 'T') {
-                    if (document.activeElement.tagName !== 'INPUT') {
-                        e.preventDefault();
-                        toggleTheme();
-                    }
+                const action = keyActions[e.key.toLowerCase()];
+                if (action) {
+                    e.preventDefault();
+                    action();
                 }
                 
                 if (e.key === 'Escape') {
