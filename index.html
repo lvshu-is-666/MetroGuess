@@ -3384,9 +3384,9 @@
                 showToast('新游戏开始！', 'success');
             });
             
-            elements.btnSave.addEventListener('click', saveGameState);
-            elements.btnLoad.addEventListener('click', loadGameState);
-            elements.btnCloudSync.addEventListener('click', handleCloudSync);
+            if (elements.btnSave) elements.btnSave.addEventListener('click', saveGameState);
+            if (elements.btnLoad) elements.btnLoad.addEventListener('click', loadGameState);
+            if (elements.btnCloudSync) elements.btnCloudSync.addEventListener('click', handleCloudSync);
             elements.btnHint.addEventListener('click', useHint);
             elements.btnTheme.addEventListener('click', toggleTheme);
             elements.soundToggle.addEventListener('click', toggleSound);
