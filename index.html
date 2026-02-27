@@ -21,20 +21,10 @@
             border: 1px solid rgba(255, 255, 255, 0.3);
         }
         
-        .dark .glass-panel {
-            background: rgba(30, 41, 59, 0.9);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        
         .station-card {
             background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
             border: 2px solid #e2e8f0;
             transition: all 0.3s ease;
-        }
-        
-        .dark .station-card {
-            background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
-            border-color: #475569;
         }
         
         .station-card:hover {
@@ -44,11 +34,6 @@
         
         .station-card.solved {
             background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
-            border-color: #22c55e;
-        }
-        
-        .dark .station-card.solved {
-            background: linear-gradient(135deg, #14532d 0%, #166534 100%);
             border-color: #22c55e;
         }
         
@@ -400,6 +385,289 @@
         
         .sound-toggle:hover {
             transform: scale(1.1);
+        }
+        
+        .dark .glass-panel {
+            background: rgba(15, 23, 42, 0.95);
+            border: 1px solid rgba(71, 85, 105, 0.5);
+        }
+        
+        .dark .station-card {
+            background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+            border-color: #475569;
+        }
+        
+        .dark .station-card:hover {
+            border-color: #60a5fa;
+            box-shadow: 0 4px 20px rgba(96, 165, 250, 0.2);
+        }
+        
+        .dark .station-card.solved {
+            background: linear-gradient(135deg, #14532d 0%, #166534 100%);
+            border-color: #22c55e;
+        }
+        
+        .dark h1 {
+            color: #f1f5f9;
+        }
+        
+        .dark h2, .dark h3, .dark h4 {
+            color: #e2e8f0;
+        }
+        
+        .dark .text-slate-900 {
+            color: #f1f5f9;
+        }
+        
+        .dark .text-slate-800 {
+            color: #e2e8f0;
+        }
+        
+        .dark .text-slate-700 {
+            color: #cbd5e1;
+        }
+        
+        .dark .text-slate-600 {
+            color: #94a3b8;
+        }
+        
+        .dark .text-slate-500 {
+            color: #64748b;
+        }
+        
+        .dark .bg-slate-200 {
+            background-color: #334155;
+        }
+        
+        .dark .bg-slate-100 {
+            background-color: #1e293b;
+        }
+        
+        .dark .bg-slate-50 {
+            background-color: #1e293b;
+        }
+        
+        .dark .bg-white {
+            background-color: #1e293b;
+        }
+        
+        .dark .border-slate-200 {
+            border-color: #475569;
+        }
+        
+        .dark .hover\:bg-slate-300:hover {
+            background-color: #475569;
+        }
+        
+        .dark .hover\:bg-slate-200:hover {
+            background-color: #334155;
+        }
+        
+        .dark input[type="text"],
+        .dark input[type="number"],
+        .dark select,
+        .dark textarea {
+            background-color: #1e293b;
+            border-color: #475569;
+            color: #e2e8f0;
+        }
+        
+        .dark input[type="text"]::placeholder,
+        .dark input[type="number"]::placeholder {
+            color: #64748b;
+        }
+        
+        .dark input[type="text"]:focus,
+        .dark input[type="number"]:focus,
+        .dark select:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
+        }
+        
+        .dark .mode-btn {
+            background-color: #1e293b;
+            border-color: #475569;
+            color: #cbd5e1;
+        }
+        
+        .dark .mode-btn:hover {
+            background-color: #334155;
+        }
+        
+        .dark .mode-btn.active {
+            background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);
+            color: white;
+        }
+        
+        .dark .difficulty-btn {
+            background-color: #1e293b;
+            border-color: #475569;
+            color: #cbd5e1;
+        }
+        
+        .dark .difficulty-btn:hover {
+            background-color: #334155;
+        }
+        
+        .dark .difficulty-btn.active {
+            background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+            color: white;
+        }
+        
+        .dark .leaderboard-tab {
+            background-color: #1e293b;
+            border-color: #475569;
+            color: #cbd5e1;
+        }
+        
+        .dark .leaderboard-tab:hover {
+            background-color: #334155;
+        }
+        
+        .dark .leaderboard-tab.active {
+            background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);
+            color: white;
+        }
+        
+        .dark .mp-mode-btn {
+            background-color: #1e293b;
+            border-color: #475569;
+            color: #cbd5e1;
+        }
+        
+        .dark .mp-mode-btn:hover {
+            background-color: #334155;
+        }
+        
+        .dark .mp-mode-btn.active {
+            background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);
+        }
+        
+        .dark #btn-theme {
+            background-color: #334155;
+            color: #fbbf24;
+        }
+        
+        .dark #btn-theme:hover {
+            background-color: #475569;
+        }
+        
+        .dark .letter-key {
+            background-color: #334155;
+            border-color: #475569;
+            color: #e2e8f0;
+        }
+        
+        .dark .letter-key:hover {
+            background-color: #475569;
+            border-color: #60a5fa;
+        }
+        
+        .dark .letter-key.used {
+            background-color: #1e293b;
+            color: #64748b;
+        }
+        
+        .dark .letter-key.found {
+            background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+            color: white;
+        }
+        
+        .dark .letter-key.not-found {
+            background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%);
+            color: white;
+        }
+        
+        .dark .neon-glow {
+            text-shadow: 0 0 10px rgba(96, 165, 250, 0.6),
+                         0 0 20px rgba(96, 165, 250, 0.4),
+                         0 0 30px rgba(96, 165, 250, 0.3);
+        }
+        
+        .dark .progress-bar {
+            background: linear-gradient(90deg, #22c55e, #4ade80);
+            box-shadow: 0 0 10px rgba(34, 197, 94, 0.5);
+        }
+        
+        .dark #chat-messages {
+            background-color: #0f172a;
+        }
+        
+        .dark #victory-modal > div {
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            border: 1px solid #475569;
+        }
+        
+        .dark #victory-modal h2 {
+            color: #f1f5f9;
+        }
+        
+        .dark #victory-modal p {
+            color: #94a3b8;
+        }
+        
+        .dark #victory-modal .bg-slate-100 {
+            background-color: #0f172a;
+        }
+        
+        .dark .tooltip::after {
+            background: #f1f5f9;
+            color: #1e293b;
+        }
+        
+        .dark .sound-toggle {
+            background: rgba(15, 23, 42, 0.95);
+            border: 1px solid rgba(71, 85, 105, 0.5);
+        }
+        
+        .dark a {
+            color: #60a5fa;
+        }
+        
+        .dark a:hover {
+            color: #93c5fd;
+        }
+        
+        .dark ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        
+        .dark ::-webkit-scrollbar-track {
+            background: #1e293b;
+        }
+        
+        .dark ::-webkit-scrollbar-thumb {
+            background: #475569;
+            border-radius: 4px;
+        }
+        
+        .dark ::-webkit-scrollbar-thumb:hover {
+            background: #64748b;
+        }
+        
+        .dark .bg-green-50 {
+            background-color: rgba(34, 197, 94, 0.1);
+        }
+        
+        .dark .border-green-200 {
+            border-color: rgba(34, 197, 94, 0.3);
+        }
+        
+        .dark .text-green-700 {
+            color: #4ade80;
+        }
+        
+        .dark .bg-blue-100 {
+            background-color: rgba(59, 130, 246, 0.2);
+        }
+        
+        .dark .text-blue-700 {
+            color: #60a5fa;
+        }
+        
+        .dark .bg-blue-50 {
+            background-color: rgba(59, 130, 246, 0.1);
         }
     </style>
 </head>
@@ -814,7 +1082,7 @@
         </div>
         
         <footer class="text-center mt-6 text-sm text-slate-500">
-            <p>制作者：<a href="https://space.bilibili.com/lvshu" target="_blank" class="text-blue-600 hover:text-blue-700 font-medium">bilibili@lvshu</a></p>
+            <p>制作者：<a href="https://space.bilibili.com/1944366810" target="_blank" class="text-blue-600 hover:text-blue-700 font-medium">bilibili@lvshu</a></p>
         </footer>
     </div>
     
@@ -1519,14 +1787,18 @@
 
         function initFirebase() {
             try {
-                if (typeof firebase !== 'undefined' && firebase.app) {
-                    firebase.initializeApp(MULTIPLAYER_CONFIG);
+                if (typeof firebase !== 'undefined') {
+                    if (!firebase.apps.length) {
+                        firebase.initializeApp(MULTIPLAYER_CONFIG);
+                    }
                     db = firebase.database();
                     mpState.connected = true;
                     mpState.playerId = localStorage.getItem('mp_player_id') || generatePlayerId();
                     localStorage.setItem('mp_player_id', mpState.playerId);
-                    console.log('Firebase initialized');
+                    console.log('Firebase initialized successfully');
                     loadOnlineRooms();
+                } else {
+                    console.log('Firebase SDK not loaded');
                 }
             } catch (e) {
                 console.log('Firebase init failed, running in offline mode:', e);
@@ -1547,40 +1819,52 @@
         }
 
         async function createRoom() {
+            console.log('createRoom called, connected:', mpState.connected);
+            
             if (!mpState.connected) {
-                showToast('请先连接网络', 'error');
-                return;
+                showToast('正在连接服务器...', 'info');
+                initFirebase();
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                if (!mpState.connected) {
+                    showToast('连接失败，请检查网络', 'error');
+                    return;
+                }
             }
 
-            const roomCode = generateRoomCode();
-            mpState.roomId = roomCode;
-            mpState.isHost = true;
+            try {
+                const roomCode = generateRoomCode();
+                mpState.roomId = roomCode;
+                mpState.isHost = true;
 
-            roomRef = db.ref('rooms/' + roomCode);
-            
-            await roomRef.set({
-                host: mpState.playerId,
-                status: 'waiting',
-                createdAt: Date.now(),
-                gameMode: mpState.gameMode,
-                settings: {
-                    difficulty: gameState.difficulty,
-                    stationCount: parseInt(document.getElementById('station-count').value) || 5
-                }
-            });
+                roomRef = db.ref('rooms/' + roomCode);
+                
+                await roomRef.set({
+                    host: mpState.playerId,
+                    status: 'waiting',
+                    createdAt: Date.now(),
+                    gameMode: mpState.gameMode,
+                    settings: {
+                        difficulty: gameState.difficulty,
+                        stationCount: parseInt(document.getElementById('station-count').value) || 5
+                    }
+                });
 
-            playersRef = roomRef.child('players/' + mpState.playerId);
-            await playersRef.set({
-                name: mpState.playerName,
-                score: 0,
-                isReady: true,
-                isHost: true,
-                joinedAt: Date.now()
-            });
+                playersRef = roomRef.child('players/' + mpState.playerId);
+                await playersRef.set({
+                    name: mpState.playerName,
+                    score: 0,
+                    isReady: true,
+                    isHost: true,
+                    joinedAt: Date.now()
+                });
 
-            setupRoomListeners();
-            showRoomUI(roomCode);
-            showToast('房间已创建: ' + roomCode, 'success');
+                setupRoomListeners();
+                showRoomUI(roomCode);
+                showToast('房间已创建: ' + roomCode, 'success');
+            } catch (e) {
+                console.error('createRoom error:', e);
+                showToast('创建房间失败: ' + e.message, 'error');
+            }
         }
 
         async function joinRoom(roomCode) {
@@ -3068,10 +3352,10 @@
             
             if (isDarkMode) {
                 document.body.classList.remove('bg-gradient-to-br', 'from-slate-50', 'via-blue-50', 'to-indigo-100');
-                document.body.classList.add('bg-gradient-to-br', 'from-slate-900', 'via-slate-800', 'to-slate-900', 'text-slate-200');
+                document.body.classList.add('bg-gradient-to-br', 'from-slate-950', 'via-slate-900', 'to-slate-950', 'text-slate-200');
                 elements.themeIcon.textContent = '☀️';
             } else {
-                document.body.classList.remove('bg-gradient-to-br', 'from-slate-900', 'via-slate-800', 'to-slate-900', 'text-slate-200');
+                document.body.classList.remove('bg-gradient-to-br', 'from-slate-950', 'via-slate-900', 'to-slate-950', 'text-slate-200');
                 document.body.classList.add('bg-gradient-to-br', 'from-slate-50', 'via-blue-50', 'to-indigo-100', 'text-slate-800');
                 elements.themeIcon.textContent = '🌙';
             }
