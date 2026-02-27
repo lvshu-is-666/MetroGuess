@@ -982,6 +982,7 @@
             btnNewGame: document.getElementById('btn-new-game'),
             btnSave: document.getElementById('btn-save'),
             btnLoad: document.getElementById('btn-load'),
+            btnCloudSync: document.getElementById('btn-cloud-sync'),
             btnHint: document.getElementById('btn-hint'),
             btnTheme: document.getElementById('btn-theme'),
             btnPlayAgain: document.getElementById('btn-play-again'),
@@ -1372,9 +1373,11 @@
                 try {
                     const parsed = JSON.parse(saved);
                     stats = {
+                        ...stats,
                         ...parsed,
                         unlockedCities: new Set(parsed.unlockedCities || ['all']),
-                        achievements: new Set(parsed.achievements || [])
+                        achievements: new Set(parsed.achievements || []),
+                        leaderboards: parsed.leaderboards || { easy: [], normal: [], hard: [] }
                     };
                 } catch (e) {
                     console.error('Failed to load stats:', e);
@@ -1389,6 +1392,94 @@
                 achievements: Array.from(stats.achievements)
             };
             localStorage.setItem('subwayGameStats', JSON.stringify(toSave));
+        }
+
+        async function syncToCloud() {
+            if (!mpState.connected || !db) {
+                showToast('请先连接网络', 'error');
+                return;
+            }
+
+            try {
+                const userRef = db.ref('users/' + mpState.playerId);
+                const toSync = {
+                    ...stats,
+                    unlockedCities: Array.from(stats.unlockedCities),
+                    achievements: Array.from(stats.achievements),
+                    lastSync: Date.now()
+                };
+                
+                await userRef.set(toSync);
+                showToast('数据已同步到云端！', 'success');
+            } catch (e) {
+                console.error('Cloud sync failed:', e);
+                showToast('同步失败: ' + e.message, 'error');
+            }
+        }
+
+        async function loadFromCloud() {
+            if (!mpState.connected || !db) {
+                showToast('请先连接网络', 'error');
+                return;
+            }
+
+            try {
+                const userRef = db.ref('users/' + mpState.playerId);
+                const snapshot = await userRef.once('value');
+                
+                if (snapshot.exists()) {
+                    const cloudData = snapshot.val();
+                    
+                    const mergedLeaderboards = {
+                        easy: mergeLeaderboardArrays(stats.leaderboards.easy, cloudData.leaderboards?.easy || []),
+                        normal: mergeLeaderboardArrays(stats.leaderboards.normal, cloudData.leaderboards?.normal || []),
+                        hard: mergeLeaderboardArrays(stats.leaderboards.hard, cloudData.leaderboards?.hard || [])
+                    };
+                    
+                    stats = {
+                        gamesPlayed: Math.max(stats.gamesPlayed, cloudData.gamesPlayed || 0),
+                        gamesWon: Math.max(stats.gamesWon, cloudData.gamesWon || 0),
+                        stationsSolved: Math.max(stats.stationsSolved, cloudData.stationsSolved || 0),
+                        totalScore: Math.max(stats.totalScore, cloudData.totalScore || 0),
+                        currentStreak: cloudData.currentStreak || stats.currentStreak,
+                        bestStreak: Math.max(stats.bestStreak, cloudData.bestStreak || 0),
+                        unlockedCities: new Set([...stats.unlockedCities, ...(cloudData.unlockedCities || ['all'])]),
+                        achievements: new Set([...stats.achievements, ...(cloudData.achievements || [])]),
+                        leaderboards: mergedLeaderboards
+                    };
+                    
+                    saveStats();
+                    updateStatsDisplay();
+                    renderLeaderboard(gameState.difficulty);
+                    showToast('云端数据已加载！', 'success');
+                } else {
+                    showToast('云端暂无数据', 'info');
+                }
+            } catch (e) {
+                console.error('Load from cloud failed:', e);
+                showToast('加载失败: ' + e.message, 'error');
+            }
+        }
+
+        function mergeLeaderboardArrays(local, cloud) {
+            const merged = [...local];
+            cloud.forEach(entry => {
+                const exists = merged.find(e => 
+                    e.stationName === entry.stationName && 
+                    e.date === entry.date &&
+                    e.score === entry.score
+                );
+                if (!exists) {
+                    merged.push(entry);
+                }
+            });
+            merged.sort((a, b) => b.score - a.score);
+            return merged.slice(0, 10);
+        }
+
+        async function handleCloudSync() {
+            await loadFromCloud();
+            await syncToCloud();
         }
 
         function updateStatsDisplay() {
@@ -2122,6 +2213,12 @@
             setupEventListeners();
             initAudio();
             initFirebase();
+            
+            setTimeout(async () => {
+                if (mpState.connected && db) {
+                    await loadFromCloud();
+                }
+            }, 1000);
         }
 
         function startNewGame() {
@@ -2891,6 +2988,11 @@
             stats.leaderboards[gameState.difficulty] = stats.leaderboards[gameState.difficulty].slice(0, 10);
             
             saveStats();
+            
+            if (mpState.connected && db) {
+                syncToCloud();
+            }
+            
             showToast('成绩已保存！', 'success');
             
             elements.victoryModal.classList.add('hidden');
@@ -2991,6 +3093,7 @@
             
             elements.btnSave.addEventListener('click', saveGameState);
             elements.btnLoad.addEventListener('click', loadGameState);
+            elements.btnCloudSync.addEventListener('click', handleCloudSync);
             elements.btnHint.addEventListener('click', useHint);
             elements.btnTheme.addEventListener('click', toggleTheme);
             elements.soundToggle.addEventListener('click', toggleSound);
