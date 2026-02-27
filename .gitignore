@@ -1,0 +1,18 @@
+# Python files (not needed for GitHub Pages)
+__pycache__/
+*.py[cod]
+*$py.class
+*.py
+
+# Temporary files
+*.tmp
+*.temp
+subway_stations_temp.csv
+
+# IDE
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db

@@ -1,0 +1,2153 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>地铁站名猜谜游戏</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+        
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        .dark .glass-panel {
+            background: rgba(30, 41, 59, 0.9);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .station-card {
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            border: 2px solid #e2e8f0;
+            transition: all 0.3s ease;
+        }
+        
+        .dark .station-card {
+            background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+            border-color: #475569;
+        }
+        
+        .station-card:hover {
+            border-color: #3b82f6;
+            box-shadow: 0 4px 20px rgba(59, 130, 246, 0.15);
+        }
+        
+        .station-card.solved {
+            background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
+            border-color: #22c55e;
+        }
+        
+        .dark .station-card.solved {
+            background: linear-gradient(135deg, #14532d 0%, #166534 100%);
+            border-color: #22c55e;
+        }
+        
+        .letter-display {
+            font-family: 'Courier New', monospace;
+            letter-spacing: 0.15em;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);
+            transition: all 0.2s ease;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+        }
+        
+        .btn-secondary {
+            background: linear-gradient(135deg, #f97316 0%, #fb923c 100%);
+            transition: all 0.2s ease;
+        }
+        
+        .btn-secondary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(249, 115, 22, 0.3);
+        }
+        
+        .btn-hint {
+            background: linear-gradient(135deg, #8b5cf6 0%, #a78bfa 100%);
+            transition: all 0.2s ease;
+        }
+        
+        .btn-hint:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+        }
+        
+        .mode-btn {
+            transition: all 0.3s ease;
+        }
+        
+        .mode-btn.active {
+            background: #2563eb;
+            color: white;
+        }
+        
+        .difficulty-btn {
+            transition: all 0.3s ease;
+        }
+        
+        .difficulty-btn.active {
+            background: #059669;
+            color: white;
+        }
+        
+        .guess-history-item {
+            animation: slideIn 0.3s ease;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        
+        .letter-reveal {
+            animation: popIn 0.4s ease;
+        }
+        
+        @keyframes popIn {
+            0% {
+                transform: scale(0.5);
+                opacity: 0;
+            }
+            50% {
+                transform: scale(1.2);
+            }
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+        
+        .crt-overlay {
+            background: repeating-linear-gradient(
+                0deg,
+                rgba(0, 0, 0, 0.03),
+                rgba(0, 0, 0, 0.03) 1px,
+                transparent 1px,
+                transparent 2px
+            );
+            pointer-events: none;
+        }
+        
+        .neon-glow {
+            text-shadow: 0 0 10px rgba(59, 130, 246, 0.5),
+                         0 0 20px rgba(59, 130, 246, 0.3),
+                         0 0 30px rgba(59, 130, 246, 0.2);
+        }
+        
+        .input-glow:focus {
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
+        }
+        
+        .letter-key {
+            transition: all 0.2s ease;
+        }
+        
+        .letter-key:hover {
+            transform: scale(1.1);
+        }
+        
+        .letter-key.used {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+        
+        .letter-key.found {
+            background: #22c55e;
+            color: white;
+        }
+        
+        .letter-key.not-found {
+            background: #ef4444;
+            color: white;
+        }
+        
+        .timer-display {
+            font-variant-numeric: tabular-nums;
+        }
+        
+        .score-popup {
+            animation: scorePopup 0.5s ease;
+        }
+        
+        @keyframes scorePopup {
+            0% {
+                transform: scale(0);
+                opacity: 0;
+            }
+            50% {
+                transform: scale(1.2);
+            }
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+        
+        .achievement-badge {
+            animation: badgeShine 2s ease infinite;
+        }
+        
+        @keyframes badgeShine {
+            0%, 100% {
+                filter: brightness(1);
+            }
+            50% {
+                filter: brightness(1.2);
+            }
+        }
+        
+        .leaderboard-item {
+            animation: fadeInUp 0.3s ease;
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .progress-bar {
+            background: linear-gradient(90deg, #22c55e, #16a34a);
+            transition: width 0.5s ease;
+        }
+        
+        .shake {
+            animation: shake 0.5s ease;
+        }
+        
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-5px); }
+            40%, 80% { transform: translateX(5px); }
+        }
+        
+        .pulse-success {
+            animation: pulseSuccess 0.5s ease;
+        }
+        
+        @keyframes pulseSuccess {
+            0% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7); }
+            70% { box-shadow: 0 0 0 15px rgba(34, 197, 94, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
+        }
+        
+        .float-score {
+            animation: floatScore 1s ease forwards;
+            pointer-events: none;
+        }
+        
+        @keyframes floatScore {
+            0% {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+            100% {
+                opacity: 0;
+                transform: translateY(-50px) scale(1.5);
+            }
+        }
+        
+        .particle {
+            position: fixed;
+            pointer-events: none;
+            animation: particleFall 1s ease forwards;
+        }
+        
+        @keyframes particleFall {
+            0% {
+                opacity: 1;
+                transform: translateY(0) rotate(0deg);
+            }
+            100% {
+                opacity: 0;
+                transform: translateY(100px) rotate(360deg);
+            }
+        }
+        
+        .firework {
+            position: fixed;
+            pointer-events: none;
+        }
+        
+        .firework-particle {
+            position: absolute;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            animation: fireworkExplode 1s ease forwards;
+        }
+        
+        @keyframes fireworkExplode {
+            0% {
+                opacity: 1;
+                transform: translate(0, 0) scale(1);
+            }
+            100% {
+                opacity: 0;
+                transform: var(--end-pos) scale(0);
+            }
+        }
+        
+        .combo-display {
+            animation: comboPop 0.3s ease;
+        }
+        
+        @keyframes comboPop {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.3); }
+            100% { transform: scale(1); }
+        }
+        
+        .toast {
+            animation: toastSlide 0.3s ease;
+        }
+        
+        @keyframes toastSlide {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .toast-exit {
+            animation: toastExit 0.3s ease forwards;
+        }
+        
+        @keyframes toastExit {
+            to {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+        }
+        
+        .tooltip {
+            position: relative;
+        }
+        
+        .tooltip::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 4px 8px;
+            background: #1e293b;
+            color: white;
+            font-size: 12px;
+            border-radius: 4px;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s;
+        }
+        
+        .tooltip:hover::after {
+            opacity: 1;
+        }
+        
+        @media (max-width: 640px) {
+            .letter-display {
+                letter-spacing: 0.08em;
+                font-size: 0.875rem;
+            }
+        }
+        
+        .sound-toggle {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 100;
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .sound-toggle:hover {
+            transform: scale(1.1);
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 min-h-screen text-slate-800 transition-colors duration-300">
+    <div class="crt-overlay fixed inset-0 z-50 opacity-30"></div>
+    
+    <div id="toast-container" class="fixed top-4 right-4 z-50 space-y-2"></div>
+    
+    <div id="floating-scores" class="fixed inset-0 pointer-events-none z-40"></div>
+    
+    <button id="sound-toggle" class="sound-toggle glass-panel shadow-lg" title="切换音效">
+        🔊
+    </button>
+    
+    <div class="relative z-10 container mx-auto px-4 py-6 max-w-6xl">
+        <header class="text-center mb-6">
+            <div class="flex justify-center items-center gap-4 mb-2">
+                <h1 class="text-3xl md:text-4xl font-bold text-slate-900 neon-glow">
+                    地铁站名猜谜游戏
+                </h1>
+                <button id="btn-theme" class="p-2 rounded-lg bg-slate-200 hover:bg-slate-300 transition-all cursor-pointer" title="切换主题 (T)">
+                    <span id="theme-icon">🌙</span>
+                </button>
+            </div>
+            <p class="text-slate-600 text-sm md:text-base">
+                开字母 · 猜站名 · 挑战你的地铁知识
+            </p>
+        </header>
+        
+        <div class="glass-panel rounded-2xl p-4 mb-4 shadow-lg">
+            <div class="flex flex-col md:flex-row gap-4 items-center justify-between">
+                <div class="flex flex-col md:flex-row gap-4 items-center">
+                    <div class="flex items-center gap-2">
+                        <span class="text-sm font-medium text-slate-700">难度:</span>
+                        <div class="flex gap-2">
+                            <button data-difficulty="easy" class="difficulty-btn px-3 py-1.5 rounded-lg text-sm font-medium border border-slate-200 bg-white text-slate-700 cursor-pointer">
+                                简单
+                            </button>
+                            <button data-difficulty="normal" class="difficulty-btn active px-3 py-1.5 rounded-lg text-sm font-medium border border-slate-200 bg-white text-slate-700 cursor-pointer">
+                                普通
+                            </button>
+                            <button data-difficulty="hard" class="difficulty-btn px-3 py-1.5 rounded-lg text-sm font-medium border border-slate-200 bg-white text-slate-700 cursor-pointer">
+                                困难
+                            </button>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="text-sm font-medium text-slate-700">站名数:</span>
+                        <input type="number" id="station-count" min="1" max="20" value="4" class="w-16 px-2 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-700 text-sm text-center">
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="text-sm font-medium text-slate-700">城市:</span>
+                        <select id="city-select" class="px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-700 text-sm cursor-pointer">
+                            <option value="all">全部城市</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="flex items-center gap-4">
+                    <div class="text-center">
+                        <div class="text-xs text-slate-500">计时</div>
+                        <div id="timer" class="text-xl font-bold text-blue-600 timer-display">00:00</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-xs text-slate-500">得分</div>
+                        <div id="score" class="text-xl font-bold text-green-600">0</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-xs text-slate-500">连击</div>
+                        <div id="combo" class="text-xl font-bold text-orange-600">0</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-xs text-slate-500">提示</div>
+                        <div id="hints-left" class="text-xl font-bold text-purple-600">3</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mt-3">
+                <div class="flex justify-between text-xs text-slate-500 mb-1">
+                    <span>进度</span>
+                    <span id="progress-text">0/0</span>
+                </div>
+                <div class="h-2 bg-slate-200 rounded-full overflow-hidden">
+                    <div id="progress-bar" class="progress-bar h-full rounded-full" style="width: 0%"></div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="flex justify-center gap-3 mb-4 flex-wrap">
+            <button id="mode-normal" class="mode-btn active px-4 py-2 rounded-lg font-medium text-sm border border-slate-200 bg-white text-slate-700 cursor-pointer">
+                普通模式
+            </button>
+            <button id="mode-reverse" class="mode-btn px-4 py-2 rounded-lg font-medium text-sm border border-slate-200 bg-white text-slate-700 cursor-pointer hidden">
+                逆向模式
+            </button>
+            <button id="mode-leaderboard" class="mode-btn px-4 py-2 rounded-lg font-medium text-sm border border-slate-200 bg-white text-slate-700 cursor-pointer">
+                排行榜
+            </button>
+        </div>
+        
+        <div class="glass-panel rounded-2xl p-4 md:p-6 mb-4 shadow-lg">
+            <div class="flex flex-col md:flex-row gap-4 items-center justify-between">
+                <div class="flex gap-3 flex-wrap justify-center">
+                    <button id="btn-new-game" class="btn-primary px-5 py-2.5 rounded-lg text-white font-medium text-sm cursor-pointer tooltip" data-tooltip="快捷键: N">
+                        新游戏
+                    </button>
+                    <button id="btn-save" class="bg-slate-700 hover:bg-slate-800 px-4 py-2.5 rounded-lg text-white font-medium text-sm transition-all cursor-pointer tooltip" data-tooltip="快捷键: S">
+                        保存
+                    </button>
+                    <button id="btn-load" class="bg-slate-600 hover:bg-slate-700 px-4 py-2.5 rounded-lg text-white font-medium text-sm transition-all cursor-pointer tooltip" data-tooltip="快捷键: L">
+                        加载
+                    </button>
+                    <button id="btn-hint" class="btn-hint px-4 py-2.5 rounded-lg text-white font-medium text-sm cursor-pointer tooltip" data-tooltip="快捷键: H">
+                        提示
+                    </button>
+                </div>
+                <div id="game-stats" class="text-sm text-slate-600">
+                    <span>猜测: <span id="guess-count">0</span>次</span>
+                </div>
+            </div>
+        </div>
+        
+        <div id="normal-mode-area" class="space-y-4">
+            <div id="stations-container" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            </div>
+            
+            <div class="glass-panel rounded-2xl p-4 shadow-lg">
+                <h3 class="text-sm font-semibold text-slate-700 mb-3">字母键盘 (点击开字母)</h3>
+                <div id="letter-keyboard" class="flex flex-wrap gap-1.5 justify-center">
+                </div>
+            </div>
+            
+            <div class="glass-panel rounded-2xl p-4 md:p-6 shadow-lg">
+                <div class="flex flex-col md:flex-row gap-3">
+                    <input 
+                        type="text" 
+                        id="guess-input" 
+                        placeholder="输入指令：开 a / 猜 站名或字母 / 结束" 
+                        class="flex-1 px-4 py-3 rounded-lg border border-slate-200 bg-white text-slate-800 placeholder-slate-400 input-glow focus:outline-none focus:border-blue-500 transition-all"
+                        autocomplete="off"
+                    >
+                    <button id="btn-submit" class="btn-secondary px-6 py-3 rounded-lg text-white font-medium cursor-pointer">
+                        提交
+                    </button>
+                </div>
+                <p class="text-xs text-slate-500 mt-2">
+                    指令格式：<span class="text-blue-600 font-medium">开 [字母]</span> 或 <span class="text-orange-600 font-medium">猜 [站名/字母]</span> 或 <span class="text-slate-600 font-medium">结束</span>
+                    <span class="mx-2">|</span>
+                    <span class="text-green-600">快捷键: A-Z 开字母, Enter 提交</span>
+                </p>
+            </div>
+        </div>
+        
+        <div id="reverse-mode-area" class="space-y-4 hidden">
+            <div class="glass-panel rounded-2xl p-4 md:p-6 shadow-lg">
+                <h3 class="text-lg font-semibold text-slate-800 mb-4">逆向模式：输入提示，让系统猜测</h3>
+                <div class="flex flex-col gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-2">输入带星号的提示（如：****e**）</label>
+                        <input 
+                            type="text" 
+                            id="reverse-input" 
+                            placeholder="输入提示，用*代表未知字母" 
+                            class="w-full px-4 py-3 rounded-lg border border-slate-200 bg-white text-slate-800 placeholder-slate-400 input-glow focus:outline-none focus:border-blue-500 transition-all letter-display text-center text-lg"
+                        >
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-2">已揭开的字母（*位置不能是这些字母）</label>
+                        <input 
+                            type="text" 
+                            id="revealed-letters-input" 
+                            placeholder="输入已揭开的字母，如：abc" 
+                            class="w-full px-4 py-3 rounded-lg border border-slate-200 bg-white text-slate-800 placeholder-slate-400 input-glow focus:outline-none focus:border-blue-500 transition-all text-center text-lg"
+                        >
+                    </div>
+                    <div class="flex gap-3">
+                        <button id="btn-reverse-guess" class="btn-primary px-6 py-3 rounded-lg text-white font-medium cursor-pointer">
+                            系统猜测
+                        </button>
+                        <button id="btn-reverse-clear" class="bg-slate-500 hover:bg-slate-600 px-6 py-3 rounded-lg text-white font-medium transition-all cursor-pointer">
+                            清空
+                        </button>
+                    </div>
+                </div>
+                
+                <div id="reverse-results" class="mt-6 hidden">
+                    <h4 class="text-sm font-medium text-slate-700 mb-3">可能的答案：</h4>
+                    <div id="reverse-results-list" class="space-y-2 max-h-64 overflow-y-auto">
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div id="leaderboard-area" class="hidden">
+            <div class="glass-panel rounded-2xl p-4 md:p-6 shadow-lg">
+                <h3 class="text-lg font-semibold text-slate-800 mb-4">🏆 排行榜</h3>
+                <div class="flex gap-2 mb-4">
+                    <button data-board="easy" class="leaderboard-tab px-3 py-1.5 rounded-lg text-sm font-medium border border-slate-200 bg-white text-slate-700 cursor-pointer">简单</button>
+                    <button data-board="normal" class="leaderboard-tab active px-3 py-1.5 rounded-lg text-sm font-medium bg-blue-500 text-white cursor-pointer">普通</button>
+                    <button data-board="hard" class="leaderboard-tab px-3 py-1.5 rounded-lg text-sm font-medium border border-slate-200 bg-white text-slate-700 cursor-pointer">困难</button>
+                </div>
+                <div id="leaderboard-list" class="space-y-2">
+                </div>
+            </div>
+            
+            <div class="glass-panel rounded-2xl p-4 md:p-6 shadow-lg mt-4">
+                <h3 class="text-lg font-semibold text-slate-800 mb-4">📊 统计数据</h3>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div class="text-center p-3 bg-slate-50 rounded-lg">
+                        <div class="text-2xl font-bold text-blue-600" id="stat-games">0</div>
+                        <div class="text-xs text-slate-500">游戏次数</div>
+                    </div>
+                    <div class="text-center p-3 bg-slate-50 rounded-lg">
+                        <div class="text-2xl font-bold text-green-600" id="stat-wins">0</div>
+                        <div class="text-xs text-slate-500">胜利次数</div>
+                    </div>
+                    <div class="text-center p-3 bg-slate-50 rounded-lg">
+                        <div class="text-2xl font-bold text-orange-600" id="stat-stations">0</div>
+                        <div class="text-xs text-slate-500">猜对站名</div>
+                    </div>
+                    <div class="text-center p-3 bg-slate-50 rounded-lg">
+                        <div class="text-2xl font-bold text-purple-600" id="stat-total">0</div>
+                        <div class="text-xs text-slate-500">总得分</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="glass-panel rounded-2xl p-4 md:p-6 shadow-lg mt-4">
+                <h3 class="text-lg font-semibold text-slate-800 mb-4">🎖️ 成就</h3>
+                <div id="achievements-list" class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                </div>
+            </div>
+        </div>
+        
+        <div class="glass-panel rounded-2xl p-4 md:p-6 shadow-lg mt-4">
+            <h3 class="text-lg font-semibold text-slate-800 mb-4">猜测记录</h3>
+            <div id="guess-history" class="space-y-2 max-h-48 overflow-y-auto">
+                <p class="text-slate-400 text-sm italic">暂无记录</p>
+            </div>
+        </div>
+        
+        <div class="glass-panel rounded-2xl p-4 md:p-6 shadow-lg mt-4">
+            <h3 class="text-lg font-semibold text-slate-800 mb-4">游戏规则</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-slate-600">
+                <div>
+                    <h4 class="font-medium text-slate-800 mb-2">普通模式</h4>
+                    <ul class="space-y-1 list-disc list-inside">
+                        <li>系统根据难度选择对应难度的站名</li>
+                        <li>简单模式：短站名、常见字母</li>
+                        <li>普通模式：中等长度、适中难度</li>
+                        <li>困难模式：长站名、稀有字母</li>
+                        <li>可自定义站名数量（1-20个）</li>
+                        <li>输入 <span class="font-mono bg-slate-100 px-1 rounded">开 [字母]</span> 揭开字母</li>
+                        <li>输入 <span class="font-mono bg-slate-100 px-1 rounded">猜 [站名]</span> 猜测站名</li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-medium text-slate-800 mb-2">得分规则</h4>
+                    <ul class="space-y-1 list-disc list-inside">
+                        <li>猜对站名: +100分</li>
+                        <li>开字母找到: +10分/站</li>
+                        <li>连击奖励: 连击数×5分</li>
+                        <li>使用提示: -30分</li>
+                        <li>时间奖励: 剩余时间×2分</li>
+                        <li>难度加成: 简单×1, 普通×1.5, 困难×2</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <footer class="text-center mt-6 text-sm text-slate-500">
+            <p>制作者：<a href="https://space.bilibili.com/lvshu" target="_blank" class="text-blue-600 hover:text-blue-700 font-medium">bilibili@lvshu</a></p>
+        </footer>
+    </div>
+    
+    <div id="victory-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl p-6 md:p-8 max-w-md w-full shadow-2xl transform scale-100 transition-transform">
+            <div class="text-center">
+                <div class="text-6xl mb-4">🎉</div>
+                <h2 class="text-2xl font-bold text-slate-900 mb-2">恭喜获胜！</h2>
+                <p class="text-slate-600 mb-4">你成功猜对了所有地铁站名！</p>
+                <div class="bg-slate-100 rounded-lg p-4 mb-4">
+                    <div class="grid grid-cols-2 gap-4 text-center">
+                        <div>
+                            <div class="text-sm text-slate-500">用时</div>
+                            <div id="final-time" class="text-xl font-bold text-blue-600">00:00</div>
+                        </div>
+                        <div>
+                            <div class="text-sm text-slate-500">得分</div>
+                            <div id="final-score" class="text-xl font-bold text-green-600 score-popup">0</div>
+                        </div>
+                        <div>
+                            <div class="text-sm text-slate-500">猜测次数</div>
+                            <div id="final-guesses" class="text-xl font-bold text-orange-600">0</div>
+                        </div>
+                        <div>
+                            <div class="text-sm text-slate-500">使用提示</div>
+                            <div id="final-hints" class="text-xl font-bold text-purple-600">0</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="mb-4">
+                    <input type="text" id="player-name" placeholder="输入你的名字" maxlength="20" class="w-full px-4 py-2 rounded-lg border border-slate-200 bg-white text-slate-800 placeholder-slate-400 focus:outline-none focus:border-blue-500">
+                </div>
+                <div class="flex justify-center gap-3">
+                    <button id="btn-save-score" class="btn-primary px-6 py-2.5 rounded-lg text-white font-medium cursor-pointer">
+                        保存成绩
+                    </button>
+                    <button id="btn-play-again" class="btn-secondary px-6 py-2.5 rounded-lg text-white font-medium cursor-pointer">
+                        再玩一次
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const DIFFICULTY_SETTINGS = {
+            easy: { stationCount: 3, hints: 5, timeBonus: 180, multiplier: 1, difficultyLevel: 'easy' },
+            normal: { stationCount: 4, hints: 3, timeBonus: 300, multiplier: 1.5, difficultyLevel: 'normal' },
+            hard: { stationCount: 6, hints: 2, timeBonus: 480, multiplier: 2, difficultyLevel: 'hard' }
+        };
+
+        const LETTER_FREQUENCY = {
+            common: ['e', 'a', 'r', 'i', 'o', 't', 'n', 's', 'l', 'c'],
+            medium: ['u', 'd', 'p', 'm', 'h', 'g', 'b', 'f', 'y', 'w'],
+            rare: ['k', 'v', 'x', 'z', 'j', 'q']
+        };
+
+        function calculateStationDifficulty(station) {
+            const name = station.station_en.toLowerCase();
+            let score = 0;
+            
+            const length = name.replace(/[^a-z]/g, '').length;
+            if (length <= 5) score += 1;
+            else if (length <= 8) score += 2;
+            else if (length <= 12) score += 3;
+            else score += 4;
+            
+            const specialChars = (name.match(/['().]/g) || []).length;
+            score += specialChars * 0.5;
+            
+            const letters = name.replace(/[^a-z]/g, '');
+            const uniqueLetters = new Set(letters.split(''));
+            
+            LETTER_FREQUENCY.rare.forEach(letter => {
+                if (uniqueLetters.has(letter)) score += 1;
+            });
+            
+            LETTER_FREQUENCY.medium.forEach(letter => {
+                if (uniqueLetters.has(letter)) score += 0.3;
+            });
+            
+            const letterCounts = {};
+            letters.split('').forEach(l => letterCounts[l] = (letterCounts[l] || 0) + 1);
+            const repeatCount = Object.values(letterCounts).filter(c => c > 1).length;
+            score -= repeatCount * 0.3;
+            
+            const commonLetterCount = LETTER_FREQUENCY.common.filter(l => uniqueLetters.has(l)).length;
+            score -= commonLetterCount * 0.1;
+            
+            if (score <= 2) return 'easy';
+            if (score <= 4) return 'normal';
+            return 'hard';
+        }
+
+        function classifyStationsByDifficulty() {
+            const classified = { easy: [], normal: [], hard: [] };
+            stationDatabase.forEach(station => {
+                const difficulty = calculateStationDifficulty(station);
+                classified[difficulty].push({ ...station, calculatedDifficulty: difficulty });
+            });
+            return classified;
+        }
+
+        const ACHIEVEMENTS = [
+            { id: 'first_win', name: '初次胜利', desc: '完成第一局游戏', icon: '🏅' },
+            { id: 'speed_demon', name: '速度恶魔', desc: '60秒内完成游戏', icon: '⚡' },
+            { id: 'perfect', name: '完美猜测', desc: '不使用提示完成游戏', icon: '💯' },
+            { id: 'explorer', name: '探索者', desc: '解锁所有城市', icon: '🗺️' },
+            { id: 'master', name: '地铁大师', desc: '累计得分超过10000', icon: '👑' },
+            { id: 'streak_3', name: '三连胜', desc: '连续获胜3局', icon: '🔥' },
+            { id: 'streak_5', name: '五连胜', desc: '连续获胜5局', icon: '💎' },
+            { id: 'collector', name: '收藏家', desc: '猜对100个站名', icon: '🎯' }
+        ];
+
+        let gameState = {
+            mode: 'normal',
+            difficulty: 'normal',
+            selectedCity: 'all',
+            stations: [],
+            revealedLetters: {},
+            solvedStations: new Set(),
+            guessCount: 0,
+            guessHistory: [],
+            gameWon: false,
+            score: 0,
+            hintsUsed: 0,
+            hintsLeft: 3,
+            startTime: null,
+            elapsedTime: 0,
+            usedLetters: new Set(),
+            foundLetters: new Set(),
+            combo: 0,
+            lastCorrectTime: 0,
+            devMode: false
+        };
+
+        let stationDatabase = [];
+        let timerInterval = null;
+        let isDarkMode = false;
+        let soundEnabled = true;
+        let audioContext = null;
+        let stats = {
+            totalScore: 0,
+            gamesPlayed: 0,
+            gamesWon: 0,
+            stationsSolved: 0,
+            currentStreak: 0,
+            bestStreak: 0,
+            unlockedCities: new Set(['all']),
+            achievements: new Set(),
+            leaderboards: { easy: [], normal: [], hard: [] }
+        };
+
+        const elements = {
+            stationsContainer: document.getElementById('stations-container'),
+            guessInput: document.getElementById('guess-input'),
+            reverseInput: document.getElementById('reverse-input'),
+            revealedLettersInput: document.getElementById('revealed-letters-input'),
+            btnSubmit: document.getElementById('btn-submit'),
+            btnReverseGuess: document.getElementById('btn-reverse-guess'),
+            btnReverseClear: document.getElementById('btn-reverse-clear'),
+            btnNewGame: document.getElementById('btn-new-game'),
+            btnSave: document.getElementById('btn-save'),
+            btnLoad: document.getElementById('btn-load'),
+            btnHint: document.getElementById('btn-hint'),
+            btnTheme: document.getElementById('btn-theme'),
+            btnPlayAgain: document.getElementById('btn-play-again'),
+            btnSaveScore: document.getElementById('btn-save-score'),
+            modeNormal: document.getElementById('mode-normal'),
+            modeReverse: document.getElementById('mode-reverse'),
+            modeLeaderboard: document.getElementById('mode-leaderboard'),
+            normalModeArea: document.getElementById('normal-mode-area'),
+            reverseModeArea: document.getElementById('reverse-mode-area'),
+            leaderboardArea: document.getElementById('leaderboard-area'),
+            reverseResults: document.getElementById('reverse-results'),
+            reverseResultsList: document.getElementById('reverse-results-list'),
+            guessHistory: document.getElementById('guess-history'),
+            victoryModal: document.getElementById('victory-modal'),
+            solvedCount: document.getElementById('solved-count'),
+            totalCount: document.getElementById('total-count'),
+            guessCount: document.getElementById('guess-count'),
+            timer: document.getElementById('timer'),
+            score: document.getElementById('score'),
+            hintsLeft: document.getElementById('hints-left'),
+            letterKeyboard: document.getElementById('letter-keyboard'),
+            citySelect: document.getElementById('city-select'),
+            leaderboardList: document.getElementById('leaderboard-list'),
+            achievementsList: document.getElementById('achievements-list'),
+            themeIcon: document.getElementById('theme-icon'),
+            playerName: document.getElementById('player-name'),
+            finalTime: document.getElementById('final-time'),
+            finalScore: document.getElementById('final-score'),
+            finalGuesses: document.getElementById('final-guesses'),
+            finalHints: document.getElementById('final-hints'),
+            progressBar: document.getElementById('progress-bar'),
+            progressText: document.getElementById('progress-text'),
+            combo: document.getElementById('combo'),
+            toastContainer: document.getElementById('toast-container'),
+            floatingScores: document.getElementById('floating-scores'),
+            soundToggle: document.getElementById('sound-toggle')
+        };
+
+        const csvData = `city_cn,city_en,station_cn,station_en
+北京,Beijing,古城,Gucheng
+北京,Beijing,八宝山,Babaoshan
+北京,Beijing,玉泉路,Yuquan Lu
+北京,Beijing,五棵松,Wukesong
+北京,Beijing,万寿路,Wanshou Lu
+北京,Beijing,公主坟,Gongzhufen
+北京,Beijing,军事博物馆,Military Museum
+北京,Beijing,木樨地,Muxidi
+北京,Beijing,南礼士路,Nanlishi Lu
+北京,Beijing,复兴门,Fuxingmen
+北京,Beijing,西单,Xidan
+北京,Beijing,天安门西,Tian'anmenxi
+北京,Beijing,天安门东,Tian'anmendong
+北京,Beijing,王府井,Wangfujing
+北京,Beijing,东单,Dongdan
+北京,Beijing,建国门,Jianguomen
+北京,Beijing,永安里,Yong'an Li
+北京,Beijing,国贸,Guomao
+北京,Beijing,大望路,Dawang Lu
+北京,Beijing,四惠,Sihui
+北京,Beijing,四惠东,Sihui Dong (E)
+北京,Beijing,高碑店,Gaobeidian
+北京,Beijing,传媒大学,Communication Univ. of China
+北京,Beijing,双桥,Shuang Qiao
+北京,Beijing,管庄,Guaanzhuang
+北京,Beijing,八里桥,Bali Qiao
+北京,Beijing,通州北苑,Tongzhou Beiyuan
+北京,Beijing,果园,Guoyuan
+北京,Beijing,九棵树,Jiukeshu
+北京,Beijing,梨园,Liyuan
+北京,Beijing,临河里,Linheli
+北京,Beijing,土桥,Tu Qiao
+北京,Beijing,花庄,Huazhuang
+北京,Beijing,环球度假区,Universal Resort
+北京,Beijing,西直门,Xizhimen
+北京,Beijing,车公庄,Chegongzhuang
+北京,Beijing,阜成门,Fucheng Men
+北京,Beijing,长椿街,Changchun Jie
+北京,Beijing,宣武门,Xuanwu Men
+北京,Beijing,和平门,Heping Men
+北京,Beijing,前门,Qianmen
+北京,Beijing,崇文门,Chongwen Men
+北京,Beijing,北京站,Beijing Zhan
+北京,Beijing,朝阳门,Chaoyang Men
+北京,Beijing,东四十条,Dongsi Shitiao
+北京,Beijing,东直门,Dongzhimen
+北京,Beijing,雍和宫,Yonghegong
+北京,Beijing,安定门,Anding Men
+北京,Beijing,鼓楼大街,Gulou Dajie
+北京,Beijing,积水潭,Jishuitan
+北京,Beijing,工人体育场,Workers' Stadium
+北京,Beijing,团结湖,Tuanjiehu
+北京,Beijing,朝阳公园,Chaoyang Park
+上海,Shanghai,人民广场,People's Square
+上海,Shanghai,南京东路,East Nanjing Road
+上海,Shanghai,陆家嘴,Lujiazui
+上海,Shanghai,豫园,Yuyuan Garden
+上海,Shanghai,外滩,The Bund
+上海,Shanghai,南京西路,West Nanjing Road
+上海,Shanghai,静安寺,Jing'an Temple
+上海,Shanghai,徐家汇,Xujiahui
+上海,Shanghai,淮海中路,Middle Huaihai Road
+上海,Shanghai,新天地,Xintiandi
+广州,Guangzhou,体育西路,Tiyu Xilu
+广州,Guangzhou,珠江新城,Zhujiang New Town
+广州,Guangzhou,广州塔,Canton Tower
+广州,Guangzhou,公园前,Gongyuan Qian
+广州,Guangzhou,北京路,Beijing Road
+广州,Guangzhou,烈士陵园,Martyrs' Park
+深圳,Shenzhen,华强北,Huaqiangbei
+深圳,Shenzhen,世界之窗,Window of the World
+深圳,Shenzhen,欢乐谷,Happy Valley
+深圳,Shenzhen,市民中心,Civic Center
+深圳,Shenzhen,购物公园,Shopping Park
+成都,Chengdu,春熙路,Chunxi Road
+成都,Chengdu,天府广场,Tianfu Square
+成都,Chengdu,宽窄巷子,Kuanzhai Alley
+成都,Chengdu,锦里,Jinli
+成都,Chengdu,熊猫基地,Panda Base
+杭州,Hangzhou,西湖,West Lake
+杭州,Hangzhou,龙翔桥,Longxiangqiao
+杭州,Hangzhou,武林广场,Wulin Square
+杭州,Hangzhou,钱江新城,Qianjiang New City
+杭州,Hangzhou,萧山机场,Xiaoshan Airport
+南京,Nanjing,新街口,Xinjiekou
+南京,Nanjing,夫子庙,Confucius Temple
+南京,Nanjing,玄武湖,Xuanwu Lake
+南京,Nanjing,中山陵,Sun Yat-sen Mausoleum
+南京,Nanjing,南京南站,Nanjing South Station`;
+
+        function initAudio() {
+            try {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            } catch (e) {
+                console.log('Web Audio API not supported');
+            }
+        }
+
+        function playSound(type) {
+            if (!soundEnabled || !audioContext) return;
+            
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            const now = audioContext.currentTime;
+            
+            switch (type) {
+                case 'reveal':
+                    oscillator.frequency.setValueAtTime(440, now);
+                    oscillator.frequency.exponentialRampToValueAtTime(880, now + 0.1);
+                    gainNode.gain.setValueAtTime(0.1, now);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+                    oscillator.start(now);
+                    oscillator.stop(now + 0.1);
+                    break;
+                case 'correct':
+                    oscillator.frequency.setValueAtTime(523, now);
+                    oscillator.frequency.setValueAtTime(659, now + 0.1);
+                    oscillator.frequency.setValueAtTime(784, now + 0.2);
+                    gainNode.gain.setValueAtTime(0.15, now);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+                    oscillator.start(now);
+                    oscillator.stop(now + 0.3);
+                    break;
+                case 'wrong':
+                    oscillator.frequency.setValueAtTime(200, now);
+                    oscillator.frequency.exponentialRampToValueAtTime(100, now + 0.2);
+                    gainNode.gain.setValueAtTime(0.1, now);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
+                    oscillator.start(now);
+                    oscillator.stop(now + 0.2);
+                    break;
+                case 'victory':
+                    const notes = [523, 587, 659, 698, 784, 880, 988, 1047];
+                    notes.forEach((freq, i) => {
+                        const osc = audioContext.createOscillator();
+                        const gain = audioContext.createGain();
+                        osc.connect(gain);
+                        gain.connect(audioContext.destination);
+                        osc.frequency.setValueAtTime(freq, now + i * 0.1);
+                        gain.gain.setValueAtTime(0.1, now + i * 0.1);
+                        gain.gain.exponentialRampToValueAtTime(0.01, now + i * 0.1 + 0.15);
+                        osc.start(now + i * 0.1);
+                        osc.stop(now + i * 0.1 + 0.15);
+                    });
+                    break;
+                case 'hint':
+                    oscillator.frequency.setValueAtTime(600, now);
+                    oscillator.frequency.exponentialRampToValueAtTime(400, now + 0.15);
+                    gainNode.gain.setValueAtTime(0.1, now);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
+                    oscillator.start(now);
+                    oscillator.stop(now + 0.15);
+                    break;
+                case 'combo':
+                    oscillator.frequency.setValueAtTime(800 + gameState.combo * 50, now);
+                    gainNode.gain.setValueAtTime(0.08, now);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.08);
+                    oscillator.start(now);
+                    oscillator.stop(now + 0.08);
+                    break;
+            }
+        }
+
+        function toggleSound() {
+            soundEnabled = !soundEnabled;
+            elements.soundToggle.textContent = soundEnabled ? '🔊' : '🔇';
+            if (soundEnabled && !audioContext) {
+                initAudio();
+            }
+            showToast(soundEnabled ? '音效已开启' : '音效已关闭', 'info');
+        }
+
+        function showToast(message, type = 'info') {
+            const toast = document.createElement('div');
+            toast.className = `toast px-4 py-2 rounded-lg shadow-lg text-sm font-medium ${
+                type === 'success' ? 'bg-green-500 text-white' :
+                type === 'error' ? 'bg-red-500 text-white' :
+                'bg-slate-700 text-white'
+            }`;
+            toast.textContent = message;
+            elements.toastContainer.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.classList.add('toast-exit');
+                setTimeout(() => toast.remove(), 300);
+            }, 2000);
+        }
+
+        function showFloatingScore(points, x, y) {
+            const scoreEl = document.createElement('div');
+            scoreEl.className = 'float-score text-2xl font-bold text-green-500';
+            scoreEl.textContent = `+${points}`;
+            scoreEl.style.left = `${x}px`;
+            scoreEl.style.top = `${y}px`;
+            elements.floatingScores.appendChild(scoreEl);
+            
+            setTimeout(() => scoreEl.remove(), 1000);
+        }
+
+        function createParticles(x, y, count = 10) {
+            const colors = ['#22c55e', '#3b82f6', '#f97316', '#eab308', '#ec4899'];
+            
+            for (let i = 0; i < count; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = `${x + (Math.random() - 0.5) * 100}px`;
+                particle.style.top = `${y}px`;
+                particle.style.width = `${Math.random() * 10 + 5}px`;
+                particle.style.height = particle.style.width;
+                particle.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                particle.style.borderRadius = '50%';
+                document.body.appendChild(particle);
+                
+                setTimeout(() => particle.remove(), 1000);
+            }
+        }
+
+        function createFireworks() {
+            const colors = ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#ff00ff', '#00ffff'];
+            
+            for (let f = 0; f < 5; f++) {
+                setTimeout(() => {
+                    const x = Math.random() * window.innerWidth;
+                    const y = Math.random() * window.innerHeight * 0.5;
+                    
+                    for (let i = 0; i < 30; i++) {
+                        const particle = document.createElement('div');
+                        particle.className = 'firework-particle';
+                        particle.style.left = `${x}px`;
+                        particle.style.top = `${y}px`;
+                        particle.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                        
+                        const angle = (i / 30) * Math.PI * 2;
+                        const distance = 50 + Math.random() * 100;
+                        const endX = Math.cos(angle) * distance;
+                        const endY = Math.sin(angle) * distance;
+                        
+                        particle.style.setProperty('--end-pos', `translate(${endX}px, ${endY}px)`);
+                        
+                        const firework = document.createElement('div');
+                        firework.className = 'firework';
+                        firework.style.left = '0';
+                        firework.style.top = '0';
+                        firework.appendChild(particle);
+                        document.body.appendChild(firework);
+                        
+                        setTimeout(() => firework.remove(), 1000);
+                    }
+                }, f * 300);
+            }
+        }
+
+        function parseCSV(data) {
+            const lines = data.trim().split('\n');
+            const result = [];
+            
+            for (let i = 1; i < lines.length; i++) {
+                const line = lines[i].trim();
+                if (!line) continue;
+                
+                const values = [];
+                let current = '';
+                let inQuotes = false;
+                
+                for (let j = 0; j < line.length; j++) {
+                    const char = line[j];
+                    if (char === '"') {
+                        inQuotes = !inQuotes;
+                    } else if (char === ',' && !inQuotes) {
+                        values.push(current.trim());
+                        current = '';
+                    } else {
+                        current += char;
+                    }
+                }
+                values.push(current.trim());
+                
+                if (values.length >= 4) {
+                    result.push({
+                        city_cn: values[0],
+                        city_en: values[1],
+                        station_cn: values[2],
+                        station_en: values[3]
+                    });
+                }
+            }
+            return result;
+        }
+
+        async function loadCSVFromFile() {
+            try {
+                const response = await fetch('subway_stations.csv');
+                if (response.ok) {
+                    const text = await response.text();
+                    const parsed = parseCSV(text);
+                    if (parsed.length > 0) {
+                        stationDatabase = parsed;
+                        console.log(`Loaded ${parsed.length} stations from CSV file`);
+                        updateCitySelect();
+                    }
+                }
+            } catch (e) {
+                console.log('Using embedded data');
+            }
+        }
+
+        function updateCitySelect() {
+            const cities = [...new Set(stationDatabase.map(s => s.city_cn))].sort();
+            elements.citySelect.innerHTML = '<option value="all">全部城市</option>';
+            cities.forEach(city => {
+                const option = document.createElement('option');
+                option.value = city;
+                option.textContent = city;
+                elements.citySelect.appendChild(option);
+            });
+        }
+
+        function loadStats() {
+            const saved = localStorage.getItem('subwayGameStats');
+            if (saved) {
+                try {
+                    const parsed = JSON.parse(saved);
+                    stats = {
+                        ...parsed,
+                        unlockedCities: new Set(parsed.unlockedCities || ['all']),
+                        achievements: new Set(parsed.achievements || [])
+                    };
+                } catch (e) {
+                    console.error('Failed to load stats:', e);
+                }
+            }
+        }
+
+        function saveStats() {
+            const toSave = {
+                ...stats,
+                unlockedCities: Array.from(stats.unlockedCities),
+                achievements: Array.from(stats.achievements)
+            };
+            localStorage.setItem('subwayGameStats', JSON.stringify(toSave));
+        }
+
+        function updateStatsDisplay() {
+            document.getElementById('stat-games').textContent = stats.gamesPlayed;
+            document.getElementById('stat-wins').textContent = stats.gamesWon;
+            document.getElementById('stat-stations').textContent = stats.stationsSolved;
+            document.getElementById('stat-total').textContent = stats.totalScore;
+        }
+
+        async function init() {
+            stationDatabase = parseCSV(csvData);
+            await loadCSVFromFile();
+            loadStats();
+            updateCitySelect();
+            renderAchievements();
+            updateStatsDisplay();
+            startNewGame();
+            setupEventListeners();
+            initAudio();
+        }
+
+        function startNewGame() {
+            stopTimer();
+            
+            const settings = DIFFICULTY_SETTINGS[gameState.difficulty];
+            const customCount = parseInt(document.getElementById('station-count').value) || settings.stationCount;
+            const stationCount = Math.min(Math.max(customCount, 1), 20);
+            
+            const classified = classifyStationsByDifficulty();
+            const targetDifficulty = settings.difficultyLevel;
+            
+            let pool = classified[targetDifficulty];
+            
+            if (gameState.selectedCity !== 'all') {
+                pool = pool.filter(s => s.city_cn === gameState.selectedCity);
+            }
+            
+            if (pool.length < stationCount) {
+                let allPool = gameState.selectedCity === 'all' 
+                    ? stationDatabase 
+                    : stationDatabase.filter(s => s.city_cn === gameState.selectedCity);
+                allPool = allPool.map(s => ({
+                    ...s,
+                    calculatedDifficulty: calculateStationDifficulty(s)
+                }));
+                pool = allPool;
+            }
+            
+            const shuffled = [...pool].sort(() => Math.random() - 0.5);
+            const selected = shuffled.slice(0, stationCount);
+            
+            gameState = {
+                mode: gameState.mode,
+                difficulty: gameState.difficulty,
+                selectedCity: gameState.selectedCity,
+                stations: selected,
+                revealedLetters: {},
+                solvedStations: new Set(),
+                guessCount: 0,
+                guessHistory: [],
+                gameWon: false,
+                score: 0,
+                hintsUsed: 0,
+                hintsLeft: settings.hints,
+                startTime: Date.now(),
+                elapsedTime: 0,
+                usedLetters: new Set(),
+                foundLetters: new Set(),
+                combo: 0,
+                lastCorrectTime: 0,
+                devMode: false
+            };
+            
+            selected.forEach((_, index) => {
+                gameState.revealedLetters[index] = new Set();
+            });
+            
+            elements.victoryModal.classList.add('hidden');
+            
+            renderStations();
+            renderLetterKeyboard();
+            updateStats();
+            renderGuessHistory();
+            startTimer();
+            updateProgressBar();
+        }
+
+        function startTimer() {
+            stopTimer();
+            timerInterval = setInterval(() => {
+                gameState.elapsedTime = Math.floor((Date.now() - gameState.startTime) / 1000);
+                updateTimerDisplay();
+            }, 1000);
+        }
+
+        function stopTimer() {
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+            }
+        }
+
+        function updateTimerDisplay() {
+            const minutes = Math.floor(gameState.elapsedTime / 60);
+            const seconds = gameState.elapsedTime % 60;
+            elements.timer.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+        }
+
+        function updateProgressBar() {
+            const total = gameState.stations.length;
+            const solved = gameState.solvedStations.size;
+            const percent = total > 0 ? (solved / total) * 100 : 0;
+            elements.progressBar.style.width = `${percent}%`;
+            elements.progressText.textContent = `${solved}/${total}`;
+        }
+
+        function renderStations() {
+            elements.stationsContainer.innerHTML = '';
+            
+            gameState.stations.forEach((station, index) => {
+                const isSolved = gameState.solvedStations.has(index);
+                const revealed = gameState.revealedLetters[index];
+                const displayText = getDisplayText(station.station_en, revealed, isSolved, gameState.devMode);
+                const difficulty = station.calculatedDifficulty || calculateStationDifficulty(station);
+                const difficultyLabel = difficulty === 'easy' ? '简单' : difficulty === 'normal' ? '普通' : '困难';
+                const difficultyColor = difficulty === 'easy' ? 'bg-green-100 text-green-700' : 
+                                       difficulty === 'normal' ? 'bg-yellow-100 text-yellow-700' : 
+                                       'bg-red-100 text-red-700';
+                
+                const card = document.createElement('div');
+                card.className = `station-card rounded-xl p-4 ${isSolved ? 'solved' : ''}`;
+                card.id = `station-${index}`;
+                card.innerHTML = `
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-xs font-medium text-slate-500">#${index + 1}</span>
+                        <div class="flex items-center gap-2">
+                            <span class="text-xs px-2 py-0.5 rounded ${difficultyColor}">${difficultyLabel}</span>
+                            ${isSolved ? '<span class="text-green-600 text-sm font-medium">✓ 已解开</span>' : ''}
+                        </div>
+                    </div>
+                    <div class="letter-display text-lg md:text-xl font-bold text-slate-800 mb-3 text-center py-2 bg-white/50 rounded-lg dark:bg-slate-700/50 dark:text-slate-200">
+                        ${displayText}
+                    </div>
+                    ${(isSolved || gameState.devMode) ? `
+                        <div class="text-center text-sm">
+                            <p class="text-slate-800 font-medium dark:text-slate-200">${station.station_cn}</p>
+                            <p class="text-slate-500 text-xs">${station.city_cn} · ${station.city_en}</p>
+                        </div>
+                    ` : ''}
+                `;
+                elements.stationsContainer.appendChild(card);
+            });
+        }
+
+        function getDisplayText(stationName, revealedLetters, isSolved, devMode = false) {
+            if (isSolved || devMode) {
+                return stationName;
+            }
+            
+            return stationName.split('').map(char => {
+                const lowerChar = char.toLowerCase();
+                if (/[a-z]/.test(lowerChar)) {
+                    if (revealedLetters.has(lowerChar)) {
+                        return `<span class="letter-reveal text-blue-600">${char}</span>`;
+                    }
+                    return '*';
+                }
+                return '*';
+            }).join('');
+        }
+
+        function renderLetterKeyboard() {
+            elements.letterKeyboard.innerHTML = '';
+            const letters = 'abcdefghijklmnopqrstuvwxyz'.split('');
+            
+            letters.forEach(letter => {
+                const btn = document.createElement('button');
+                const isUsed = gameState.usedLetters.has(letter);
+                const isFound = gameState.foundLetters.has(letter);
+                
+                btn.className = `letter-key w-8 h-8 rounded text-sm font-medium cursor-pointer ${
+                    isFound ? 'found' : isUsed ? 'not-found used' : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
+                }`;
+                btn.textContent = letter.toUpperCase();
+                btn.disabled = isUsed || gameState.gameWon;
+                btn.dataset.letter = letter;
+                
+                if (!isUsed && !gameState.gameWon) {
+                    btn.addEventListener('click', () => {
+                        revealLetter(letter);
+                    });
+                }
+                
+                elements.letterKeyboard.appendChild(btn);
+            });
+        }
+
+        function handleGuess() {
+            const input = elements.guessInput.value.trim();
+            if (!input) return;
+            
+            elements.guessInput.value = '';
+            
+            const command = input.toLowerCase();
+            
+            if (command === 'lvshu') {
+                gameState.devMode = !gameState.devMode;
+                renderStations();
+                if (gameState.devMode) {
+                    elements.modeReverse.classList.remove('hidden');
+                    addToHistory('开发者模式已开启', 'info', '所有答案已显示');
+                    showToast('开发者模式已开启', 'info');
+                } else {
+                    elements.modeReverse.classList.add('hidden');
+                    if (gameState.mode === 'reverse') {
+                        switchMode('normal');
+                    }
+                    addToHistory('开发者模式已关闭', 'info', '恢复游戏状态');
+                    showToast('开发者模式已关闭', 'info');
+                }
+                return;
+            }
+            
+            gameState.guessCount++;
+            
+            if (command === '结束') {
+                addToHistory('结束游戏', 'info');
+                startNewGame();
+                return;
+            }
+            
+            if (command.startsWith('开 ')) {
+                const letter = command.slice(2).trim().toLowerCase();
+                if (letter.length === 1 && /[a-z]/.test(letter)) {
+                    revealLetter(letter);
+                } else {
+                    addToHistory(`无效指令: ${input}`, 'error');
+                }
+            } else if (command.startsWith('猜 ')) {
+                const guess = command.slice(2).trim();
+                if (guess.length === 1 && /[a-z]/i.test(guess)) {
+                    revealLetter(guess.toLowerCase());
+                } else {
+                    guessStation(guess);
+                }
+            } else {
+                addToHistory(`无效指令: ${input}`, 'error');
+            }
+            
+            updateStats();
+        }
+
+        function revealLetter(letter) {
+            if (gameState.usedLetters.has(letter)) {
+                addToHistory(`字母 ${letter.toUpperCase()} 已使用`, 'error');
+                showToast('该字母已使用', 'error');
+                return;
+            }
+            
+            gameState.usedLetters.add(letter);
+            let found = false;
+            let matchCount = 0;
+            
+            gameState.stations.forEach((station, index) => {
+                if (gameState.solvedStations.has(index)) return;
+                
+                const stationLower = station.station_en.toLowerCase();
+                if (stationLower.includes(letter)) {
+                    found = true;
+                    gameState.revealedLetters[index].add(letter);
+                    matchCount++;
+                    gameState.score += 10;
+                }
+            });
+            
+            if (found) {
+                gameState.foundLetters.add(letter);
+                playSound('reveal');
+                addToHistory(`开 ${letter.toUpperCase()}`, 'success', `在 ${matchCount} 个站名中找到 (+${matchCount * 10}分)`);
+                
+                const btn = document.querySelector(`[data-letter="${letter}"]`);
+                if (btn) {
+                    createParticles(btn.getBoundingClientRect().left + 16, btn.getBoundingClientRect().top + 16, 5);
+                }
+            } else {
+                playSound('wrong');
+                addToHistory(`开 ${letter.toUpperCase()}`, 'error', '未找到该字母');
+                
+                elements.stationsContainer.classList.add('shake');
+                setTimeout(() => elements.stationsContainer.classList.remove('shake'), 500);
+            }
+            
+            renderStations();
+            renderLetterKeyboard();
+            updateScoreDisplay();
+        }
+
+        function guessStation(guess) {
+            let correct = false;
+            let matchedStation = null;
+            let matchedIndex = -1;
+            
+            gameState.stations.forEach((station, index) => {
+                if (gameState.solvedStations.has(index)) return;
+                
+                const stationCn = station.station_cn.toLowerCase();
+                const stationEn = station.station_en.toLowerCase();
+                const guessLower = guess.toLowerCase();
+                
+                if (guessLower === stationCn || guessLower === stationEn) {
+                    correct = true;
+                    matchedIndex = index;
+                    matchedStation = station;
+                }
+            });
+            
+            if (correct && matchedIndex !== -1) {
+                gameState.solvedStations.add(matchedIndex);
+                
+                const now = Date.now();
+                if (now - gameState.lastCorrectTime < 5000) {
+                    gameState.combo++;
+                    playSound('combo');
+                } else {
+                    gameState.combo = 1;
+                }
+                gameState.lastCorrectTime = now;
+                
+                const comboBonus = gameState.combo * 5;
+                const totalPoints = 100 + comboBonus;
+                gameState.score += totalPoints;
+                stats.stationsSolved++;
+                
+                playSound('correct');
+                addToHistory(`猜 ${guess}`, 'success', `正确！${matchedStation.city_cn} · ${matchedStation.station_cn} (+${totalPoints}分)`);
+                
+                const card = document.getElementById(`station-${matchedIndex}`);
+                if (card) {
+                    card.classList.add('pulse-success');
+                    const rect = card.getBoundingClientRect();
+                    showFloatingScore(totalPoints, rect.left + rect.width / 2, rect.top);
+                    createParticles(rect.left + rect.width / 2, rect.top + rect.height / 2, 15);
+                }
+                
+                renderStations();
+                updateScoreDisplay();
+                updateProgressBar();
+                updateComboDisplay();
+                checkWinCondition();
+            } else {
+                gameState.combo = 0;
+                updateComboDisplay();
+                playSound('wrong');
+                addToHistory(`猜 ${guess}`, 'error', '不正确');
+                
+                elements.stationsContainer.classList.add('shake');
+                setTimeout(() => elements.stationsContainer.classList.remove('shake'), 500);
+            }
+        }
+
+        function updateComboDisplay() {
+            elements.combo.textContent = gameState.combo;
+            if (gameState.combo > 1) {
+                elements.combo.classList.add('combo-display');
+                setTimeout(() => elements.combo.classList.remove('combo-display'), 300);
+            }
+        }
+
+        function useHint() {
+            if (gameState.hintsLeft <= 0) {
+                addToHistory('提示次数已用完', 'error');
+                showToast('提示次数已用完', 'error');
+                return;
+            }
+            
+            const unsolvedIndices = gameState.stations
+                .map((_, index) => index)
+                .filter(index => !gameState.solvedStations.has(index));
+            
+            if (unsolvedIndices.length === 0) return;
+            
+            const randomIndex = unsolvedIndices[Math.floor(Math.random() * unsolvedIndices.length)];
+            const station = gameState.stations[randomIndex];
+            const stationLower = station.station_en.toLowerCase();
+            
+            const unrevealedLetters = stationLower
+                .split('')
+                .filter(char => /[a-z]/.test(char) && !gameState.revealedLetters[randomIndex].has(char));
+            
+            if (unrevealedLetters.length === 0) {
+                addToHistory('该站名已全部揭开', 'info');
+                return;
+            }
+            
+            const randomLetter = unrevealedLetters[Math.floor(Math.random() * unrevealedLetters.length)];
+            gameState.revealedLetters[randomIndex].add(randomLetter);
+            gameState.usedLetters.add(randomLetter);
+            gameState.foundLetters.add(randomLetter);
+            gameState.hintsLeft--;
+            gameState.hintsUsed++;
+            gameState.score = Math.max(0, gameState.score - 30);
+            
+            playSound('hint');
+            addToHistory(`使用提示`, 'info', `揭示字母 ${randomLetter.toUpperCase()} (-30分)`);
+            showToast(`提示：字母 ${randomLetter.toUpperCase()}`, 'info');
+            
+            renderStations();
+            renderLetterKeyboard();
+            updateScoreDisplay();
+            elements.hintsLeft.textContent = gameState.hintsLeft;
+        }
+
+        function checkWinCondition() {
+            if (gameState.solvedStations.size === gameState.stations.length) {
+                gameState.gameWon = true;
+                stopTimer();
+                
+                const settings = DIFFICULTY_SETTINGS[gameState.difficulty];
+                const timeBonus = Math.max(0, settings.timeBonus - gameState.elapsedTime) * 2;
+                gameState.score += timeBonus;
+                gameState.score = Math.floor(gameState.score * settings.multiplier);
+                
+                stats.gamesPlayed++;
+                stats.gamesWon++;
+                stats.currentStreak++;
+                stats.bestStreak = Math.max(stats.bestStreak, stats.currentStreak);
+                stats.totalScore += gameState.score;
+                
+                checkAchievements();
+                saveStats();
+                updateStatsDisplay();
+                
+                playSound('victory');
+                createFireworks();
+                
+                setTimeout(() => {
+                    elements.finalTime.textContent = formatTime(gameState.elapsedTime);
+                    elements.finalScore.textContent = gameState.score;
+                    elements.finalGuesses.textContent = gameState.guessCount;
+                    elements.finalHints.textContent = gameState.hintsUsed;
+                    elements.victoryModal.classList.remove('hidden');
+                }, 500);
+            }
+        }
+
+        function checkAchievements() {
+            if (!stats.achievements.has('first_win')) {
+                stats.achievements.add('first_win');
+                showToast('🏆 成就解锁：初次胜利！', 'success');
+            }
+            
+            if (gameState.elapsedTime <= 60 && !stats.achievements.has('speed_demon')) {
+                stats.achievements.add('speed_demon');
+                showToast('🏆 成就解锁：速度恶魔！', 'success');
+            }
+            
+            if (gameState.hintsUsed === 0 && !stats.achievements.has('perfect')) {
+                stats.achievements.add('perfect');
+                showToast('🏆 成就解锁：完美猜测！', 'success');
+            }
+            
+            if (stats.currentStreak >= 3 && !stats.achievements.has('streak_3')) {
+                stats.achievements.add('streak_3');
+                showToast('🏆 成就解锁：三连胜！', 'success');
+            }
+            
+            if (stats.currentStreak >= 5 && !stats.achievements.has('streak_5')) {
+                stats.achievements.add('streak_5');
+                showToast('🏆 成就解锁：五连胜！', 'success');
+            }
+            
+            if (stats.totalScore >= 10000 && !stats.achievements.has('master')) {
+                stats.achievements.add('master');
+                showToast('🏆 成就解锁：地铁大师！', 'success');
+            }
+            
+            if (stats.stationsSolved >= 100 && !stats.achievements.has('collector')) {
+                stats.achievements.add('collector');
+                showToast('🏆 成就解锁：收藏家！', 'success');
+            }
+            
+            if (gameState.selectedCity !== 'all' && !stats.unlockedCities.has(gameState.selectedCity)) {
+                stats.unlockedCities.add(gameState.selectedCity);
+            }
+            
+            renderAchievements();
+        }
+
+        function renderAchievements() {
+            elements.achievementsList.innerHTML = '';
+            
+            ACHIEVEMENTS.forEach(achievement => {
+                const unlocked = stats.achievements.has(achievement.id);
+                const div = document.createElement('div');
+                div.className = `p-3 rounded-lg border ${unlocked ? 'bg-yellow-50 border-yellow-200' : 'bg-slate-50 border-slate-200 opacity-50'}`;
+                div.innerHTML = `
+                    <div class="flex items-center gap-2 mb-1">
+                        <span class="text-xl ${unlocked ? 'achievement-badge' : ''}">${achievement.icon}</span>
+                        <span class="font-medium text-sm ${unlocked ? 'text-slate-800' : 'text-slate-500'}">${achievement.name}</span>
+                    </div>
+                    <p class="text-xs text-slate-500">${achievement.desc}</p>
+                `;
+                elements.achievementsList.appendChild(div);
+            });
+        }
+
+        function formatTime(seconds) {
+            const minutes = Math.floor(seconds / 60);
+            const secs = seconds % 60;
+            return `${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+        }
+
+        function updateScoreDisplay() {
+            elements.score.textContent = gameState.score;
+        }
+
+        function handleReverseGuess() {
+            const pattern = elements.reverseInput.value.trim().toLowerCase();
+            const revealedLetters = elements.revealedLettersInput.value.trim().toLowerCase();
+            if (!pattern) return;
+            
+            if (!/^[a-z*\s'().]+$/.test(pattern)) {
+                addToHistory('请输入有效的提示', 'error');
+                return;
+            }
+            
+            const matches = findMatchingStations(pattern, revealedLetters);
+            renderReverseResults(matches, pattern, revealedLetters);
+        }
+
+        function findMatchingStations(pattern, revealedLetters = '') {
+            const revealedSet = new Set(revealedLetters.replace(/[^a-z]/g, '').split(''));
+            
+            return stationDatabase.filter(station => {
+                const name = station.station_en.toLowerCase();
+                if (name.length !== pattern.length) return false;
+                
+                for (let i = 0; i < pattern.length; i++) {
+                    if (pattern[i] !== '*' && pattern[i] !== name[i]) {
+                        return false;
+                    }
+                    if (pattern[i] === '*' && revealedSet.has(name[i])) {
+                        return false;
+                    }
+                }
+                
+                return true;
+            });
+        }
+
+        function renderReverseResults(matches, pattern, revealedLetters = '') {
+            elements.reverseResults.classList.remove('hidden');
+            elements.reverseResultsList.innerHTML = '';
+            
+            if (matches.length === 0) {
+                elements.reverseResultsList.innerHTML = `
+                    <div class="text-slate-500 text-center py-4">
+                        未找到匹配的站名
+                    </div>
+                `;
+                return;
+            }
+            
+            matches.slice(0, 20).forEach(station => {
+                const item = document.createElement('div');
+                item.className = 'flex items-center justify-between p-3 bg-white rounded-lg border border-slate-200 hover:border-blue-300 transition-all cursor-pointer';
+                item.innerHTML = `
+                    <div>
+                        <p class="font-medium text-slate-800">${station.station_en}</p>
+                        <p class="text-sm text-slate-500">${station.station_cn} · ${station.city_cn}</p>
+                    </div>
+                    <span class="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded">匹配</span>
+                `;
+                elements.reverseResultsList.appendChild(item);
+            });
+            
+            if (matches.length > 20) {
+                const more = document.createElement('div');
+                more.className = 'text-center text-slate-500 text-sm py-2';
+                more.textContent = `还有 ${matches.length - 20} 个结果...`;
+                elements.reverseResultsList.appendChild(more);
+            }
+            
+            const revealedInfo = revealedLetters ? `，已揭开字母: ${revealedLetters}` : '';
+            addToHistory(`逆向猜测: ${pattern}${revealedInfo}`, 'info', `找到 ${matches.length} 个匹配`);
+        }
+
+        function addToHistory(action, type, detail = '') {
+            const timestamp = new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
+            const historyItem = { action, type, detail, timestamp };
+            gameState.guessHistory.push(historyItem);
+            renderGuessHistory();
+        }
+
+        function renderGuessHistory() {
+            if (gameState.guessHistory.length === 0) {
+                elements.guessHistory.innerHTML = '<p class="text-slate-400 text-sm italic">暂无记录</p>';
+                return;
+            }
+            
+            elements.guessHistory.innerHTML = '';
+            [...gameState.guessHistory].reverse().forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'guess-history-item flex items-center justify-between p-2 rounded-lg text-sm';
+                
+                let typeClass = '';
+                let typeIcon = '';
+                switch (item.type) {
+                    case 'success':
+                        typeClass = 'bg-green-50 text-green-800';
+                        typeIcon = '✓';
+                        break;
+                    case 'error':
+                        typeClass = 'bg-red-50 text-red-800';
+                        typeIcon = '✗';
+                        break;
+                    default:
+                        typeClass = 'bg-slate-50 text-slate-700';
+                        typeIcon = '•';
+                }
+                
+                div.className += ` ${typeClass}`;
+                div.innerHTML = `
+                    <div class="flex items-center gap-2">
+                        <span class="font-medium">${typeIcon}</span>
+                        <span>${item.action}</span>
+                        ${item.detail ? `<span class="text-xs opacity-75">- ${item.detail}</span>` : ''}
+                    </div>
+                    <span class="text-xs opacity-50">${item.timestamp}</span>
+                `;
+                elements.guessHistory.appendChild(div);
+            });
+        }
+
+        function updateStats() {
+            elements.guessCount.textContent = gameState.guessCount;
+            elements.hintsLeft.textContent = gameState.hintsLeft;
+        }
+
+        function switchMode(mode) {
+            gameState.mode = mode;
+            
+            elements.modeNormal.classList.remove('active');
+            elements.modeReverse.classList.remove('active');
+            elements.modeLeaderboard.classList.remove('active');
+            elements.normalModeArea.classList.add('hidden');
+            elements.reverseModeArea.classList.add('hidden');
+            elements.leaderboardArea.classList.add('hidden');
+            
+            if (mode === 'normal') {
+                elements.modeNormal.classList.add('active');
+                elements.normalModeArea.classList.remove('hidden');
+                elements.guessInput.focus();
+            } else if (mode === 'reverse') {
+                elements.modeReverse.classList.add('active');
+                elements.reverseModeArea.classList.remove('hidden');
+                elements.reverseInput.focus();
+            } else if (mode === 'leaderboard') {
+                elements.modeLeaderboard.classList.add('active');
+                elements.leaderboardArea.classList.remove('hidden');
+                renderLeaderboard('normal');
+                updateStatsDisplay();
+            }
+        }
+
+        function renderLeaderboard(difficulty) {
+            const board = stats.leaderboards[difficulty] || [];
+            elements.leaderboardList.innerHTML = '';
+            
+            document.querySelectorAll('.leaderboard-tab').forEach(tab => {
+                tab.classList.remove('active', 'bg-blue-500', 'text-white');
+                tab.classList.add('bg-white', 'text-slate-700');
+                if (tab.dataset.board === difficulty) {
+                    tab.classList.add('active', 'bg-blue-500', 'text-white');
+                    tab.classList.remove('bg-white', 'text-slate-700');
+                }
+            });
+            
+            if (board.length === 0) {
+                elements.leaderboardList.innerHTML = '<p class="text-slate-500 text-center py-4">暂无记录</p>';
+                return;
+            }
+            
+            board.slice(0, 10).forEach((entry, index) => {
+                const item = document.createElement('div');
+                item.className = 'leaderboard-item flex items-center justify-between p-3 bg-white rounded-lg border border-slate-200';
+                item.style.animationDelay = `${index * 0.1}s`;
+                
+                const medal = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `${index + 1}.`;
+                
+                item.innerHTML = `
+                    <div class="flex items-center gap-3">
+                        <span class="text-xl">${medal}</span>
+                        <div>
+                            <p class="font-medium text-slate-800">${entry.name}</p>
+                            <p class="text-xs text-slate-500">${entry.date}</p>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <p class="font-bold text-green-600">${entry.score}</p>
+                        <p class="text-xs text-slate-500">${formatTime(entry.time)} · ${entry.guesses}次</p>
+                    </div>
+                `;
+                elements.leaderboardList.appendChild(item);
+            });
+        }
+
+        function saveScore() {
+            const name = elements.playerName.value.trim() || '匿名玩家';
+            const entry = {
+                name,
+                score: gameState.score,
+                time: gameState.elapsedTime,
+                guesses: gameState.guessCount,
+                hints: gameState.hintsUsed,
+                date: new Date().toLocaleDateString('zh-CN')
+            };
+            
+            if (!stats.leaderboards[gameState.difficulty]) {
+                stats.leaderboards[gameState.difficulty] = [];
+            }
+            
+            stats.leaderboards[gameState.difficulty].push(entry);
+            stats.leaderboards[gameState.difficulty].sort((a, b) => b.score - a.score);
+            stats.leaderboards[gameState.difficulty] = stats.leaderboards[gameState.difficulty].slice(0, 10);
+            
+            saveStats();
+            showToast('成绩已保存！', 'success');
+            
+            elements.victoryModal.classList.add('hidden');
+            switchMode('leaderboard');
+            renderLeaderboard(gameState.difficulty);
+        }
+
+        function saveGameState() {
+            const stateToSave = {
+                ...gameState,
+                revealedLetters: Object.fromEntries(
+                    Object.entries(gameState.revealedLetters).map(([k, v]) => [k, Array.from(v)])
+                ),
+                solvedStations: Array.from(gameState.solvedStations),
+                usedLetters: Array.from(gameState.usedLetters),
+                foundLetters: Array.from(gameState.foundLetters)
+            };
+            localStorage.setItem('subwayGameState', JSON.stringify(stateToSave));
+            addToHistory('保存游戏', 'info', '游戏状态已保存');
+            showToast('游戏已保存！', 'success');
+        }
+
+        function loadGameState() {
+            const saved = localStorage.getItem('subwayGameState');
+            if (saved) {
+                try {
+                    const parsed = JSON.parse(saved);
+                    gameState = {
+                        ...parsed,
+                        revealedLetters: Object.fromEntries(
+                            Object.entries(parsed.revealedLetters || {}).map(([k, v]) => [k, new Set(v)])
+                        ),
+                        solvedStations: new Set(parsed.solvedStations || []),
+                        usedLetters: new Set(parsed.usedLetters || []),
+                        foundLetters: new Set(parsed.foundLetters || [])
+                    };
+                    
+                    switchMode(gameState.mode);
+                    renderStations();
+                    renderLetterKeyboard();
+                    updateStats();
+                    updateScoreDisplay();
+                    updateProgressBar();
+                    renderGuessHistory();
+                    
+                    if (gameState.gameWon) {
+                        elements.victoryModal.classList.remove('hidden');
+                    }
+                    
+                    addToHistory('加载游戏', 'info', '游戏状态已加载');
+                    showToast('游戏已加载！', 'success');
+                } catch (e) {
+                    console.error('Failed to load game state:', e);
+                    showToast('加载失败！', 'error');
+                }
+            } else {
+                showToast('没有找到保存的游戏！', 'error');
+            }
+        }
+
+        function toggleTheme() {
+            isDarkMode = !isDarkMode;
+            document.body.classList.toggle('dark', isDarkMode);
+            
+            if (isDarkMode) {
+                document.body.classList.remove('bg-gradient-to-br', 'from-slate-50', 'via-blue-50', 'to-indigo-100');
+                document.body.classList.add('bg-gradient-to-br', 'from-slate-900', 'via-slate-800', 'to-slate-900', 'text-slate-200');
+                elements.themeIcon.textContent = '☀️';
+            } else {
+                document.body.classList.remove('bg-gradient-to-br', 'from-slate-900', 'via-slate-800', 'to-slate-900', 'text-slate-200');
+                document.body.classList.add('bg-gradient-to-br', 'from-slate-50', 'via-blue-50', 'to-indigo-100', 'text-slate-800');
+                elements.themeIcon.textContent = '🌙';
+            }
+            showToast(isDarkMode ? '已切换到暗色模式' : '已切换到亮色模式', 'info');
+        }
+
+        function setupEventListeners() {
+            elements.btnSubmit.addEventListener('click', handleGuess);
+            elements.guessInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') handleGuess();
+            });
+            
+            elements.btnReverseGuess.addEventListener('click', handleReverseGuess);
+            elements.btnReverseClear.addEventListener('click', () => {
+                elements.reverseInput.value = '';
+                elements.revealedLettersInput.value = '';
+                elements.reverseResults.classList.add('hidden');
+            });
+            elements.reverseInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') handleReverseGuess();
+            });
+            
+            elements.btnNewGame.addEventListener('click', () => {
+                stats.currentStreak = 0;
+                startNewGame();
+                showToast('新游戏开始！', 'success');
+            });
+            
+            elements.btnSave.addEventListener('click', saveGameState);
+            elements.btnLoad.addEventListener('click', loadGameState);
+            elements.btnHint.addEventListener('click', useHint);
+            elements.btnTheme.addEventListener('click', toggleTheme);
+            elements.soundToggle.addEventListener('click', toggleSound);
+            
+            elements.btnPlayAgain.addEventListener('click', () => {
+                elements.victoryModal.classList.add('hidden');
+                startNewGame();
+            });
+            
+            elements.btnSaveScore.addEventListener('click', saveScore);
+            
+            elements.modeNormal.addEventListener('click', () => switchMode('normal'));
+            elements.modeReverse.addEventListener('click', () => switchMode('reverse'));
+            elements.modeLeaderboard.addEventListener('click', () => switchMode('leaderboard'));
+            
+            document.querySelectorAll('.difficulty-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.difficulty-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    gameState.difficulty = btn.dataset.difficulty;
+                    stats.currentStreak = 0;
+                    startNewGame();
+                    showToast(`难度已切换到${btn.textContent}`, 'info');
+                });
+            });
+            
+            elements.citySelect.addEventListener('change', (e) => {
+                gameState.selectedCity = e.target.value;
+                stats.currentStreak = 0;
+                startNewGame();
+                showToast(`城市已切换到${e.target.options[e.target.selectedIndex].text}`, 'info');
+            });
+            
+            document.getElementById('station-count').addEventListener('change', (e) => {
+                const count = parseInt(e.target.value);
+                if (count >= 1 && count <= 20) {
+                    stats.currentStreak = 0;
+                    startNewGame();
+                    showToast(`站名数已设置为${count}`, 'info');
+                }
+            });
+            
+            document.querySelectorAll('.leaderboard-tab').forEach(tab => {
+                tab.addEventListener('click', () => {
+                    renderLeaderboard(tab.dataset.board);
+                });
+            });
+            
+            document.addEventListener('keydown', (e) => {
+                if (gameState.mode !== 'normal' || gameState.gameWon) return;
+                
+                if (document.activeElement === elements.guessInput) return;
+                
+                if (e.key.length === 1 && /[a-zA-Z]/.test(e.key)) {
+                    e.preventDefault();
+                    revealLetter(e.key.toLowerCase());
+                }
+            });
+            
+            document.addEventListener('keydown', (e) => {
+                if (e.ctrlKey || e.metaKey || e.altKey) return;
+                
+                if (e.key === 'n' || e.key === 'N') {
+                    if (document.activeElement.tagName !== 'INPUT') {
+                        e.preventDefault();
+                        stats.currentStreak = 0;
+                        startNewGame();
+                        showToast('新游戏开始！', 'success');
+                    }
+                }
+                
+                if (e.key === 's' || e.key === 'S') {
+                    if (document.activeElement.tagName !== 'INPUT') {
+                        e.preventDefault();
+                        saveGameState();
+                    }
+                }
+                
+                if (e.key === 'l' || e.key === 'L') {
+                    if (document.activeElement.tagName !== 'INPUT') {
+                        e.preventDefault();
+                        loadGameState();
+                    }
+                }
+                
+                if (e.key === 'h' || e.key === 'H') {
+                    if (document.activeElement.tagName !== 'INPUT') {
+                        e.preventDefault();
+                        useHint();
+                    }
+                }
+                
+                if (e.key === 't' || e.key === 'T') {
+                    if (document.activeElement.tagName !== 'INPUT') {
+                        e.preventDefault();
+                        toggleTheme();
+                    }
+                }
+                
+                if (e.key === 'Escape') {
+                    elements.victoryModal.classList.add('hidden');
+                }
+            });
+        }
+
+        init();
+    </script>
+</body>
+</html>
