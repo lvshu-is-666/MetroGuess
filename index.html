@@ -663,15 +663,46 @@
                 <div id="mp-game" class="hidden space-y-4">
                     <div class="flex justify-between items-center">
                         <div id="mp-timer" class="text-2xl font-bold text-blue-600">00:00</div>
-                        <div id="mp-round" class="text-sm text-slate-500">第 1 轮</div>
+                        <div id="mp-round" class="text-sm text-slate-500">第 1 轮 / 共 5 轮</div>
                     </div>
                     
                     <div id="mp-players-status" class="grid grid-cols-2 md:grid-cols-4 gap-3">
                     </div>
                     
-                    <div id="mp-station-display" class="text-center py-4">
-                        <div class="letter-display text-3xl font-bold text-slate-800 mb-2"></div>
-                        <div class="text-sm text-slate-500">等待游戏开始...</div>
+                    <div class="glass-panel rounded-xl p-4">
+                        <div class="text-center mb-4">
+                            <div class="text-sm text-slate-500 mb-1">当前站名</div>
+                            <div id="mp-letter-display" class="letter-display text-3xl md:text-4xl font-bold text-slate-800 tracking-widest"></div>
+                            <div id="mp-hint-text" class="text-sm text-blue-500 mt-2"></div>
+                        </div>
+                        
+                        <div class="flex gap-2 justify-center mb-4">
+                            <input type="text" id="mp-guess-input" placeholder="输入站名" 
+                                class="px-4 py-2 rounded-lg border border-slate-200 bg-white text-slate-800 text-center text-lg w-48 focus:outline-none focus:ring-2 focus:ring-blue-400">
+                            <button id="mp-submit-btn" class="btn-primary px-6 py-2 rounded-lg text-white font-medium cursor-pointer">
+                                确认
+                            </button>
+                        </div>
+                        
+                        <div class="flex gap-2 justify-center flex-wrap mb-4">
+                            <button id="mp-hint-btn" class="bg-yellow-500 hover:bg-yellow-600 px-4 py-2 rounded-lg text-white font-medium text-sm cursor-pointer">
+                                💡 提示
+                            </button>
+                            <button id="mp-skip-btn" class="bg-slate-500 hover:bg-slate-600 px-4 py-2 rounded-lg text-white font-medium text-sm cursor-pointer">
+                                ⏭ 跳过
+                            </button>
+                        </div>
+                        
+                        <div id="mp-guess-history" class="flex flex-wrap gap-2 justify-center max-h-20 overflow-y-auto">
+                        </div>
+                    </div>
+                    
+                    <div id="mp-game-result" class="hidden glass-panel rounded-xl p-6 text-center">
+                        <h3 class="text-2xl font-bold text-slate-800 mb-4">🎉 游戏结束！</h3>
+                        <div id="mp-final-rankings" class="space-y-2 mb-4"></div>
+                        <button id="mp-play-again" class="btn-primary px-6 py-2 rounded-lg text-white font-medium cursor-pointer">
+                            再来一局
+                        </button>
                     </div>
                 </div>
             </div>
@@ -1652,14 +1683,255 @@
         }
 
         function startMultiplayerGame() {
+            elements.mpLobby.classList.add('hidden');
             elements.mpRoom.classList.add('hidden');
-            elements.multiplayerArea.classList.add('hidden');
-            elements.normalModeArea.classList.remove('hidden');
+            elements.mpGame.classList.remove('hidden');
             mpState.gameStarted = true;
-            gameState.mode = 'normal';
-            startNewGame();
+            
+            if (mpState.isHost) {
+                initMultiplayerGame();
+            }
+            
+            setupGameListeners();
             showToast('游戏开始！', 'success');
-            startTimer();
+        }
+
+        async function initMultiplayerGame() {
+            if (!roomRef) return;
+            
+            const settings = DIFFICULTY_SETTINGS[gameState.difficulty];
+            const stationCount = parseInt(document.getElementById('station-count').value) || 5;
+            
+            const classified = classifyStationsByDifficulty();
+            let pool = classified[settings.difficultyLevel];
+            
+            if (gameState.selectedCity !== 'all') {
+                pool = pool.filter(s => s.city_cn === gameState.selectedCity);
+            }
+            
+            const shuffled = [...pool].sort(() => Math.random() - 0.5);
+            const selected = shuffled.slice(0, stationCount);
+            
+            const gameData = {
+                stations: selected,
+                currentStationIndex: 0,
+                stationCount: stationCount,
+                startedAt: Date.now(),
+                status: 'playing'
+            };
+            
+            await roomRef.child('game').set(gameData);
+        }
+
+        function setupGameListeners() {
+            if (!roomRef) return;
+            
+            roomRef.child('game').on('value', (snapshot) => {
+                const gameData = snapshot.val();
+                if (!gameData) return;
+                
+                mpState.gameData = gameData;
+                renderMultiplayerGame(gameData);
+            });
+            
+            roomRef.child('players').on('value', (snapshot) => {
+                const players = snapshot.val() || {};
+                renderPlayersStatus(players);
+            });
+        }
+
+        function renderMultiplayerGame(gameData) {
+            if (!gameData.stations || gameData.currentStationIndex === undefined) return;
+            
+            const currentStation = gameData.stations[gameData.currentStationIndex];
+            if (!currentStation) {
+                showGameResult();
+                return;
+            }
+            
+            const totalStations = gameData.stationCount || gameData.stations.length;
+            document.getElementById('mp-round').textContent = `第 ${gameData.currentStationIndex + 1} 轮 / 共 ${totalStations} 轮`;
+            
+            const letterDisplay = document.getElementById('mp-letter-display');
+            letterDisplay.innerHTML = renderLetterDisplay(currentStation.station_cn, mpState.revealedLetters || {});
+            
+            const hintText = document.getElementById('mp-hint-text');
+            hintText.textContent = `城市: ${currentStation.city_cn}`;
+            
+            document.getElementById('mp-guess-history').innerHTML = '';
+        }
+
+        function renderPlayersStatus(players) {
+            const container = document.getElementById('mp-players-status');
+            container.innerHTML = '';
+            
+            const sortedPlayers = Object.entries(players).sort((a, b) => b[1].score - a[1].score);
+            
+            sortedPlayers.forEach(([id, player], index) => {
+                const div = document.createElement('div');
+                div.className = `p-3 rounded-lg border ${id === mpState.playerId ? 'bg-blue-50 border-blue-200' : 'bg-slate-50 border-slate-200'}`;
+                div.innerHTML = `
+                    <div class="flex items-center justify-between">
+                        <span class="font-medium ${id === mpState.playerId ? 'text-blue-600' : 'text-slate-800'}">
+                            ${index === 0 ? '👑' : ''} ${player.name}
+                        </span>
+                        ${player.currentStationSolved ? '<span class="text-green-500">✓</span>' : ''}
+                    </div>
+                    <div class="text-lg font-bold text-blue-600">${player.score || 0} 分</div>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        async function submitMpGuess() {
+            const input = document.getElementById('mp-guess-input');
+            const guess = input.value.trim();
+            if (!guess || !mpState.gameData) return;
+            
+            const currentStation = mpState.gameData.stations[mpState.gameData.currentStationIndex];
+            if (!currentStation) return;
+            
+            const isCorrect = guess === currentStation.station_cn;
+            
+            addMpGuessHistory(guess, isCorrect);
+            input.value = '';
+            
+            if (isCorrect) {
+                playSound('correct');
+                const score = calculateMpScore();
+                
+                await playersRef.update({
+                    score: firebase.database.ServerValue.increment(score),
+                    currentStationSolved: true
+                });
+                
+                showToast(`正确！+${score}分`, 'success');
+                
+                if (mpState.isHost) {
+                    setTimeout(() => nextStation(), 1500);
+                }
+            } else {
+                playSound('wrong');
+                showToast('错误，再试试！', 'error');
+            }
+        }
+
+        function calculateMpScore() {
+            const baseScore = 100;
+            const hintPenalty = (mpState.mpHintsUsed || 0) * 20;
+            return Math.max(baseScore - hintPenalty, 10);
+        }
+
+        function addMpGuessHistory(guess, isCorrect) {
+            const container = document.getElementById('mp-guess-history');
+            const span = document.createElement('span');
+            span.className = `px-2 py-1 rounded text-sm ${isCorrect ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`;
+            span.textContent = guess;
+            container.appendChild(span);
+        }
+
+        async function useMpHint() {
+            if (!mpState.gameData) return;
+            
+            const currentStation = mpState.gameData.stations[mpState.gameData.currentStationIndex];
+            if (!currentStation) return;
+            
+            mpState.mpHintsUsed = (mpState.mpHintsUsed || 0) + 1;
+            mpState.revealedLetters = mpState.revealedLetters || {};
+            
+            const stationName = currentStation.station_cn;
+            const unrevealed = [];
+            for (let i = 0; i < stationName.length; i++) {
+                if (!mpState.revealedLetters[i]) {
+                    unrevealed.push(i);
+                }
+            }
+            
+            if (unrevealed.length > 0) {
+                const randomIndex = unrevealed[Math.floor(Math.random() * unrevealed.length)];
+                mpState.revealedLetters[randomIndex] = stationName[randomIndex];
+                renderMultiplayerGame(mpState.gameData);
+                playSound('hint');
+            }
+        }
+
+        async function skipStation() {
+            if (!mpState.isHost || !mpState.gameData) return;
+            await nextStation();
+        }
+
+        async function nextStation() {
+            if (!roomRef || !mpState.gameData) return;
+            
+            const nextIndex = mpState.gameData.currentStationIndex + 1;
+            
+            if (nextIndex >= mpState.gameData.stationCount) {
+                await roomRef.child('game/status').set('finished');
+                showGameResult();
+            } else {
+                await roomRef.child('game').update({
+                    currentStationIndex: nextIndex
+                });
+                
+                const snapshot = await roomRef.child('players').once('value');
+                const players = snapshot.val() || {};
+                const updates = {};
+                Object.keys(players).forEach(id => {
+                    updates[`${id}/currentStationSolved`] = false;
+                });
+                await roomRef.child('players').update(updates);
+                
+                mpState.revealedLetters = {};
+                mpState.mpHintsUsed = 0;
+            }
+        }
+
+        async function showGameResult() {
+            document.getElementById('mp-game-result').classList.remove('hidden');
+            
+            if (!roomRef) return;
+            const snapshot = await roomRef.child('players').once('value');
+            const players = snapshot.val() || {};
+            
+            const sortedPlayers = Object.values(players).sort((a, b) => b.score - a.score);
+            
+            const container = document.getElementById('mp-final-rankings');
+            container.innerHTML = '';
+            
+            sortedPlayers.forEach((player, index) => {
+                const div = document.createElement('div');
+                div.className = `flex justify-between items-center p-3 rounded-lg ${index === 0 ? 'bg-yellow-100' : 'bg-slate-100'}`;
+                div.innerHTML = `
+                    <span class="font-medium">
+                        ${index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `第${index + 1}名`}
+                        ${player.name}
+                    </span>
+                    <span class="font-bold text-blue-600">${player.score} 分</span>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        async function playAgain() {
+            if (mpState.isHost && roomRef) {
+                await roomRef.child('game').remove();
+                const snapshot = await roomRef.child('players').once('value');
+                const players = snapshot.val() || {};
+                const updates = {};
+                Object.keys(players).forEach(id => {
+                    updates[`${id}/score`] = 0;
+                    updates[`${id}/currentStationSolved`] = false;
+                });
+                await roomRef.child('players').update(updates);
+            }
+            
+            mpState.revealedLetters = {};
+            mpState.mpHintsUsed = 0;
+            document.getElementById('mp-game-result').classList.add('hidden');
+            
+            if (mpState.isHost) {
+                initMultiplayerGame();
+            }
         }
 
         function quickMatch() {
@@ -2526,6 +2798,13 @@
             document.getElementById('btn-ready').addEventListener('click', toggleReady);
             document.getElementById('btn-leave-room').addEventListener('click', leaveRoom);
             document.getElementById('btn-start-game').addEventListener('click', startGame);
+            document.getElementById('mp-submit-btn').addEventListener('click', submitMpGuess);
+            document.getElementById('mp-hint-btn').addEventListener('click', useMpHint);
+            document.getElementById('mp-skip-btn').addEventListener('click', skipStation);
+            document.getElementById('mp-play-again').addEventListener('click', playAgain);
+            document.getElementById('mp-guess-input').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') submitMpGuess();
+            });
             document.getElementById('btn-copy-room').addEventListener('click', copyRoomCode);
             document.getElementById('btn-send-chat').addEventListener('click', sendChatMessage);
             elements.chatInput.addEventListener('keypress', (e) => {
