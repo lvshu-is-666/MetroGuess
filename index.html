@@ -6,6 +6,9 @@
     <title>地铁站名猜谜游戏</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="encrypted_data.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-auth-compat.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         * {
@@ -489,6 +492,9 @@
             <button id="mode-normal" class="mode-btn active px-4 py-2 rounded-lg font-medium text-sm border border-slate-200 bg-white text-slate-700 cursor-pointer">
                 普通模式
             </button>
+            <button id="mode-multiplayer" class="mode-btn px-4 py-2 rounded-lg font-medium text-sm border border-slate-200 bg-white text-slate-700 cursor-pointer">
+                联机对战
+            </button>
             <button id="mode-reverse" class="mode-btn px-4 py-2 rounded-lg font-medium text-sm border border-slate-200 bg-white text-slate-700 cursor-pointer hidden">
                 逆向模式
             </button>
@@ -585,6 +591,84 @@
                 <div id="reverse-results" class="mt-6 hidden">
                     <h4 class="text-sm font-medium text-slate-700 mb-3">可能的答案：</h4>
                     <div id="reverse-results-list" class="space-y-2 max-h-64 overflow-y-auto">
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div id="multiplayer-area" class="hidden">
+            <div class="glass-panel rounded-2xl p-4 md:p-6 shadow-lg">
+                <h3 class="text-lg font-semibold text-slate-800 mb-4">🎮 联机对战</h3>
+                
+                <div id="mp-lobby" class="space-y-4">
+                    <div class="flex gap-3 flex-wrap">
+                        <button id="btn-create-room" class="btn-primary px-4 py-2 rounded-lg text-white font-medium text-sm cursor-pointer">
+                            创建房间
+                        </button>
+                        <button id="btn-quick-match" class="btn-secondary px-4 py-2 rounded-lg text-white font-medium text-sm cursor-pointer">
+                            快速匹配
+                        </button>
+                    </div>
+                    
+                    <div class="flex gap-2 items-center">
+                        <input type="text" id="room-code-input" placeholder="输入房间号" maxlength="6" class="flex-1 px-4 py-2 rounded-lg border border-slate-200 bg-white text-slate-800 uppercase tracking-widest text-center font-mono text-lg">
+                        <button id="btn-join-room" class="bg-green-500 hover:bg-green-600 px-4 py-2 rounded-lg text-white font-medium text-sm transition-all cursor-pointer">
+                            加入房间
+                        </button>
+                    </div>
+                    
+                    <div id="online-rooms" class="space-y-2">
+                        <p class="text-slate-500 text-sm text-center">正在加载在线房间...</p>
+                    </div>
+                </div>
+                
+                <div id="mp-room" class="hidden space-y-4">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <span class="text-sm text-slate-500">房间号:</span>
+                            <span id="room-code-display" class="text-2xl font-bold text-blue-600 font-mono tracking-widest ml-2"></span>
+                        </div>
+                        <button id="btn-copy-room" class="bg-slate-200 hover:bg-slate-300 px-3 py-1.5 rounded-lg text-slate-700 text-sm cursor-pointer">
+                            📋 复制
+                        </button>
+                    </div>
+                    
+                    <div class="flex gap-2">
+                        <button id="btn-ready" class="btn-primary px-4 py-2 rounded-lg text-white font-medium text-sm cursor-pointer">
+                            准备
+                        </button>
+                        <button id="btn-leave-room" class="bg-red-500 hover:bg-red-600 px-4 py-2 rounded-lg text-white font-medium text-sm transition-all cursor-pointer">
+                            离开房间
+                        </button>
+                    </div>
+                    
+                    <div id="room-players" class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    </div>
+                    
+                    <div id="room-chat" class="space-y-2">
+                        <div id="chat-messages" class="h-32 overflow-y-auto bg-slate-50 rounded-lg p-2 text-sm">
+                        </div>
+                        <div class="flex gap-2">
+                            <input type="text" id="chat-input" placeholder="输入消息..." class="flex-1 px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-800 text-sm">
+                            <button id="btn-send-chat" class="bg-blue-500 hover:bg-blue-600 px-3 py-1.5 rounded-lg text-white text-sm cursor-pointer">
+                                发送
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="mp-game" class="hidden space-y-4">
+                    <div class="flex justify-between items-center">
+                        <div id="mp-timer" class="text-2xl font-bold text-blue-600">00:00</div>
+                        <div id="mp-round" class="text-sm text-slate-500">第 1 轮</div>
+                    </div>
+                    
+                    <div id="mp-players-status" class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    </div>
+                    
+                    <div id="mp-station-display" class="text-center py-4">
+                        <div class="letter-display text-3xl font-bold text-slate-800 mb-2"></div>
+                        <div class="text-sm text-slate-500">等待游戏开始...</div>
                     </div>
                 </div>
             </div>
@@ -868,7 +952,18 @@
             combo: document.getElementById('combo'),
             toastContainer: document.getElementById('toast-container'),
             floatingScores: document.getElementById('floating-scores'),
-            soundToggle: document.getElementById('sound-toggle')
+            soundToggle: document.getElementById('sound-toggle'),
+            modeMultiplayer: document.getElementById('mode-multiplayer'),
+            multiplayerArea: document.getElementById('multiplayer-area'),
+            mpLobby: document.getElementById('mp-lobby'),
+            mpRoom: document.getElementById('mp-room'),
+            mpGame: document.getElementById('mp-game'),
+            roomCodeInput: document.getElementById('room-code-input'),
+            roomCodeDisplay: document.getElementById('room-code-display'),
+            onlineRooms: document.getElementById('online-rooms'),
+            roomPlayers: document.getElementById('room-players'),
+            chatMessages: document.getElementById('chat-messages'),
+            chatInput: document.getElementById('chat-input')
         };
 
         const csvData = `city_cn,city_en,station_cn,station_en
@@ -1238,6 +1333,332 @@
             document.getElementById('stat-total').textContent = stats.totalScore;
         }
 
+        // ========== 联机模块 ==========
+        const MULTIPLAYER_CONFIG = {
+            apiKey: "AIzaSyDemo-KeyForMetroGuess2026",
+            authDomain: "metroguess-demo.firebaseapp.com",
+            databaseURL: "https://metroguess-demo-default-rtdb.firebaseio.com",
+            projectId: "metroguess-demo",
+            storageBucket: "metroguess-demo.appspot.com",
+            messagingSenderId: "123456789",
+            appId: "1:123456789:web:abcdef123456"
+        };
+
+        let mpState = {
+            connected: false,
+            playerId: null,
+            playerName: '玩家' + Math.random().toString(36).substr(2, 4).toUpperCase(),
+            roomId: null,
+            isHost: false,
+            isReady: false,
+            gameStarted: false
+        };
+
+        let db = null;
+        let roomRef = null;
+        let playersRef = null;
+        let chatRef = null;
+
+        function initFirebase() {
+            try {
+                if (typeof firebase !== 'undefined' && firebase.app) {
+                    firebase.initializeApp(MULTIPLAYER_CONFIG);
+                    db = firebase.database();
+                    mpState.connected = true;
+                    mpState.playerId = localStorage.getItem('mp_player_id') || generatePlayerId();
+                    localStorage.setItem('mp_player_id', mpState.playerId);
+                    console.log('Firebase initialized');
+                    loadOnlineRooms();
+                }
+            } catch (e) {
+                console.log('Firebase init failed, running in offline mode:', e);
+            }
+        }
+
+        function generatePlayerId() {
+            return 'p_' + Date.now().toString(36) + Math.random().toString(36).substr(2, 5);
+        }
+
+        function generateRoomCode() {
+            const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+            let code = '';
+            for (let i = 0; i < 6; i++) {
+                code += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            return code;
+        }
+
+        async function createRoom() {
+            if (!mpState.connected) {
+                showToast('请先连接网络', 'error');
+                return;
+            }
+
+            const roomCode = generateRoomCode();
+            mpState.roomId = roomCode;
+            mpState.isHost = true;
+
+            roomRef = db.ref('rooms/' + roomCode);
+            
+            await roomRef.set({
+                host: mpState.playerId,
+                status: 'waiting',
+                createdAt: Date.now(),
+                settings: {
+                    difficulty: gameState.difficulty,
+                    stationCount: parseInt(document.getElementById('station-count').value) || 4
+                }
+            });
+
+            playersRef = roomRef.child('players/' + mpState.playerId);
+            await playersRef.set({
+                name: mpState.playerName,
+                score: 0,
+                isReady: true,
+                isHost: true,
+                joinedAt: Date.now()
+            });
+
+            setupRoomListeners();
+            showRoomUI(roomCode);
+            showToast('房间已创建: ' + roomCode, 'success');
+        }
+
+        async function joinRoom(roomCode) {
+            if (!mpState.connected) {
+                showToast('请先连接网络', 'error');
+                return;
+            }
+
+            roomCode = roomCode.toUpperCase().trim();
+            if (roomCode.length !== 6) {
+                showToast('房间号格式错误', 'error');
+                return;
+            }
+
+            roomRef = db.ref('rooms/' + roomCode);
+            
+            const snapshot = await roomRef.once('value');
+            if (!snapshot.exists()) {
+                showToast('房间不存在', 'error');
+                return;
+            }
+
+            const roomData = snapshot.val();
+            if (roomData.status !== 'waiting') {
+                showToast('游戏已开始', 'error');
+                return;
+            }
+
+            mpState.roomId = roomCode;
+            mpState.isHost = false;
+
+            playersRef = roomRef.child('players/' + mpState.playerId);
+            await playersRef.set({
+                name: mpState.playerName,
+                score: 0,
+                isReady: false,
+                isHost: false,
+                joinedAt: Date.now()
+            });
+
+            setupRoomListeners();
+            showRoomUI(roomCode);
+            showToast('已加入房间', 'success');
+        }
+
+        function setupRoomListeners() {
+            if (!roomRef) return;
+
+            roomRef.child('players').on('value', (snapshot) => {
+                const players = snapshot.val() || {};
+                renderRoomPlayers(players);
+            });
+
+            roomRef.child('status').on('value', (snapshot) => {
+                const status = snapshot.val();
+                if (status === 'playing') {
+                    startMultiplayerGame();
+                }
+            });
+
+            chatRef = roomRef.child('chat');
+            chatRef.limitToLast(50).on('child_added', (snapshot) => {
+                const msg = snapshot.val();
+                addChatMessage(msg.name, msg.text, msg.time);
+            });
+        }
+
+        function renderRoomPlayers(players) {
+            elements.roomPlayers.innerHTML = '';
+            Object.entries(players).forEach(([id, player]) => {
+                const div = document.createElement('div');
+                div.className = `p-3 rounded-lg border ${player.isReady ? 'bg-green-50 border-green-200' : 'bg-slate-50 border-slate-200'}`;
+                div.innerHTML = `
+                    <div class="flex items-center justify-between">
+                        <span class="font-medium ${id === mpState.playerId ? 'text-blue-600' : 'text-slate-800'}">${player.name}</span>
+                        ${player.isHost ? '<span class="text-xs bg-yellow-100 text-yellow-700 px-1 rounded">房主</span>' : ''}
+                    </div>
+                    <div class="text-xs ${player.isReady ? 'text-green-600' : 'text-slate-500'}">
+                        ${player.isReady ? '✓ 已准备' : '等待中...'}
+                    </div>
+                `;
+                elements.roomPlayers.appendChild(div);
+            });
+        }
+
+        function addChatMessage(name, text, time) {
+            const div = document.createElement('div');
+            div.className = 'text-sm';
+            div.innerHTML = `<span class="font-medium text-blue-600">${name}:</span> <span class="text-slate-700">${text}</span>`;
+            elements.chatMessages.appendChild(div);
+            elements.chatMessages.scrollTop = elements.chatMessages.scrollHeight;
+        }
+
+        async function sendChatMessage() {
+            const text = elements.chatInput.value.trim();
+            if (!text || !chatRef) return;
+            
+            await chatRef.push({
+                name: mpState.playerName,
+                text: text,
+                time: Date.now()
+            });
+            elements.chatInput.value = '';
+        }
+
+        async function toggleReady() {
+            if (!playersRef) return;
+            mpState.isReady = !mpState.isReady;
+            await playersRef.child('isReady').set(mpState.isReady);
+            
+            document.getElementById('btn-ready').textContent = mpState.isReady ? '取消准备' : '准备';
+            document.getElementById('btn-ready').className = mpState.isReady 
+                ? 'bg-yellow-500 hover:bg-yellow-600 px-4 py-2 rounded-lg text-white font-medium text-sm cursor-pointer'
+                : 'btn-primary px-4 py-2 rounded-lg text-white font-medium text-sm cursor-pointer';
+
+            if (mpState.isHost) {
+                checkAllReady();
+            }
+        }
+
+        async function checkAllReady() {
+            if (!roomRef) return;
+            const snapshot = await roomRef.child('players').once('value');
+            const players = snapshot.val() || {};
+            const allReady = Object.values(players).every(p => p.isReady);
+            const playerCount = Object.keys(players).length;
+
+            if (allReady && playerCount >= 1) {
+                await roomRef.child('status').set('playing');
+            }
+        }
+
+        async function leaveRoom() {
+            if (playersRef) {
+                await playersRef.remove();
+            }
+            if (mpState.isHost && roomRef) {
+                await roomRef.remove();
+            }
+            cleanupRoom();
+            showLobbyUI();
+            showToast('已离开房间', 'info');
+        }
+
+        function cleanupRoom() {
+            if (roomRef) {
+                roomRef.child('players').off();
+                roomRef.child('status').off();
+                if (chatRef) chatRef.off();
+            }
+            roomRef = null;
+            playersRef = null;
+            chatRef = null;
+            mpState.roomId = null;
+            mpState.isHost = false;
+            mpState.isReady = false;
+        }
+
+        function showRoomUI(roomCode) {
+            elements.mpLobby.classList.add('hidden');
+            elements.mpRoom.classList.remove('hidden');
+            elements.roomCodeDisplay.textContent = roomCode;
+            elements.chatMessages.innerHTML = '';
+        }
+
+        function showLobbyUI() {
+            elements.mpLobby.classList.remove('hidden');
+            elements.mpRoom.classList.add('hidden');
+            elements.mpGame.classList.add('hidden');
+        }
+
+        async function loadOnlineRooms() {
+            if (!db) return;
+            
+            const roomsRef = db.ref('rooms');
+            roomsRef.orderByChild('status').equalTo('waiting').limitToLast(10).on('value', (snapshot) => {
+                const rooms = snapshot.val() || {};
+                renderOnlineRooms(rooms);
+            });
+        }
+
+        function renderOnlineRooms(rooms) {
+            elements.onlineRooms.innerHTML = '';
+            
+            if (Object.keys(rooms).length === 0) {
+                elements.onlineRooms.innerHTML = '<p class="text-slate-500 text-sm text-center">暂无在线房间</p>';
+                return;
+            }
+
+            Object.entries(rooms).forEach(([code, room]) => {
+                const playerCount = room.players ? Object.keys(room.players).length : 0;
+                const div = document.createElement('div');
+                div.className = 'flex items-center justify-between p-3 bg-slate-50 rounded-lg hover:bg-slate-100 cursor-pointer transition-all';
+                div.innerHTML = `
+                    <div>
+                        <span class="font-mono font-bold text-blue-600">${code}</span>
+                        <span class="text-xs text-slate-500 ml-2">${room.settings?.difficulty || '普通'} · ${playerCount}人</span>
+                    </div>
+                    <button class="join-room-btn bg-green-500 hover:bg-green-600 px-3 py-1 rounded text-white text-sm" data-room="${code}">
+                        加入
+                    </button>
+                `;
+                elements.onlineRooms.appendChild(div);
+            });
+
+            document.querySelectorAll('.join-room-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    joinRoom(btn.dataset.room);
+                });
+            });
+        }
+
+        function startMultiplayerGame() {
+            elements.mpRoom.classList.add('hidden');
+            elements.mpGame.classList.remove('hidden');
+            mpState.gameStarted = true;
+            startNewGame();
+            showToast('游戏开始！', 'success');
+        }
+
+        function quickMatch() {
+            showToast('正在匹配...', 'info');
+            setTimeout(() => {
+                const fakeRoom = generateRoomCode();
+                joinRoom(fakeRoom);
+            }, 1500);
+        }
+
+        function copyRoomCode() {
+            navigator.clipboard.writeText(mpState.roomId).then(() => {
+                showToast('房间号已复制', 'success');
+            });
+        }
+
+        // ========== 联机模块结束 ==========
+
         async function init() {
             stationDatabase = parseCSV(csvData);
             await loadCSVFromFile();
@@ -1248,6 +1669,7 @@
             startNewGame();
             setupEventListeners();
             initAudio();
+            initFirebase();
         }
 
         function startNewGame() {
@@ -1874,9 +2296,11 @@
             elements.modeNormal.classList.remove('active');
             elements.modeReverse.classList.remove('active');
             elements.modeLeaderboard.classList.remove('active');
+            elements.modeMultiplayer.classList.remove('active');
             elements.normalModeArea.classList.add('hidden');
             elements.reverseModeArea.classList.add('hidden');
             elements.leaderboardArea.classList.add('hidden');
+            elements.multiplayerArea.classList.add('hidden');
             
             if (mode === 'normal') {
                 elements.modeNormal.classList.add('active');
@@ -1891,6 +2315,9 @@
                 elements.leaderboardArea.classList.remove('hidden');
                 renderLeaderboard('normal');
                 updateStatsDisplay();
+            } else if (mode === 'multiplayer') {
+                elements.modeMultiplayer.classList.add('active');
+                elements.multiplayerArea.classList.remove('hidden');
             }
         }
 
@@ -2070,6 +2497,23 @@
             elements.modeNormal.addEventListener('click', () => switchMode('normal'));
             elements.modeReverse.addEventListener('click', () => switchMode('reverse'));
             elements.modeLeaderboard.addEventListener('click', () => switchMode('leaderboard'));
+            elements.modeMultiplayer.addEventListener('click', () => switchMode('multiplayer'));
+            
+            document.getElementById('btn-create-room').addEventListener('click', createRoom);
+            document.getElementById('btn-quick-match').addEventListener('click', quickMatch);
+            document.getElementById('btn-join-room').addEventListener('click', () => {
+                joinRoom(elements.roomCodeInput.value);
+            });
+            document.getElementById('btn-ready').addEventListener('click', toggleReady);
+            document.getElementById('btn-leave-room').addEventListener('click', leaveRoom);
+            document.getElementById('btn-copy-room').addEventListener('click', copyRoomCode);
+            document.getElementById('btn-send-chat').addEventListener('click', sendChatMessage);
+            elements.chatInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') sendChatMessage();
+            });
+            elements.roomCodeInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') joinRoom(elements.roomCodeInput.value);
+            });
             
             document.querySelectorAll('.difficulty-btn').forEach(btn => {
                 btn.addEventListener('click', () => {
