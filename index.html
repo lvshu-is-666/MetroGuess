@@ -9,46 +9,68 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-database-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-auth-compat.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
+        .icon {
+            display: inline-block;
+            width: 1.25em;
+            height: 1.25em;
+            vertical-align: middle;
+        }
+        .icon-sm { width: 1em; height: 1em; }
+        .icon-lg { width: 1.5em; height: 1.5em; }
+        
         :root {
-            --primary-color: #2563eb;
-            --primary-light: #3b82f6;
-            --success-color: #22c55e;
-            --warning-color: #f97316;
-            --hint-color: #8b5cf6;
-            --error-color: #ef4444;
-            --transition-fast: 0.2s ease;
-            --transition-normal: 0.3s ease;
+            --primary-color: #4F46E5;
+            --primary-light: #818CF8;
+            --primary-dark: #3730A3;
+            --success-color: #10B981;
+            --warning-color: #F97316;
+            --hint-color: #8B5CF6;
+            --error-color: #EF4444;
+            --cta-color: #F97316;
+            --bg-color: #EEF2FF;
+            --text-color: #1E1B4B;
+            --transition-fast: 0.2s ease-out;
+            --transition-normal: 0.3s ease-out;
             --shadow-sm: 0 4px 12px;
+            --shadow-glow: 0 0 20px;
             --radius-lg: 0.75rem;
             --radius-xl: 1rem;
         }
         
         * {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            font-family: 'Nunito', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+        
+        h1, h2, h3, h4, h5, h6, .font-display {
+            font-family: 'Fredoka', 'Nunito', sans-serif;
         }
         
         .glass-panel {
-            background: rgba(255, 255, 255, 0.9);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.3);
+            background: rgba(238, 242, 255, 0.95);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(129, 140, 248, 0.3);
+            box-shadow: 0 8px 32px rgba(79, 70, 229, 0.1);
         }
         
         .station-card {
-            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-            border: 2px solid #e2e8f0;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(238, 242, 255, 0.9) 100%);
+            border: 2px solid rgba(129, 140, 248, 0.4);
             transition: all var(--transition-normal);
+            box-shadow: 0 4px 16px rgba(79, 70, 229, 0.08);
         }
         
         .station-card:hover {
             border-color: var(--primary-light);
-            box-shadow: 0 4px 20px rgba(59, 130, 246, 0.15);
+            box-shadow: 0 8px 32px rgba(79, 70, 229, 0.2), 0 0 20px rgba(129, 140, 248, 0.3);
+            transform: translateY(-2px);
         }
         
         .station-card.solved {
-            background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(16, 185, 129, 0.1) 100%);
             border-color: var(--success-color);
+            box-shadow: 0 0 20px rgba(16, 185, 129, 0.3);
         }
         
         .letter-display {
@@ -59,53 +81,61 @@
         .btn-primary {
             background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-light) 100%);
             transition: all var(--transition-fast);
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
         }
         
         .btn-primary:hover {
-            transform: translateY(-1px);
-            box-shadow: var(--shadow-sm) rgba(37, 99, 235, 0.3);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(79, 70, 229, 0.4), 0 0 30px rgba(129, 140, 248, 0.3);
         }
         
         .btn-secondary {
-            background: linear-gradient(135deg, var(--warning-color) 0%, #fb923c 100%);
+            background: linear-gradient(135deg, var(--cta-color) 0%, #FB923C 100%);
             transition: all var(--transition-fast);
+            box-shadow: 0 4px 12px rgba(249, 115, 22, 0.3);
         }
         
         .btn-secondary:hover {
-            transform: translateY(-1px);
-            box-shadow: var(--shadow-sm) rgba(249, 115, 22, 0.3);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(249, 115, 22, 0.4), 0 0 30px rgba(251, 146, 60, 0.3);
         }
         
         .btn-hint {
-            background: linear-gradient(135deg, var(--hint-color) 0%, #a78bfa 100%);
+            background: linear-gradient(135deg, var(--hint-color) 0%, #A78BFA 100%);
             transition: all var(--transition-fast);
+            box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
         }
         
         .btn-hint:hover {
-            transform: translateY(-1px);
-            box-shadow: var(--shadow-sm) rgba(139, 92, 246, 0.3);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(139, 92, 246, 0.4), 0 0 30px rgba(167, 139, 250, 0.3);
         }
         
         .mode-btn, .difficulty-btn {
             transition: all var(--transition-normal);
-            background-color: white;
-            border: 1px solid #e2e8f0;
+            background-color: rgba(255, 255, 255, 0.9);
+            border: 2px solid rgba(129, 140, 248, 0.3);
+            box-shadow: 0 2px 8px rgba(79, 70, 229, 0.08);
         }
         
         .mode-btn:hover, .difficulty-btn:hover {
-            background-color: #f1f5f9;
+            background-color: rgba(238, 242, 255, 0.95);
+            border-color: var(--primary-light);
+            box-shadow: 0 4px 16px rgba(79, 70, 229, 0.15);
         }
         
         .mode-btn.active {
-            background: var(--primary-color);
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-light) 100%);
             color: white;
-            border-color: var(--primary-color);
+            border-color: transparent;
+            box-shadow: 0 4px 16px rgba(79, 70, 229, 0.3), 0 0 20px rgba(129, 140, 248, 0.2);
         }
         
         .difficulty-btn.active {
-            background: #059669;
+            background: linear-gradient(135deg, #059669 0%, #10B981 100%);
             color: white;
-            border-color: #059669;
+            border-color: transparent;
+            box-shadow: 0 4px 16px rgba(16, 185, 129, 0.3), 0 0 20px rgba(16, 185, 129, 0.2);
         }
         
         @keyframes slideIn {
@@ -148,9 +178,29 @@
         }
         
         .neon-glow {
-            text-shadow: 0 0 10px rgba(59, 130, 246, 0.5),
-                         0 0 20px rgba(59, 130, 246, 0.3),
-                         0 0 30px rgba(59, 130, 246, 0.2);
+            text-shadow: 
+                0 0 10px rgba(129, 140, 248, 0.8),
+                0 0 20px rgba(129, 140, 248, 0.6),
+                0 0 40px rgba(79, 70, 229, 0.4),
+                0 0 80px rgba(79, 70, 229, 0.2);
+            animation: neonPulse 2s ease-in-out infinite alternate;
+        }
+        
+        @keyframes neonPulse {
+            from {
+                text-shadow: 
+                    0 0 10px rgba(129, 140, 248, 0.8),
+                    0 0 20px rgba(129, 140, 248, 0.6),
+                    0 0 40px rgba(79, 70, 229, 0.4),
+                    0 0 80px rgba(79, 70, 229, 0.2);
+            }
+            to {
+                text-shadow: 
+                    0 0 15px rgba(129, 140, 248, 1),
+                    0 0 30px rgba(129, 140, 248, 0.8),
+                    0 0 60px rgba(79, 70, 229, 0.6),
+                    0 0 100px rgba(79, 70, 229, 0.3);
+            }
         }
         
         .input-glow:focus {
@@ -282,6 +332,32 @@
             .letter-display {
                 letter-spacing: 0.08em;
                 font-size: 0.875rem;
+            }
+        }
+        
+        @media (prefers-reduced-motion: reduce) {
+            *,
+            *::before,
+            *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+            
+            .neon-glow {
+                animation: none;
+            }
+            
+            .station-card:hover,
+            .btn-primary:hover,
+            .btn-secondary:hover,
+            .btn-hint:hover {
+                transform: none;
+            }
+            
+            .particle,
+            .firework-particle {
+                display: none;
             }
         }
         
@@ -461,14 +537,22 @@
         .dark .bg-blue-50 { background-color: rgba(59, 130, 246, 0.1); }
     </style>
 </head>
-<body class="bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 min-h-screen text-slate-800 transition-colors duration-300">
+<body class="bg-gradient-to-br from-indigo-50 via-purple-50 to-blue-100 min-h-screen text-slate-800 transition-colors duration-300">
 
     <div id="toast-container" class="fixed top-4 right-4 z-50 space-y-2" role="alert" aria-live="polite"></div>
     
     <div id="floating-scores" class="fixed inset-0 pointer-events-none z-40" aria-hidden="true"></div>
     
-    <button id="sound-toggle" class="sound-toggle glass-panel shadow-lg" title="切换音效" aria-label="切换音效">
-        🔊
+    <button id="sound-toggle" class="sound-toggle glass-panel shadow-lg cursor-pointer" title="切换音效" aria-label="切换音效">
+        <svg id="sound-on-icon" class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+            <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+        </svg>
+        <svg id="sound-off-icon" class="icon hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+            <line x1="23" y1="9" x2="17" y2="15"></line>
+            <line x1="17" y1="9" x2="23" y2="15"></line>
+        </svg>
     </button>
     
     <main class="relative z-10 container mx-auto px-4 py-6 max-w-6xl">
@@ -478,7 +562,20 @@
                     地铁站名猜谜游戏
                 </h1>
                 <button id="btn-theme" class="p-2 rounded-lg bg-slate-200 hover:bg-slate-300 transition-all cursor-pointer" title="切换主题 (T)" aria-label="切换主题">
-                    <span id="theme-icon">🌙</span>
+                    <svg id="theme-moon-icon" class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg id="theme-sun-icon" class="icon hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
                 </button>
             </div>
             <p class="text-slate-600 text-sm md:text-base">
@@ -657,20 +754,40 @@
         
         <div id="multiplayer-area" class="hidden">
             <div class="glass-panel rounded-2xl p-4 md:p-6 shadow-lg">
-                <h3 class="text-lg font-semibold text-slate-800 mb-4">🎮 联机对战</h3>
+                <h3 class="text-lg font-semibold text-slate-800 mb-4 flex items-center gap-2">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="9" cy="7" r="4"></circle>
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                    </svg>
+                    联机对战
+                </h3>
                 
                 <div id="mp-lobby" class="space-y-4">
                     <div class="flex gap-2 justify-center mb-2">
-                        <button id="mode-battle" class="mp-mode-btn active px-4 py-2 rounded-lg font-medium text-sm bg-blue-500 text-white cursor-pointer">
-                            ⚔️ 对战模式
+                        <button id="mode-battle" class="mp-mode-btn active px-4 py-2 rounded-lg font-medium text-sm bg-blue-500 text-white cursor-pointer flex items-center gap-1.5">
+                            <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="4 17 10 11 4 5"></polyline>
+                                <line x1="12" y1="19" x2="20" y2="19"></line>
+                            </svg>
+                            对战模式
                         </button>
-                        <button id="mode-coop" class="mp-mode-btn px-4 py-2 rounded-lg font-medium text-sm border border-slate-200 bg-white text-slate-700 cursor-pointer">
-                            🤝 合作模式
+                        <button id="mode-coop" class="mp-mode-btn px-4 py-2 rounded-lg font-medium text-sm border border-slate-200 bg-white text-slate-700 cursor-pointer flex items-center gap-1.5">
+                            <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                            </svg>
+                            合作模式
                         </button>
                     </div>
                     
                     <div id="coop-info" class="hidden bg-green-50 border border-green-200 rounded-lg p-3 text-sm text-green-700">
-                        <strong>🤝 合作模式：</strong>所有玩家一起猜同一组站名，共同完成任务！任何玩家答对都算过关，比拼团队速度！
+                        <strong class="flex items-center gap-1">
+                            <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                            </svg>
+                            合作模式：
+                        </strong>所有玩家一起猜同一组站名，共同完成任务！任何玩家答对都算过关，比拼团队速度！
                     </div>
                     
                     <div class="flex gap-3 flex-wrap">
@@ -700,8 +817,12 @@
                             <span class="text-sm text-slate-500">房间号:</span>
                             <span id="room-code-display" class="text-2xl font-bold text-blue-600 font-mono tracking-widest ml-2"></span>
                         </div>
-                        <button id="btn-copy-room" class="bg-slate-200 hover:bg-slate-300 px-3 py-1.5 rounded-lg text-slate-700 text-sm cursor-pointer">
-                            📋 复制
+                        <button id="btn-copy-room" class="bg-slate-200 hover:bg-slate-300 px-3 py-1.5 rounded-lg text-slate-700 text-sm cursor-pointer flex items-center gap-1">
+                            <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                            </svg>
+                            复制
                         </button>
                     </div>
                     
@@ -752,7 +873,13 @@
                                 <div id="mp-hints-left" class="text-xl font-bold text-purple-600">3</div>
                             </div>
                         </div>
-                        <div id="mp-mode-badge" class="text-sm font-medium px-2 py-1 rounded bg-blue-100 text-blue-700">⚔️ 对战</div>
+                        <div id="mp-mode-badge" class="text-sm font-medium px-2 py-1 rounded bg-blue-100 text-blue-700 flex items-center gap-1">
+                            <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="4 17 10 11 4 5"></polyline>
+                                <line x1="12" y1="19" x2="20" y2="19"></line>
+                            </svg>
+                            对战
+                        </div>
                     </div>
                     
                     <div class="mt-3">
@@ -802,7 +929,13 @@
                     </div>
                     
                     <div id="mp-game-result" class="hidden glass-panel rounded-xl p-6 text-center">
-                        <h3 class="text-2xl font-bold text-slate-800 mb-4">🎉 游戏结束！</h3>
+                        <h3 class="text-2xl font-bold text-slate-800 mb-4 flex items-center justify-center gap-2">
+                            <svg class="icon-lg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                                <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                            </svg>
+                            游戏结束！
+                        </h3>
                         <div id="mp-final-rankings" class="space-y-2 mb-4"></div>
                         <button id="mp-play-again" class="btn-primary px-6 py-2 rounded-lg text-white font-medium cursor-pointer">
                             再来一局
@@ -814,7 +947,17 @@
         
         <div id="leaderboard-area" class="hidden">
             <div class="glass-panel rounded-2xl p-4 md:p-6 shadow-lg">
-                <h3 class="text-lg font-semibold text-slate-800 mb-4">🏆 排行榜</h3>
+                <h3 class="text-lg font-semibold text-slate-800 mb-4 flex items-center gap-2">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path>
+                        <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path>
+                        <path d="M4 22h16"></path>
+                        <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"></path>
+                        <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"></path>
+                        <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"></path>
+                    </svg>
+                    排行榜
+                </h3>
                 <div class="flex gap-2 mb-4">
                     <button data-board="easy" class="leaderboard-tab px-3 py-1.5 rounded-lg text-sm font-medium border border-slate-200 bg-white text-slate-700 cursor-pointer">简单</button>
                     <button data-board="normal" class="leaderboard-tab active px-3 py-1.5 rounded-lg text-sm font-medium bg-blue-500 text-white cursor-pointer">普通</button>
@@ -825,7 +968,14 @@
             </div>
             
             <div class="glass-panel rounded-2xl p-4 md:p-6 shadow-lg mt-4">
-                <h3 class="text-lg font-semibold text-slate-800 mb-4">📊 统计数据</h3>
+                <h3 class="text-lg font-semibold text-slate-800 mb-4 flex items-center gap-2">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="20" x2="18" y2="10"></line>
+                        <line x1="12" y1="20" x2="12" y2="4"></line>
+                        <line x1="6" y1="20" x2="6" y2="14"></line>
+                    </svg>
+                    统计数据
+                </h3>
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
                     <div class="text-center p-3 bg-slate-50 rounded-lg">
                         <div class="text-2xl font-bold text-blue-600" id="stat-games">0</div>
@@ -847,7 +997,13 @@
             </div>
             
             <div class="glass-panel rounded-2xl p-4 md:p-6 shadow-lg mt-4">
-                <h3 class="text-lg font-semibold text-slate-800 mb-4">🎖️ 成就</h3>
+                <h3 class="text-lg font-semibold text-slate-800 mb-4 flex items-center gap-2">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="8" r="7"></circle>
+                        <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline>
+                    </svg>
+                    成就
+                </h3>
                 <div id="achievements-list" class="grid grid-cols-2 md:grid-cols-4 gap-3">
                 </div>
             </div>
@@ -898,8 +1054,13 @@
     <div id="victory-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl p-6 md:p-8 max-w-md w-full shadow-2xl transform scale-100 transition-transform">
             <div class="text-center">
-                <div class="text-6xl mb-4">🎉</div>
-                <h2 class="text-2xl font-bold text-slate-900 mb-2">恭喜获胜！</h2>
+                <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-green-400 to-emerald-500 flex items-center justify-center shadow-lg">
+                    <svg class="w-8 h-8 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                        <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                    </svg>
+                </div>
+                <h2 class="text-2xl font-bold text-slate-900 mb-2 font-display">恭喜获胜！</h2>
                 <p class="text-slate-600 mb-4">你成功猜对了所有地铁站名！</p>
                 <div class="bg-slate-100 rounded-lg p-4 mb-4">
                     <div class="grid grid-cols-2 gap-4 text-center">
@@ -950,15 +1111,26 @@
         };
 
         const ACHIEVEMENTS = [
-            { id: 'first_win', name: '初次胜利', desc: '完成第一局游戏', icon: '🏅' },
-            { id: 'speed_demon', name: '速度恶魔', desc: '60秒内完成游戏', icon: '⚡' },
-            { id: 'perfect', name: '完美猜测', desc: '不使用提示完成游戏', icon: '💯' },
-            { id: 'explorer', name: '探索者', desc: '解锁所有城市', icon: '🗺️' },
-            { id: 'master', name: '地铁大师', desc: '累计得分超过10000', icon: '👑' },
-            { id: 'streak_3', name: '三连胜', desc: '连续获胜3局', icon: '🔥' },
-            { id: 'streak_5', name: '五连胜', desc: '连续获胜5局', icon: '💎' },
-            { id: 'collector', name: '收藏家', desc: '猜对100个站名', icon: '🎯' }
+            { id: 'first_win', name: '初次胜利', desc: '完成第一局游戏', icon: 'trophy' },
+            { id: 'speed_demon', name: '速度恶魔', desc: '60秒内完成游戏', icon: 'zap' },
+            { id: 'perfect', name: '完美猜测', desc: '不使用提示完成游戏', icon: 'check-circle' },
+            { id: 'explorer', name: '探索者', desc: '解锁所有城市', icon: 'map' },
+            { id: 'master', name: '地铁大师', desc: '累计得分超过10000', icon: 'crown' },
+            { id: 'streak_3', name: '三连胜', desc: '连续获胜3局', icon: 'flame' },
+            { id: 'streak_5', name: '五连胜', desc: '连续获胜5局', icon: 'gem' },
+            { id: 'collector', name: '收藏家', desc: '猜对100个站名', icon: 'target' }
         ];
+        
+        const ACHIEVEMENT_ICONS = {
+            trophy: '<svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path><path d="M4 22h16"></path><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"></path><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"></path><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"></path></svg>',
+            zap: '<svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>',
+            'check-circle': '<svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>',
+            map: '<svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"></polygon><line x1="8" y1="2" x2="8" y2="18"></line><line x1="16" y1="6" x2="16" y2="22"></line></svg>',
+            crown: '<svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 4l3 12h14l3-12-6 7-4-7-4 7-6-7zm3 16h14"></path></svg>',
+            flame: '<svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"></path></svg>',
+            gem: '<svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12l4 6-10 13L2 9z"></path><path d="M11 3 8 9l4 13 4-13-3-6"></path><path d="M2 9h20"></path></svg>',
+            target: '<svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2"></circle></svg>'
+        };
 
         const $ = id => document.getElementById(id);
         const $all = sel => document.querySelectorAll(sel);
@@ -1268,7 +1440,17 @@
 
         function toggleSound() {
             soundEnabled = !soundEnabled;
-            elements.soundToggle.textContent = soundEnabled ? '🔊' : '🔇';
+            const soundOnIcon = $('sound-on-icon');
+            const soundOffIcon = $('sound-off-icon');
+            if (soundOnIcon && soundOffIcon) {
+                if (soundEnabled) {
+                    soundOnIcon.classList.remove('hidden');
+                    soundOffIcon.classList.add('hidden');
+                } else {
+                    soundOnIcon.classList.add('hidden');
+                    soundOffIcon.classList.remove('hidden');
+                }
+            }
             if (soundEnabled && !audioContext) {
                 initAudio();
             }
@@ -1963,7 +2145,7 @@
                         <span class="font-mono font-bold text-blue-600">${code}</span>
                         <span class="text-xs text-slate-500 ml-2">${gameMode} · ${room.settings?.difficulty || '普通'} · ${playerCount}人</span>
                     </div>
-                    <button class="join-room-btn bg-green-500 hover:bg-green-600 px-3 py-1 rounded text-white text-sm" data-room="${code}">
+                    <button class="join-room-btn bg-green-500 hover:bg-green-600 px-3 py-1 rounded text-white text-sm cursor-pointer" data-room="${code}">
                         加入
                     </button>
                 `;
@@ -3141,9 +3323,10 @@
                 const unlocked = stats.achievements.has(achievement.id);
                 const div = document.createElement('div');
                 div.className = `p-3 rounded-lg border ${unlocked ? 'bg-yellow-50 border-yellow-200' : 'bg-slate-50 border-slate-200 opacity-50'}`;
+                const iconSvg = ACHIEVEMENT_ICONS[achievement.icon] || '';
                 div.innerHTML = `
                     <div class="flex items-center gap-2 mb-1">
-                        <span class="text-xl ${unlocked ? 'achievement-badge' : ''}">${achievement.icon}</span>
+                        <span class="${unlocked ? 'achievement-badge text-yellow-600' : 'text-slate-400'}">${iconSvg}</span>
                         <span class="font-medium text-sm ${unlocked ? 'text-slate-800' : 'text-slate-500'}">${achievement.name}</span>
                     </div>
                     <p class="text-xs text-slate-500">${achievement.desc}</p>
@@ -3498,14 +3681,19 @@
             isDarkMode = !isDarkMode;
             document.body.classList.toggle('dark', isDarkMode);
             
+            const moonIcon = $('theme-moon-icon');
+            const sunIcon = $('theme-sun-icon');
+            
             if (isDarkMode) {
-                document.body.classList.remove('bg-gradient-to-br', 'from-slate-50', 'via-blue-50', 'to-indigo-100');
+                document.body.classList.remove('bg-gradient-to-br', 'from-indigo-50', 'via-purple-50', 'to-blue-100');
                 document.body.classList.add('bg-gradient-to-br', 'from-slate-950', 'via-slate-900', 'to-slate-950', 'text-slate-200');
-                elements.themeIcon.textContent = '☀️';
+                if (moonIcon) moonIcon.classList.add('hidden');
+                if (sunIcon) sunIcon.classList.remove('hidden');
             } else {
                 document.body.classList.remove('bg-gradient-to-br', 'from-slate-950', 'via-slate-900', 'to-slate-950', 'text-slate-200');
-                document.body.classList.add('bg-gradient-to-br', 'from-slate-50', 'via-blue-50', 'to-indigo-100', 'text-slate-800');
-                elements.themeIcon.textContent = '🌙';
+                document.body.classList.add('bg-gradient-to-br', 'from-indigo-50', 'via-purple-50', 'to-blue-100', 'text-slate-800');
+                if (moonIcon) moonIcon.classList.remove('hidden');
+                if (sunIcon) sunIcon.classList.add('hidden');
             }
             showToast(isDarkMode ? '已切换到暗色模式' : '已切换到亮色模式', 'info');
         }
