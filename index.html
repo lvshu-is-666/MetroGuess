@@ -540,7 +540,7 @@
                     <input 
                         type="text" 
                         id="guess-input" 
-                        placeholder="输入指令：开 a / 猜 站名或字母 / 结束" 
+                        placeholder="输入字母开字母，或输入站名猜测" 
                         class="flex-1 px-4 py-3 rounded-lg border border-slate-200 bg-white text-slate-800 placeholder-slate-400 input-glow focus:outline-none focus:border-blue-500 transition-all"
                         autocomplete="off"
                     >
@@ -549,7 +549,9 @@
                     </button>
                 </div>
                 <p class="text-xs text-slate-500 mt-2">
-                    指令格式：<span class="text-blue-600 font-medium">开 [字母]</span> 或 <span class="text-orange-600 font-medium">猜 [站名/字母]</span> 或 <span class="text-slate-600 font-medium">结束</span>
+                    直接输入<span class="text-blue-600 font-medium">字母</span>开字母，或输入<span class="text-orange-600 font-medium">站名</span>猜测
+                    <span class="mx-2">|</span>
+                    <span class="text-slate-600">也可用：开 [字母] / 猜 [站名] / 结束</span>
                     <span class="mx-2">|</span>
                     <span class="text-green-600">快捷键: A-Z 开字母, Enter 提交</span>
                 </p>
@@ -601,6 +603,19 @@
                 <h3 class="text-lg font-semibold text-slate-800 mb-4">🎮 联机对战</h3>
                 
                 <div id="mp-lobby" class="space-y-4">
+                    <div class="flex gap-2 justify-center mb-2">
+                        <button id="mode-battle" class="mp-mode-btn active px-4 py-2 rounded-lg font-medium text-sm bg-blue-500 text-white cursor-pointer">
+                            ⚔️ 对战模式
+                        </button>
+                        <button id="mode-coop" class="mp-mode-btn px-4 py-2 rounded-lg font-medium text-sm border border-slate-200 bg-white text-slate-700 cursor-pointer">
+                            🤝 合作模式
+                        </button>
+                    </div>
+                    
+                    <div id="coop-info" class="hidden bg-green-50 border border-green-200 rounded-lg p-3 text-sm text-green-700">
+                        <strong>🤝 合作模式：</strong>所有玩家一起猜同一组站名，共同完成任务！任何玩家答对都算过关，比拼团队速度！
+                    </div>
+                    
                     <div class="flex gap-3 flex-wrap">
                         <button id="btn-create-room" class="btn-primary px-4 py-2 rounded-lg text-white font-medium text-sm cursor-pointer">
                             创建房间
@@ -664,6 +679,7 @@
                     <div class="flex justify-between items-center">
                         <div id="mp-timer" class="text-2xl font-bold text-blue-600">00:00</div>
                         <div id="mp-round" class="text-sm text-slate-500">第 1 轮 / 共 5 轮</div>
+                        <div id="mp-mode-badge" class="text-sm font-medium px-2 py-1 rounded bg-blue-100 text-blue-700">⚔️ 对战</div>
                     </div>
                     
                     <div id="mp-players-status" class="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -676,6 +692,17 @@
                             <div id="mp-hint-text" class="text-sm text-blue-500 mt-2"></div>
                         </div>
                         
+                        <div id="mp-found-letters" class="text-center mb-4">
+                            <span class="text-sm text-slate-500">已发现字母：</span>
+                            <span id="mp-found-list" class="font-mono text-lg text-green-600"></span>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <div class="text-sm text-slate-500 text-center mb-2">点击字母开字</div>
+                            <div id="mp-keyboard" class="flex flex-wrap gap-1 justify-center max-w-md mx-auto">
+                            </div>
+                        </div>
+                        
                         <div class="flex gap-2 justify-center mb-4">
                             <input type="text" id="mp-guess-input" placeholder="输入站名" 
                                 class="px-4 py-2 rounded-lg border border-slate-200 bg-white text-slate-800 text-center text-lg w-48 focus:outline-none focus:ring-2 focus:ring-blue-400">
@@ -686,7 +713,7 @@
                         
                         <div class="flex gap-2 justify-center flex-wrap mb-4">
                             <button id="mp-hint-btn" class="bg-yellow-500 hover:bg-yellow-600 px-4 py-2 rounded-lg text-white font-medium text-sm cursor-pointer">
-                                💡 提示
+                                💡 提示 (<span id="mp-hints-left">3</span>)
                             </button>
                             <button id="mp-skip-btn" class="bg-slate-500 hover:bg-slate-600 px-4 py-2 rounded-lg text-white font-medium text-sm cursor-pointer">
                                 ⏭ 跳过
@@ -775,7 +802,8 @@
                     <h4 class="font-medium text-slate-800 mb-2">得分规则</h4>
                     <ul class="space-y-1 list-disc list-inside">
                         <li>猜对站名: +100分</li>
-                        <li>开字母找到: +10分/站</li>
+                        <li>开字母猜对: -5分</li>
+                        <li>开字母猜错: -15分</li>
                         <li>连击奖励: 连击数×5分</li>
                         <li>使用提示: -30分</li>
                         <li>时间奖励: 剩余时间×2分</li>
@@ -907,6 +935,7 @@
             selectedCity: 'all',
             stations: [],
             revealedLetters: {},
+            revealedSpecialChars: new Set(),
             solvedStations: new Set(),
             guessCount: 0,
             guessHistory: [],
@@ -917,7 +946,9 @@
             startTime: null,
             elapsedTime: 0,
             usedLetters: new Set(),
+            usedSpecialChars: new Set(),
             foundLetters: new Set(),
+            foundSpecialChars: new Set(),
             combo: 0,
             lastCorrectTime: 0,
             devMode: false
@@ -1386,7 +1417,8 @@
             roomId: null,
             isHost: false,
             isReady: false,
-            gameStarted: false
+            gameStarted: false,
+            gameMode: 'battle' // 'battle' or 'coop'
         };
 
         let db = null;
@@ -1439,9 +1471,10 @@
                 host: mpState.playerId,
                 status: 'waiting',
                 createdAt: Date.now(),
+                gameMode: mpState.gameMode,
                 settings: {
                     difficulty: gameState.difficulty,
-                    stationCount: parseInt(document.getElementById('station-count').value) || 4
+                    stationCount: parseInt(document.getElementById('station-count').value) || 5
                 }
             });
 
@@ -1660,12 +1693,13 @@
 
             Object.entries(rooms).forEach(([code, room]) => {
                 const playerCount = room.players ? Object.keys(room.players).length : 0;
+                const gameMode = room.gameMode === 'coop' ? '🤝 合作' : '⚔️ 对战';
                 const div = document.createElement('div');
                 div.className = 'flex items-center justify-between p-3 bg-slate-50 rounded-lg hover:bg-slate-100 cursor-pointer transition-all';
                 div.innerHTML = `
                     <div>
                         <span class="font-mono font-bold text-blue-600">${code}</span>
-                        <span class="text-xs text-slate-500 ml-2">${room.settings?.difficulty || '普通'} · ${playerCount}人</span>
+                        <span class="text-xs text-slate-500 ml-2">${gameMode} · ${room.settings?.difficulty || '普通'} · ${playerCount}人</span>
                     </div>
                     <button class="join-room-btn bg-green-500 hover:bg-green-600 px-3 py-1 rounded text-white text-sm" data-room="${code}">
                         加入
@@ -1687,6 +1721,13 @@
             elements.mpRoom.classList.add('hidden');
             elements.mpGame.classList.remove('hidden');
             mpState.gameStarted = true;
+            
+            // 初始化游戏状态
+            mpState.revealedLetters = {};
+            mpState.mpHintsUsed = 0;
+            mpState.mpHintsLeft = 3;
+            mpState.usedLetters = new Set();
+            mpState.foundLetters = new Set();
             
             if (mpState.isHost) {
                 initMultiplayerGame();
@@ -1717,7 +1758,8 @@
                 currentStationIndex: 0,
                 stationCount: stationCount,
                 startedAt: Date.now(),
-                status: 'playing'
+                status: 'playing',
+                gameMode: mpState.gameMode
             };
             
             await roomRef.child('game').set(gameData);
@@ -1725,6 +1767,10 @@
 
         function setupGameListeners() {
             if (!roomRef) return;
+            
+            roomRef.child('gameMode').on('value', (snapshot) => {
+                mpState.gameMode = snapshot.val() || 'battle';
+            });
             
             roomRef.child('game').on('value', (snapshot) => {
                 const gameData = snapshot.val();
@@ -1752,13 +1798,92 @@
             const totalStations = gameData.stationCount || gameData.stations.length;
             document.getElementById('mp-round').textContent = `第 ${gameData.currentStationIndex + 1} 轮 / 共 ${totalStations} 轮`;
             
+            // 显示游戏模式
+            const modeBadge = document.getElementById('mp-mode-badge');
+            if (gameData.gameMode === 'coop') {
+                modeBadge.textContent = '🤝 合作';
+                modeBadge.className = 'text-sm font-medium px-2 py-1 rounded bg-green-100 text-green-700';
+            } else {
+                modeBadge.textContent = '⚔️ 对战';
+                modeBadge.className = 'text-sm font-medium px-2 py-1 rounded bg-blue-100 text-blue-700';
+            }
+            
             const letterDisplay = document.getElementById('mp-letter-display');
             letterDisplay.innerHTML = renderLetterDisplay(currentStation.station_cn, mpState.revealedLetters || {});
             
             const hintText = document.getElementById('mp-hint-text');
             hintText.textContent = `城市: ${currentStation.city_cn}`;
             
+            // 渲染键盘
+            renderMpKeyboard(currentStation.station_cn);
+            
+            // 更新已发现字母
+            updateMpFoundLetters();
+            
+            // 更新提示次数
+            document.getElementById('mp-hints-left').textContent = mpState.mpHintsLeft || 3;
+            
             document.getElementById('mp-guess-history').innerHTML = '';
+        }
+        
+        function renderMpKeyboard(stationName) {
+            const keyboard = document.getElementById('mp-keyboard');
+            keyboard.innerHTML = '';
+            
+            const letters = 'abcdefghijklmnopqrstuvwxyz'.toUpperCase().split('');
+            const stationLetters = new Set(stationName.toUpperCase().split(''));
+            
+            letters.forEach(letter => {
+                const btn = document.createElement('button');
+                const isUsed = (mpState.usedLetters || new Set()).has(letter);
+                const isFound = (mpState.foundLetters || new Set()).has(letter);
+                
+                btn.className = `w-8 h-8 rounded text-sm font-medium transition-all ${
+                    isFound ? 'bg-green-500 text-white' :
+                    isUsed ? 'bg-slate-300 text-slate-500 cursor-not-allowed' :
+                    'bg-white border border-slate-300 text-slate-700 hover:bg-blue-50 cursor-pointer'
+                }`;
+                btn.textContent = letter;
+                
+                if (!isUsed && !isFound) {
+                    btn.addEventListener('click', () => openMpLetter(letter, stationName));
+                }
+                
+                keyboard.appendChild(btn);
+            });
+        }
+        
+        async function openMpLetter(letter, stationName) {
+            mpState.usedLetters = mpState.usedLetters || new Set();
+            mpState.foundLetters = mpState.foundLetters || new Set();
+            mpState.revealedLetters = mpState.revealedLetters || {};
+            
+            mpState.usedLetters.add(letter);
+            
+            const upperStation = stationName.toUpperCase();
+            let found = false;
+            
+            for (let i = 0; i < stationName.length; i++) {
+                if (upperStation[i] === letter) {
+                    mpState.revealedLetters[i] = stationName[i];
+                    mpState.foundLetters.add(letter);
+                    found = true;
+                }
+            }
+            
+            if (found) {
+                playSound('correct');
+            } else {
+                playSound('wrong');
+            }
+            
+            renderMultiplayerGame(mpState.gameData);
+        }
+        
+        function updateMpFoundLetters() {
+            const foundList = document.getElementById('mp-found-list');
+            const found = mpState.foundLetters || new Set();
+            foundList.textContent = Array.from(found).sort().join(' ');
         }
 
         function renderPlayersStatus(players) {
@@ -1800,15 +1925,34 @@
                 playSound('correct');
                 const score = calculateMpScore();
                 
-                await playersRef.update({
-                    score: firebase.database.ServerValue.increment(score),
-                    currentStationSolved: true
-                });
-                
-                showToast(`正确！+${score}分`, 'success');
-                
-                if (mpState.isHost) {
-                    setTimeout(() => nextStation(), 1500);
+                if (mpState.gameMode === 'coop') {
+                    // 合作模式：任何玩家答对都算过关
+                    await playersRef.update({
+                        score: firebase.database.ServerValue.increment(score),
+                        currentStationSolved: true
+                    });
+                    
+                    // 记录是谁答对的
+                    await roomRef.child('game/lastSolvedBy').set(mpState.playerName);
+                    
+                    showToast(`🎉 ${mpState.playerName} 答对了！+${score}分`, 'success');
+                    
+                    // 房主负责进入下一题
+                    if (mpState.isHost) {
+                        setTimeout(() => nextStation(), 1500);
+                    }
+                } else {
+                    // 对战模式：只有自己答对才算
+                    await playersRef.update({
+                        score: firebase.database.ServerValue.increment(score),
+                        currentStationSolved: true
+                    });
+                    
+                    showToast(`正确！+${score}分`, 'success');
+                    
+                    if (mpState.isHost) {
+                        setTimeout(() => nextStation(), 1500);
+                    }
                 }
             } else {
                 playSound('wrong');
@@ -1833,10 +1977,17 @@
         async function useMpHint() {
             if (!mpState.gameData) return;
             
+            mpState.mpHintsLeft = mpState.mpHintsLeft || 3;
+            if (mpState.mpHintsLeft <= 0) {
+                showToast('提示次数已用完', 'error');
+                return;
+            }
+            
             const currentStation = mpState.gameData.stations[mpState.gameData.currentStationIndex];
             if (!currentStation) return;
             
             mpState.mpHintsUsed = (mpState.mpHintsUsed || 0) + 1;
+            mpState.mpHintsLeft--;
             mpState.revealedLetters = mpState.revealedLetters || {};
             
             const stationName = currentStation.station_cn;
@@ -1849,7 +2000,13 @@
             
             if (unrevealed.length > 0) {
                 const randomIndex = unrevealed[Math.floor(Math.random() * unrevealed.length)];
-                mpState.revealedLetters[randomIndex] = stationName[randomIndex];
+                const revealedLetter = stationName[randomIndex];
+                mpState.revealedLetters[randomIndex] = revealedLetter;
+                
+                // 更新 foundLetters
+                mpState.foundLetters = mpState.foundLetters || new Set();
+                mpState.foundLetters.add(revealedLetter.toUpperCase());
+                
                 renderMultiplayerGame(mpState.gameData);
                 playSound('hint');
             }
@@ -1881,8 +2038,12 @@
                 });
                 await roomRef.child('players').update(updates);
                 
+                // 重置所有状态
                 mpState.revealedLetters = {};
                 mpState.mpHintsUsed = 0;
+                mpState.mpHintsLeft = 3;
+                mpState.usedLetters = new Set();
+                mpState.foundLetters = new Set();
             }
         }
 
@@ -1999,6 +2160,7 @@
                 selectedCity: gameState.selectedCity,
                 stations: selected,
                 revealedLetters: {},
+                revealedSpecialChars: new Set(),
                 solvedStations: new Set(),
                 guessCount: 0,
                 guessHistory: [],
@@ -2009,7 +2171,9 @@
                 startTime: Date.now(),
                 elapsedTime: 0,
                 usedLetters: new Set(),
+                usedSpecialChars: new Set(),
                 foundLetters: new Set(),
+                foundSpecialChars: new Set(),
                 combo: 0,
                 lastCorrectTime: 0,
                 devMode: false
@@ -2064,7 +2228,7 @@
             gameState.stations.forEach((station, index) => {
                 const isSolved = gameState.solvedStations.has(index);
                 const revealed = gameState.revealedLetters[index];
-                const displayText = getDisplayText(station.station_en, revealed, isSolved, gameState.devMode);
+                const displayText = getDisplayText(station.station_en, revealed, isSolved, gameState.devMode, gameState.revealedSpecialChars);
                 const difficulty = station.calculatedDifficulty || calculateStationDifficulty(station);
                 const difficultyLabel = difficulty === 'easy' ? '简单' : difficulty === 'normal' ? '普通' : '困难';
                 const difficultyColor = difficulty === 'easy' ? 'bg-green-100 text-green-700' : 
@@ -2096,7 +2260,7 @@
             });
         }
 
-        function getDisplayText(stationName, revealedLetters, isSolved, devMode = false) {
+        function getDisplayText(stationName, revealedLetters, isSolved, devMode = false, revealedSpecialChars = null) {
             if (isSolved || devMode) {
                 return stationName;
             }
@@ -2108,6 +2272,12 @@
                         return `<span class="letter-reveal text-blue-600">${char}</span>`;
                     }
                     return '*';
+                }
+                if (char === ' ') {
+                    return ' ';
+                }
+                if (revealedSpecialChars && revealedSpecialChars.has(char)) {
+                    return `<span class="letter-reveal text-blue-600">${char}</span>`;
                 }
                 return '*';
             }).join('');
@@ -2174,9 +2344,9 @@
             }
             
             if (command.startsWith('开 ')) {
-                const letter = command.slice(2).trim().toLowerCase();
-                if (letter.length === 1 && /[a-z]/.test(letter)) {
-                    revealLetter(letter);
+                const letter = command.slice(2).trim();
+                if (letter.length === 1) {
+                    revealLetter(letter.toLowerCase());
                 } else {
                     addToHistory(`无效指令: ${input}`, 'error');
                 }
@@ -2187,6 +2357,10 @@
                 } else {
                     guessStation(guess);
                 }
+            } else if (command.length === 1) {
+                revealLetter(command.toLowerCase());
+            } else if (command.length > 1) {
+                guessStation(command);
             } else {
                 addToHistory(`无效指令: ${input}`, 'error');
             }
@@ -2195,43 +2369,83 @@
         }
 
         function revealLetter(letter) {
-            if (gameState.usedLetters.has(letter)) {
-                addToHistory(`字母 ${letter.toUpperCase()} 已使用`, 'error');
-                showToast('该字母已使用', 'error');
-                return;
-            }
+            const isSpecialChar = !/[a-z]/.test(letter);
             
-            gameState.usedLetters.add(letter);
-            let found = false;
-            let matchCount = 0;
-            
-            gameState.stations.forEach((station, index) => {
-                if (gameState.solvedStations.has(index)) return;
-                
-                const stationLower = station.station_en.toLowerCase();
-                if (stationLower.includes(letter)) {
-                    found = true;
-                    gameState.revealedLetters[index].add(letter);
-                    matchCount++;
-                    gameState.score += 10;
+            if (isSpecialChar) {
+                if (gameState.usedSpecialChars.has(letter)) {
+                    addToHistory(`字符 ${letter} 已使用`, 'error');
+                    showToast('该字符已使用', 'error');
+                    return;
                 }
-            });
-            
-            if (found) {
-                gameState.foundLetters.add(letter);
-                playSound('reveal');
-                addToHistory(`开 ${letter.toUpperCase()}`, 'success', `在 ${matchCount} 个站名中找到 (+${matchCount * 10}分)`);
                 
-                const btn = document.querySelector(`[data-letter="${letter}"]`);
-                if (btn) {
-                    createParticles(btn.getBoundingClientRect().left + 16, btn.getBoundingClientRect().top + 16, 5);
+                gameState.usedSpecialChars.add(letter);
+                let found = false;
+                let matchCount = 0;
+                
+                gameState.stations.forEach((station, index) => {
+                    if (gameState.solvedStations.has(index)) return;
+                    
+                    const stationEn = station.station_en;
+                    if (stationEn.includes(letter)) {
+                        found = true;
+                        matchCount++;
+                    }
+                });
+                
+                if (found) {
+                    gameState.revealedSpecialChars.add(letter);
+                    gameState.foundSpecialChars.add(letter);
+                    gameState.score = Math.max(0, gameState.score - 5);
+                    playSound('reveal');
+                    addToHistory(`开 ${letter}`, 'success', `在 ${matchCount} 个站名中找到 (-5分)`);
+                } else {
+                    gameState.score = Math.max(0, gameState.score - 15);
+                    playSound('wrong');
+                    addToHistory(`开 ${letter}`, 'error', '未找到该字符 (-15分)');
+                    
+                    elements.stationsContainer.classList.add('shake');
+                    setTimeout(() => elements.stationsContainer.classList.remove('shake'), 500);
                 }
             } else {
-                playSound('wrong');
-                addToHistory(`开 ${letter.toUpperCase()}`, 'error', '未找到该字母');
+                if (gameState.usedLetters.has(letter)) {
+                    addToHistory(`字母 ${letter.toUpperCase()} 已使用`, 'error');
+                    showToast('该字母已使用', 'error');
+                    return;
+                }
                 
-                elements.stationsContainer.classList.add('shake');
-                setTimeout(() => elements.stationsContainer.classList.remove('shake'), 500);
+                gameState.usedLetters.add(letter);
+                let found = false;
+                let matchCount = 0;
+                
+                gameState.stations.forEach((station, index) => {
+                    if (gameState.solvedStations.has(index)) return;
+                    
+                    const stationLower = station.station_en.toLowerCase();
+                    if (stationLower.includes(letter)) {
+                        found = true;
+                        gameState.revealedLetters[index].add(letter);
+                        matchCount++;
+                    }
+                });
+                
+                if (found) {
+                    gameState.foundLetters.add(letter);
+                    gameState.score = Math.max(0, gameState.score - 5);
+                    playSound('reveal');
+                    addToHistory(`开 ${letter.toUpperCase()}`, 'success', `在 ${matchCount} 个站名中找到 (-5分)`);
+                    
+                    const btn = document.querySelector(`[data-letter="${letter}"]`);
+                    if (btn) {
+                        createParticles(btn.getBoundingClientRect().left + 16, btn.getBoundingClientRect().top + 16, 5);
+                    }
+                } else {
+                    gameState.score = Math.max(0, gameState.score - 15);
+                    playSound('wrong');
+                    addToHistory(`开 ${letter.toUpperCase()}`, 'error', '未找到该字母 (-15分)');
+                    
+                    elements.stationsContainer.classList.add('shake');
+                    setTimeout(() => elements.stationsContainer.classList.remove('shake'), 500);
+                }
             }
             
             renderStations();
@@ -2463,7 +2677,7 @@
             const revealedLetters = elements.revealedLettersInput.value.trim().toLowerCase();
             if (!pattern) return;
             
-            if (!/^[a-z*\s'().]+$/.test(pattern)) {
+            if (!/^[a-z*\s'().\[\]-]+$/.test(pattern)) {
                 addToHistory('请输入有效的提示', 'error');
                 return;
             }
@@ -2481,6 +2695,9 @@
                 
                 for (let i = 0; i < pattern.length; i++) {
                     if (pattern[i] !== '*' && pattern[i] !== name[i]) {
+                        return false;
+                    }
+                    if (pattern[i] === '*' && !/[a-z]/.test(name[i])) {
                         return false;
                     }
                     if (pattern[i] === '*' && revealedSet.has(name[i])) {
@@ -2789,6 +3006,20 @@
             elements.modeReverse.addEventListener('click', () => switchMode('reverse'));
             elements.modeLeaderboard.addEventListener('click', () => switchMode('leaderboard'));
             elements.modeMultiplayer.addEventListener('click', () => switchMode('multiplayer'));
+            
+            document.getElementById('mode-battle').addEventListener('click', () => {
+                mpState.gameMode = 'battle';
+                document.getElementById('mode-battle').className = 'mp-mode-btn active px-4 py-2 rounded-lg font-medium text-sm bg-blue-500 text-white cursor-pointer';
+                document.getElementById('mode-coop').className = 'mp-mode-btn px-4 py-2 rounded-lg font-medium text-sm border border-slate-200 bg-white text-slate-700 cursor-pointer';
+                document.getElementById('coop-info').classList.add('hidden');
+            });
+            
+            document.getElementById('mode-coop').addEventListener('click', () => {
+                mpState.gameMode = 'coop';
+                document.getElementById('mode-coop').className = 'mp-mode-btn active px-4 py-2 rounded-lg font-medium text-sm bg-green-500 text-white cursor-pointer';
+                document.getElementById('mode-battle').className = 'mp-mode-btn px-4 py-2 rounded-lg font-medium text-sm border border-slate-200 bg-white text-slate-700 cursor-pointer';
+                document.getElementById('coop-info').classList.remove('hidden');
+            });
             
             document.getElementById('btn-create-room').addEventListener('click', createRoom);
             document.getElementById('btn-quick-match').addEventListener('click', quickMatch);
