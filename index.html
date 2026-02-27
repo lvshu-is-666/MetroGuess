@@ -633,9 +633,12 @@
                         </button>
                     </div>
                     
-                    <div class="flex gap-2">
+                    <div class="flex gap-2 flex-wrap">
                         <button id="btn-ready" class="btn-primary px-4 py-2 rounded-lg text-white font-medium text-sm cursor-pointer">
                             准备
+                        </button>
+                        <button id="btn-start-game" class="bg-green-500 hover:bg-green-600 px-4 py-2 rounded-lg text-white font-medium text-sm transition-all cursor-pointer hidden">
+                            开始游戏
                         </button>
                         <button id="btn-leave-room" class="bg-red-500 hover:bg-red-600 px-4 py-2 rounded-lg text-white font-medium text-sm transition-all cursor-pointer">
                             离开房间
@@ -1538,9 +1541,21 @@
                 ? 'bg-yellow-500 hover:bg-yellow-600 px-4 py-2 rounded-lg text-white font-medium text-sm cursor-pointer'
                 : 'btn-primary px-4 py-2 rounded-lg text-white font-medium text-sm cursor-pointer';
 
-            if (mpState.isHost) {
-                checkAllReady();
+            updateStartButton();
+        }
+
+        function updateStartButton() {
+            const startBtn = document.getElementById('btn-start-game');
+            if (mpState.isHost && mpState.isReady) {
+                startBtn.classList.remove('hidden');
+            } else {
+                startBtn.classList.add('hidden');
             }
+        }
+
+        async function startGame() {
+            if (!roomRef || !mpState.isHost) return;
+            await roomRef.child('status').set('playing');
         }
 
         async function checkAllReady() {
@@ -1551,7 +1566,7 @@
             const playerCount = Object.keys(players).length;
 
             if (allReady && playerCount >= 1) {
-                await roomRef.child('status').set('playing');
+                updateStartButton();
             }
         }
 
@@ -2507,6 +2522,7 @@
             });
             document.getElementById('btn-ready').addEventListener('click', toggleReady);
             document.getElementById('btn-leave-room').addEventListener('click', leaveRoom);
+            document.getElementById('btn-start-game').addEventListener('click', startGame);
             document.getElementById('btn-copy-room').addEventListener('click', copyRoomCode);
             document.getElementById('btn-send-chat').addEventListener('click', sendChatMessage);
             elements.chatInput.addEventListener('keypress', (e) => {
