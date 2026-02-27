@@ -1917,6 +1917,15 @@
             document.getElementById('mp-guess-history').innerHTML = '';
         }
         
+        function renderLetterDisplay(stationName, revealedLetters) {
+            return stationName.split('').map((char, index) => {
+                if (revealedLetters[index]) {
+                    return `<span class="text-blue-600">${char}</span>`;
+                }
+                return '<span class="text-slate-300">_</span>';
+            }).join(' ');
+        }
+        
         function renderMpKeyboard(stationName) {
             const keyboard = document.getElementById('mp-keyboard');
             keyboard.innerHTML = '';
