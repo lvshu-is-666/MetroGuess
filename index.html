@@ -672,7 +672,7 @@
     </style>
 </head>
 <body class="bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 min-h-screen text-slate-800 transition-colors duration-300">
-    <div class="crt-overlay fixed inset-0 z-50 opacity-30"></div>
+
     
     <div id="toast-container" class="fixed top-4 right-4 z-50 space-y-2"></div>
     
@@ -945,7 +945,13 @@
                 
                 <div id="mp-game" class="hidden space-y-4">
                     <div class="flex justify-between items-center">
-                        <div id="mp-timer" class="text-2xl font-bold text-blue-600">00:00</div>
+                        <div class="flex items-center gap-4">
+                            <div id="mp-timer" class="text-2xl font-bold text-blue-600">00:00</div>
+                            <div class="text-lg">
+                                <span class="text-slate-500">分数：</span>
+                                <span id="mp-score" class="font-bold text-green-600">0</span>
+                            </div>
+                        </div>
                         <div id="mp-round" class="text-sm text-slate-500">第 1 轮 / 共 5 轮</div>
                         <div id="mp-mode-badge" class="text-sm font-medium px-2 py-1 rounded bg-blue-100 text-blue-700">⚔️ 对战</div>
                     </div>
@@ -1402,70 +1408,52 @@
         function playSound(type) {
             if (!soundEnabled || !audioContext) return;
             
+            const now = audioContext.currentTime;
+            
+            switch (type) {
+                case 'reveal':
+                    playTone(440, 0.1, 0.08, now, 880);
+                    break;
+                case 'correct':
+                    playTone(523, 0.3, 0.12, now);
+                    playTone(659, 0.3, 0.12, now + 0.1);
+                    playTone(784, 0.3, 0.12, now + 0.2);
+                    break;
+                case 'wrong':
+                    playTone(200, 0.2, 0.08, now, 100);
+                    break;
+                case 'victory':
+                    const notes = [523, 587, 659, 698, 784, 880, 988, 1047];
+                    notes.forEach((freq, i) => {
+                        playTone(freq, 0.15, 0.08, now + i * 0.1);
+                    });
+                    break;
+                case 'hint':
+                    playTone(600, 0.15, 0.08, now, 400);
+                    break;
+                case 'combo':
+                    playTone(800 + gameState.combo * 50, 0.08, 0.06, now);
+                    break;
+            }
+        }
+        
+        function playTone(freq, duration, volume, startTime, endFreq = null) {
             const oscillator = audioContext.createOscillator();
             const gainNode = audioContext.createGain();
             
             oscillator.connect(gainNode);
             gainNode.connect(audioContext.destination);
             
-            const now = audioContext.currentTime;
-            
-            switch (type) {
-                case 'reveal':
-                    oscillator.frequency.setValueAtTime(440, now);
-                    oscillator.frequency.exponentialRampToValueAtTime(880, now + 0.1);
-                    gainNode.gain.setValueAtTime(0.1, now);
-                    gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
-                    oscillator.start(now);
-                    oscillator.stop(now + 0.1);
-                    break;
-                case 'correct':
-                    oscillator.frequency.setValueAtTime(523, now);
-                    oscillator.frequency.setValueAtTime(659, now + 0.1);
-                    oscillator.frequency.setValueAtTime(784, now + 0.2);
-                    gainNode.gain.setValueAtTime(0.15, now);
-                    gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
-                    oscillator.start(now);
-                    oscillator.stop(now + 0.3);
-                    break;
-                case 'wrong':
-                    oscillator.frequency.setValueAtTime(200, now);
-                    oscillator.frequency.exponentialRampToValueAtTime(100, now + 0.2);
-                    gainNode.gain.setValueAtTime(0.1, now);
-                    gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
-                    oscillator.start(now);
-                    oscillator.stop(now + 0.2);
-                    break;
-                case 'victory':
-                    const notes = [523, 587, 659, 698, 784, 880, 988, 1047];
-                    notes.forEach((freq, i) => {
-                        const osc = audioContext.createOscillator();
-                        const gain = audioContext.createGain();
-                        osc.connect(gain);
-                        gain.connect(audioContext.destination);
-                        osc.frequency.setValueAtTime(freq, now + i * 0.1);
-                        gain.gain.setValueAtTime(0.1, now + i * 0.1);
-                        gain.gain.exponentialRampToValueAtTime(0.01, now + i * 0.1 + 0.15);
-                        osc.start(now + i * 0.1);
-                        osc.stop(now + i * 0.1 + 0.15);
-                    });
-                    break;
-                case 'hint':
-                    oscillator.frequency.setValueAtTime(600, now);
-                    oscillator.frequency.exponentialRampToValueAtTime(400, now + 0.15);
-                    gainNode.gain.setValueAtTime(0.1, now);
-                    gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
-                    oscillator.start(now);
-                    oscillator.stop(now + 0.15);
-                    break;
-                case 'combo':
-                    oscillator.frequency.setValueAtTime(800 + gameState.combo * 50, now);
-                    gainNode.gain.setValueAtTime(0.08, now);
-                    gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.08);
-                    oscillator.start(now);
-                    oscillator.stop(now + 0.08);
-                    break;
+            oscillator.frequency.setValueAtTime(freq, startTime);
+            if (endFreq) {
+                oscillator.frequency.exponentialRampToValueAtTime(endFreq, startTime + duration);
             }
+            
+            gainNode.gain.setValueAtTime(volume, startTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, startTime + duration);
+            
+            oscillator.start(startTime);
+            oscillator.stop(startTime + duration);
         }
 
         function toggleSound() {
@@ -1504,41 +1492,62 @@
             setTimeout(() => scoreEl.remove(), 1000);
         }
 
-        function createParticles(x, y, count = 10) {
-            const colors = ['#22c55e', '#3b82f6', '#f97316', '#eab308', '#ec4899'];
+        const particlePool = [];
+        const MAX_PARTICLES = 20;
+        
+        function getParticle() {
+            return particlePool.pop() || document.createElement('div');
+        }
+        
+        function returnParticle(particle) {
+            if (particlePool.length < MAX_PARTICLES) {
+                particle.className = '';
+                particle.style.cssText = '';
+                particlePool.push(particle);
+            } else {
+                particle.remove();
+            }
+        }
+
+        function createParticles(x, y, count = 5) {
+            const colors = ['#22c55e', '#3b82f6', '#f97316'];
+            const reducedCount = Math.min(count, 5);
             
-            for (let i = 0; i < count; i++) {
-                const particle = document.createElement('div');
+            for (let i = 0; i < reducedCount; i++) {
+                const particle = getParticle();
                 particle.className = 'particle';
-                particle.style.left = `${x + (Math.random() - 0.5) * 100}px`;
+                particle.style.left = `${x + (Math.random() - 0.5) * 60}px`;
                 particle.style.top = `${y}px`;
-                particle.style.width = `${Math.random() * 10 + 5}px`;
+                particle.style.width = `${Math.random() * 6 + 4}px`;
                 particle.style.height = particle.style.width;
                 particle.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
                 particle.style.borderRadius = '50%';
                 document.body.appendChild(particle);
                 
-                setTimeout(() => particle.remove(), 1000);
+                setTimeout(() => {
+                    particle.remove();
+                    returnParticle(particle);
+                }, 800);
             }
         }
 
         function createFireworks() {
-            const colors = ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#ff00ff', '#00ffff'];
+            const colors = ['#ff0000', '#00ff00', '#0000ff', '#ffff00'];
             
-            for (let f = 0; f < 5; f++) {
+            for (let f = 0; f < 3; f++) {
                 setTimeout(() => {
                     const x = Math.random() * window.innerWidth;
                     const y = Math.random() * window.innerHeight * 0.5;
                     
-                    for (let i = 0; i < 30; i++) {
-                        const particle = document.createElement('div');
+                    for (let i = 0; i < 12; i++) {
+                        const particle = getParticle();
                         particle.className = 'firework-particle';
                         particle.style.left = `${x}px`;
                         particle.style.top = `${y}px`;
                         particle.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
                         
-                        const angle = (i / 30) * Math.PI * 2;
-                        const distance = 50 + Math.random() * 100;
+                        const angle = (i / 12) * Math.PI * 2;
+                        const distance = 40 + Math.random() * 60;
                         const endX = Math.cos(angle) * distance;
                         const endY = Math.sin(angle) * distance;
                         
@@ -1551,9 +1560,12 @@
                         firework.appendChild(particle);
                         document.body.appendChild(firework);
                         
-                        setTimeout(() => firework.remove(), 1000);
+                        setTimeout(() => {
+                            firework.remove();
+                            returnParticle(particle);
+                        }, 800);
                     }
-                }, f * 300);
+                }, f * 200);
             }
         }
 
@@ -1913,10 +1925,10 @@
         function setupRoomListeners() {
             if (!roomRef) return;
 
-            roomRef.child('players').on('value', (snapshot) => {
+            roomRef.child('players').on('value', debounce((snapshot) => {
                 const players = snapshot.val() || {};
                 renderRoomPlayers(players);
-            });
+            }, 100));
 
             roomRef.child('status').on('value', (snapshot) => {
                 const status = snapshot.val();
@@ -1930,6 +1942,18 @@
                 const msg = snapshot.val();
                 addChatMessage(msg.name, msg.text, msg.time);
             });
+        }
+        
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
         }
 
         function renderRoomPlayers(players) {
@@ -2099,10 +2123,16 @@
             
             // 初始化游戏状态
             mpState.revealedLetters = {};
+            mpState.revealedSpecialChars = new Set();
             mpState.mpHintsUsed = 0;
-            mpState.mpHintsLeft = 3;
+            mpState.mpHintsLeft = DIFFICULTY_SETTINGS[gameState.difficulty]?.hints || 3;
             mpState.usedLetters = new Set();
+            mpState.usedSpecialChars = new Set();
             mpState.foundLetters = new Set();
+            mpState.foundSpecialChars = new Set();
+            mpState.score = 0;
+            mpState.combo = 0;
+            mpState.lastCorrectTime = 0;
             
             if (mpState.isHost) {
                 initMultiplayerGame();
@@ -2183,14 +2213,16 @@
                 modeBadge.className = 'text-sm font-medium px-2 py-1 rounded bg-blue-100 text-blue-700';
             }
             
+            // 显示英文名而非中文名
+            const stationEn = currentStation.station_en;
             const letterDisplay = document.getElementById('mp-letter-display');
-            letterDisplay.innerHTML = renderLetterDisplay(currentStation.station_cn, mpState.revealedLetters || {});
+            letterDisplay.innerHTML = renderLetterDisplay(stationEn, mpState.revealedLetters || {}, mpState.revealedSpecialChars);
             
             const hintText = document.getElementById('mp-hint-text');
             hintText.textContent = `城市: ${currentStation.city_cn}`;
             
-            // 渲染键盘
-            renderMpKeyboard(currentStation.station_cn);
+            // 渲染键盘（使用英文名）
+            renderMpKeyboard(stationEn);
             
             // 更新已发现字母
             updateMpFoundLetters();
@@ -2198,12 +2230,25 @@
             // 更新提示次数
             document.getElementById('mp-hints-left').textContent = mpState.mpHintsLeft || 3;
             
+            // 更新分数显示
+            updateMpScoreDisplay();
+            
             document.getElementById('mp-guess-history').innerHTML = '';
         }
         
-        function renderLetterDisplay(stationName, revealedLetters) {
+        function renderLetterDisplay(stationName, revealedLetters, revealedSpecialChars) {
             return stationName.split('').map((char, index) => {
-                if (revealedLetters[index]) {
+                const lowerChar = char.toLowerCase();
+                if (/[a-z]/.test(lowerChar)) {
+                    if (revealedLetters && revealedLetters[index]) {
+                        return `<span class="text-blue-600">${char}</span>`;
+                    }
+                    return '<span class="text-slate-300">_</span>';
+                }
+                if (char === ' ') {
+                    return ' ';
+                }
+                if (revealedSpecialChars && revealedSpecialChars.has(char)) {
                     return `<span class="text-blue-600">${char}</span>`;
                 }
                 return '<span class="text-slate-300">_</span>';
@@ -2215,12 +2260,13 @@
             keyboard.innerHTML = '';
             
             const letters = 'abcdefghijklmnopqrstuvwxyz'.toUpperCase().split('');
-            const stationLetters = new Set(stationName.toUpperCase().split(''));
+            const stationLower = stationName.toLowerCase();
             
             letters.forEach(letter => {
                 const btn = document.createElement('button');
-                const isUsed = (mpState.usedLetters || new Set()).has(letter);
-                const isFound = (mpState.foundLetters || new Set()).has(letter);
+                const lowerLetter = letter.toLowerCase();
+                const isUsed = (mpState.usedLetters || new Set()).has(lowerLetter);
+                const isFound = (mpState.foundLetters || new Set()).has(lowerLetter);
                 
                 btn.className = `w-8 h-8 rounded text-sm font-medium transition-all ${
                     isFound ? 'bg-green-500 text-white' :
@@ -2230,7 +2276,7 @@
                 btn.textContent = letter;
                 
                 if (!isUsed && !isFound) {
-                    btn.addEventListener('click', () => openMpLetter(letter, stationName));
+                    btn.addEventListener('click', () => openMpLetter(lowerLetter, stationName));
                 }
                 
                 keyboard.appendChild(btn);
@@ -2238,27 +2284,75 @@
         }
         
         async function openMpLetter(letter, stationName) {
+            const isSpecialChar = !/[a-z]/.test(letter);
+            
             mpState.usedLetters = mpState.usedLetters || new Set();
             mpState.foundLetters = mpState.foundLetters || new Set();
             mpState.revealedLetters = mpState.revealedLetters || {};
+            mpState.revealedSpecialChars = mpState.revealedSpecialChars || new Set();
+            mpState.usedSpecialChars = mpState.usedSpecialChars || new Set();
+            mpState.score = mpState.score || 0;
             
-            mpState.usedLetters.add(letter);
-            
-            const upperStation = stationName.toUpperCase();
-            let found = false;
-            
-            for (let i = 0; i < stationName.length; i++) {
-                if (upperStation[i] === letter) {
-                    mpState.revealedLetters[i] = stationName[i];
-                    mpState.foundLetters.add(letter);
-                    found = true;
+            if (isSpecialChar) {
+                if (mpState.usedSpecialChars.has(letter)) {
+                    showToast('该字符已使用', 'error');
+                    return;
+                }
+                
+                mpState.usedSpecialChars.add(letter);
+                let found = false;
+                
+                for (let i = 0; i < stationName.length; i++) {
+                    if (stationName[i] === letter) {
+                        found = true;
+                        break;
+                    }
+                }
+                
+                if (found) {
+                    mpState.revealedSpecialChars.add(letter);
+                    mpState.foundSpecialChars = mpState.foundSpecialChars || new Set();
+                    mpState.foundSpecialChars.add(letter);
+                    mpState.score = Math.max(0, mpState.score - 5);
+                    playSound('reveal');
+                    showToast(`开 ${letter} - 找到！(-5分)`, 'success');
+                } else {
+                    mpState.score = Math.max(0, mpState.score - 15);
+                    playSound('wrong');
+                    showToast(`开 ${letter} - 未找到 (-15分)`, 'error');
+                }
+            } else {
+                if (mpState.usedLetters.has(letter)) {
+                    showToast('该字母已使用', 'error');
+                    return;
+                }
+                
+                mpState.usedLetters.add(letter);
+                let found = false;
+                const stationLower = stationName.toLowerCase();
+                
+                for (let i = 0; i < stationName.length; i++) {
+                    if (stationLower[i] === letter) {
+                        mpState.revealedLetters[i] = stationName[i];
+                        mpState.foundLetters.add(letter);
+                        found = true;
+                    }
+                }
+                
+                if (found) {
+                    mpState.score = Math.max(0, mpState.score - 5);
+                    playSound('reveal');
+                    showToast(`开 ${letter.toUpperCase()} - 找到！(-5分)`, 'success');
+                } else {
+                    mpState.score = Math.max(0, mpState.score - 15);
+                    playSound('wrong');
+                    showToast(`开 ${letter.toUpperCase()} - 未找到 (-15分)`, 'error');
                 }
             }
             
-            if (found) {
-                playSound('correct');
-            } else {
-                playSound('wrong');
+            // 同步分数到服务器
+            if (playersRef) {
+                await playersRef.update({ score: mpState.score });
             }
             
             renderMultiplayerGame(mpState.gameData);
@@ -2268,6 +2362,13 @@
             const foundList = document.getElementById('mp-found-list');
             const found = mpState.foundLetters || new Set();
             foundList.textContent = Array.from(found).sort().join(' ');
+        }
+        
+        function updateMpScoreDisplay() {
+            const scoreEl = document.getElementById('mp-score');
+            if (scoreEl) {
+                scoreEl.textContent = mpState.score || 0;
+            }
         }
 
         function renderPlayersStatus(players) {
@@ -2300,26 +2401,43 @@
             const currentStation = mpState.gameData.stations[mpState.gameData.currentStationIndex];
             if (!currentStation) return;
             
-            const isCorrect = guess === currentStation.station_cn;
+            // 支持中文名和英文名匹配
+            const stationCn = currentStation.station_cn.toLowerCase();
+            const stationEn = currentStation.station_en.toLowerCase();
+            const guessLower = guess.toLowerCase();
+            const isCorrect = guessLower === stationCn || guessLower === stationEn;
             
             addMpGuessHistory(guess, isCorrect);
             input.value = '';
             
             if (isCorrect) {
+                // 计算combo
+                const now = Date.now();
+                if (now - (mpState.lastCorrectTime || 0) < 5000) {
+                    mpState.combo = (mpState.combo || 0) + 1;
+                    playSound('combo');
+                } else {
+                    mpState.combo = 1;
+                }
+                mpState.lastCorrectTime = now;
+                
+                // 计算得分：基础分 + combo加成
+                const comboBonus = mpState.combo * 5;
+                const totalScore = 100 + comboBonus;
+                
                 playSound('correct');
-                const score = calculateMpScore();
                 
                 if (mpState.gameMode === 'coop') {
                     // 合作模式：任何玩家答对都算过关
                     await playersRef.update({
-                        score: firebase.database.ServerValue.increment(score),
+                        score: firebase.database.ServerValue.increment(totalScore),
                         currentStationSolved: true
                     });
                     
                     // 记录是谁答对的
                     await roomRef.child('game/lastSolvedBy').set(mpState.playerName);
                     
-                    showToast(`🎉 ${mpState.playerName} 答对了！+${score}分`, 'success');
+                    showToast(`🎉 ${mpState.playerName} 答对了！${currentStation.city_cn} · ${currentStation.station_cn} (+${totalScore}分)`, 'success');
                     
                     // 房主负责进入下一题
                     if (mpState.isHost) {
@@ -2328,17 +2446,18 @@
                 } else {
                     // 对战模式：只有自己答对才算
                     await playersRef.update({
-                        score: firebase.database.ServerValue.increment(score),
+                        score: firebase.database.ServerValue.increment(totalScore),
                         currentStationSolved: true
                     });
                     
-                    showToast(`正确！+${score}分`, 'success');
+                    showToast(`正确！${currentStation.city_cn} · ${currentStation.station_cn} (+${totalScore}分)`, 'success');
                     
                     if (mpState.isHost) {
                         setTimeout(() => nextStation(), 1500);
                     }
                 }
             } else {
+                mpState.combo = 0;
                 playSound('wrong');
                 showToast('错误，再试试！', 'error');
             }
@@ -2346,8 +2465,8 @@
 
         function calculateMpScore() {
             const baseScore = 100;
-            const hintPenalty = (mpState.mpHintsUsed || 0) * 20;
-            return Math.max(baseScore - hintPenalty, 10);
+            const comboBonus = (mpState.combo || 0) * 5;
+            return baseScore + comboBonus;
         }
 
         function addMpGuessHistory(guess, isCorrect) {
@@ -2370,30 +2489,48 @@
             const currentStation = mpState.gameData.stations[mpState.gameData.currentStationIndex];
             if (!currentStation) return;
             
-            mpState.mpHintsUsed = (mpState.mpHintsUsed || 0) + 1;
-            mpState.mpHintsLeft--;
+            // 使用英文名
+            const stationEn = currentStation.station_en.toLowerCase();
             mpState.revealedLetters = mpState.revealedLetters || {};
+            mpState.usedLetters = mpState.usedLetters || new Set();
+            mpState.foundLetters = mpState.foundLetters || new Set();
+            mpState.score = mpState.score || 0;
             
-            const stationName = currentStation.station_cn;
-            const unrevealed = [];
-            for (let i = 0; i < stationName.length; i++) {
-                if (!mpState.revealedLetters[i]) {
-                    unrevealed.push(i);
+            // 找出未揭示的字母
+            const unrevealedLetters = stationEn
+                .split('')
+                .filter((char, index) => /[a-z]/.test(char) && !mpState.revealedLetters[index]);
+            
+            if (unrevealedLetters.length === 0) {
+                showToast('该站名已全部揭开', 'info');
+                return;
+            }
+            
+            // 随机揭示一个字母
+            const randomLetter = unrevealedLetters[Math.floor(Math.random() * unrevealedLetters.length)];
+            
+            // 揭示所有该字母的位置
+            for (let i = 0; i < stationEn.length; i++) {
+                if (stationEn[i] === randomLetter) {
+                    mpState.revealedLetters[i] = currentStation.station_en[i];
                 }
             }
             
-            if (unrevealed.length > 0) {
-                const randomIndex = unrevealed[Math.floor(Math.random() * unrevealed.length)];
-                const revealedLetter = stationName[randomIndex];
-                mpState.revealedLetters[randomIndex] = revealedLetter;
-                
-                // 更新 foundLetters
-                mpState.foundLetters = mpState.foundLetters || new Set();
-                mpState.foundLetters.add(revealedLetter.toUpperCase());
-                
-                renderMultiplayerGame(mpState.gameData);
-                playSound('hint');
+            mpState.usedLetters.add(randomLetter);
+            mpState.foundLetters.add(randomLetter);
+            mpState.mpHintsLeft--;
+            mpState.mpHintsUsed = (mpState.mpHintsUsed || 0) + 1;
+            mpState.score = Math.max(0, mpState.score - 30);
+            
+            // 同步分数到服务器
+            if (playersRef) {
+                await playersRef.update({ score: mpState.score });
             }
+            
+            playSound('hint');
+            showToast(`提示：字母 ${randomLetter.toUpperCase()} (-30分)`, 'info');
+            
+            renderMultiplayerGame(mpState.gameData);
         }
 
         async function skipStation() {
@@ -2424,10 +2561,15 @@
                 
                 // 重置所有状态
                 mpState.revealedLetters = {};
+                mpState.revealedSpecialChars = new Set();
                 mpState.mpHintsUsed = 0;
-                mpState.mpHintsLeft = 3;
+                mpState.mpHintsLeft = DIFFICULTY_SETTINGS[gameState.difficulty]?.hints || 3;
                 mpState.usedLetters = new Set();
+                mpState.usedSpecialChars = new Set();
                 mpState.foundLetters = new Set();
+                mpState.foundSpecialChars = new Set();
+                mpState.combo = 0;
+                mpState.lastCorrectTime = 0;
             }
         }
 
@@ -2470,8 +2612,19 @@
                 await roomRef.child('players').update(updates);
             }
             
+            // 重置所有状态
             mpState.revealedLetters = {};
+            mpState.revealedSpecialChars = new Set();
             mpState.mpHintsUsed = 0;
+            mpState.mpHintsLeft = DIFFICULTY_SETTINGS[gameState.difficulty]?.hints || 3;
+            mpState.usedLetters = new Set();
+            mpState.usedSpecialChars = new Set();
+            mpState.foundLetters = new Set();
+            mpState.foundSpecialChars = new Set();
+            mpState.score = 0;
+            mpState.combo = 0;
+            mpState.lastCorrectTime = 0;
+            
             document.getElementById('mp-game-result').classList.add('hidden');
             
             if (mpState.isHost) {
@@ -2613,41 +2766,72 @@
         }
 
         function renderStations() {
-            elements.stationsContainer.innerHTML = '';
+            const container = elements.stationsContainer;
+            const currentCards = container.children;
             
-            gameState.stations.forEach((station, index) => {
-                const isSolved = gameState.solvedStations.has(index);
-                const revealed = gameState.revealedLetters[index];
-                const displayText = getDisplayText(station.station_en, revealed, isSolved, gameState.devMode, gameState.revealedSpecialChars);
-                const difficulty = station.calculatedDifficulty || calculateStationDifficulty(station);
-                const difficultyLabel = difficulty === 'easy' ? '简单' : difficulty === 'normal' ? '普通' : '困难';
-                const difficultyColor = difficulty === 'easy' ? 'bg-green-100 text-green-700' : 
-                                       difficulty === 'normal' ? 'bg-yellow-100 text-yellow-700' : 
-                                       'bg-red-100 text-red-700';
-                
-                const card = document.createElement('div');
-                card.className = `station-card rounded-xl p-4 ${isSolved ? 'solved' : ''}`;
-                card.id = `station-${index}`;
-                card.innerHTML = `
-                    <div class="flex items-center justify-between mb-2">
-                        <span class="text-xs font-medium text-slate-500">#${index + 1}</span>
-                        <div class="flex items-center gap-2">
-                            <span class="text-xs px-2 py-0.5 rounded ${difficultyColor}">${difficultyLabel}</span>
-                            ${isSolved ? '<span class="text-green-600 text-sm font-medium">✓ 已解开</span>' : ''}
-                        </div>
+            if (currentCards.length !== gameState.stations.length) {
+                container.innerHTML = '';
+                gameState.stations.forEach((station, index) => {
+                    const card = createStationCard(station, index);
+                    container.appendChild(card);
+                });
+                return;
+            }
+            
+            for (let i = 0; i < gameState.stations.length; i++) {
+                const station = gameState.stations[i];
+                const card = currentCards[i];
+                updateStationCard(card, station, i);
+            }
+        }
+        
+        function createStationCard(station, index) {
+            const isSolved = gameState.solvedStations.has(index);
+            const revealed = gameState.revealedLetters[index];
+            const displayText = getDisplayText(station.station_en, revealed, isSolved, gameState.devMode, gameState.revealedSpecialChars);
+            const difficulty = station.calculatedDifficulty || calculateStationDifficulty(station);
+            const difficultyLabel = difficulty === 'easy' ? '简单' : difficulty === 'normal' ? '普通' : '困难';
+            const difficultyColor = difficulty === 'easy' ? 'bg-green-100 text-green-700' : 
+                                   difficulty === 'normal' ? 'bg-yellow-100 text-yellow-700' : 
+                                   'bg-red-100 text-red-700';
+            
+            const card = document.createElement('div');
+            card.className = `station-card rounded-xl p-4 ${isSolved ? 'solved' : ''}`;
+            card.id = `station-${index}`;
+            card.innerHTML = `
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-xs font-medium text-slate-500">#${index + 1}</span>
+                    <div class="flex items-center gap-2">
+                        <span class="text-xs px-2 py-0.5 rounded ${difficultyColor}">${difficultyLabel}</span>
+                        <span class="solved-badge ${isSolved ? '' : 'hidden'} text-green-600 text-sm font-medium">✓ 已解开</span>
                     </div>
-                    <div class="letter-display text-lg md:text-xl font-bold text-slate-800 mb-3 text-center py-2 bg-white/50 rounded-lg dark:bg-slate-700/50 dark:text-slate-200">
-                        ${displayText}
-                    </div>
-                    ${(isSolved || gameState.devMode) ? `
-                        <div class="text-center text-sm">
-                            <p class="text-slate-800 font-medium dark:text-slate-200">${station.station_cn}</p>
-                            <p class="text-slate-500 text-xs">${station.city_cn} · ${station.city_en}</p>
-                        </div>
-                    ` : ''}
-                `;
-                elements.stationsContainer.appendChild(card);
-            });
+                </div>
+                <div class="letter-display text-lg md:text-xl font-bold text-slate-800 mb-3 text-center py-2 bg-white/50 rounded-lg dark:bg-slate-700/50 dark:text-slate-200">
+                    ${displayText}
+                </div>
+                <div class="station-info text-center text-sm ${isSolved || gameState.devMode ? '' : 'hidden'}">
+                    <p class="text-slate-800 font-medium dark:text-slate-200 station-cn">${station.station_cn}</p>
+                    <p class="text-slate-500 text-xs">${station.city_cn} · ${station.city_en}</p>
+                </div>
+            `;
+            return card;
+        }
+        
+        function updateStationCard(card, station, index) {
+            const isSolved = gameState.solvedStations.has(index);
+            const revealed = gameState.revealedLetters[index];
+            const displayText = getDisplayText(station.station_en, revealed, isSolved, gameState.devMode, gameState.revealedSpecialChars);
+            
+            card.className = `station-card rounded-xl p-4 ${isSolved ? 'solved' : ''}`;
+            
+            const letterDisplay = card.querySelector('.letter-display');
+            if (letterDisplay) letterDisplay.innerHTML = displayText;
+            
+            const solvedBadge = card.querySelector('.solved-badge');
+            if (solvedBadge) solvedBadge.classList.toggle('hidden', !isSolved);
+            
+            const stationInfo = card.querySelector('.station-info');
+            if (stationInfo) stationInfo.classList.toggle('hidden', !(isSolved || gameState.devMode));
         }
 
         function getDisplayText(stationName, revealedLetters, isSolved, devMode = false, revealedSpecialChars = null) {
@@ -2674,29 +2858,32 @@
         }
 
         function renderLetterKeyboard() {
-            elements.letterKeyboard.innerHTML = '';
-            const letters = 'abcdefghijklmnopqrstuvwxyz'.split('');
+            const keyboard = elements.letterKeyboard;
             
-            letters.forEach(letter => {
-                const btn = document.createElement('button');
+            if (keyboard.children.length === 0) {
+                const letters = 'abcdefghijklmnopqrstuvwxyz'.split('');
+                letters.forEach(letter => {
+                    const btn = document.createElement('button');
+                    btn.className = 'letter-key w-8 h-8 rounded text-sm font-medium cursor-pointer bg-slate-100 hover:bg-slate-200 text-slate-700';
+                    btn.textContent = letter.toUpperCase();
+                    btn.dataset.letter = letter;
+                    btn.addEventListener('click', () => revealLetter(letter));
+                    keyboard.appendChild(btn);
+                });
+            }
+            
+            const buttons = keyboard.children;
+            for (let i = 0; i < buttons.length; i++) {
+                const btn = buttons[i];
+                const letter = btn.dataset.letter;
                 const isUsed = gameState.usedLetters.has(letter);
                 const isFound = gameState.foundLetters.has(letter);
                 
                 btn.className = `letter-key w-8 h-8 rounded text-sm font-medium cursor-pointer ${
                     isFound ? 'found' : isUsed ? 'not-found used' : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
                 }`;
-                btn.textContent = letter.toUpperCase();
                 btn.disabled = isUsed || gameState.gameWon;
-                btn.dataset.letter = letter;
-                
-                if (!isUsed && !gameState.gameWon) {
-                    btn.addEventListener('click', () => {
-                        revealLetter(letter);
-                    });
-                }
-                
-                elements.letterKeyboard.appendChild(btn);
-            });
+            }
         }
 
         function handleGuess() {
@@ -3140,7 +3327,47 @@
             const timestamp = new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
             const historyItem = { action, type, detail, timestamp };
             gameState.guessHistory.push(historyItem);
-            renderGuessHistory();
+            appendHistoryItem(historyItem);
+        }
+        
+        function appendHistoryItem(item) {
+            if (gameState.guessHistory.length === 1) {
+                elements.guessHistory.innerHTML = '';
+            }
+            
+            const div = document.createElement('div');
+            div.className = 'guess-history-item flex items-center justify-between p-2 rounded-lg text-sm';
+            
+            let typeClass = '';
+            let typeIcon = '';
+            switch (item.type) {
+                case 'success':
+                    typeClass = 'bg-green-50 text-green-800';
+                    typeIcon = '✓';
+                    break;
+                case 'error':
+                    typeClass = 'bg-red-50 text-red-800';
+                    typeIcon = '✗';
+                    break;
+                default:
+                    typeClass = 'bg-slate-50 text-slate-700';
+                    typeIcon = '•';
+            }
+            
+            div.className += ` ${typeClass}`;
+            div.innerHTML = `
+                <div class="flex items-center gap-2">
+                    <span class="font-medium">${typeIcon}</span>
+                    <span>${item.action}</span>
+                    ${item.detail ? `<span class="text-xs opacity-75">- ${item.detail}</span>` : ''}
+                </div>
+                <span class="text-xs opacity-50">${item.timestamp}</span>
+            `;
+            elements.guessHistory.insertBefore(div, elements.guessHistory.firstChild);
+            
+            while (elements.guessHistory.children.length > 50) {
+                elements.guessHistory.removeChild(elements.guessHistory.lastChild);
+            }
         }
 
         function renderGuessHistory() {
@@ -3151,35 +3378,7 @@
             
             elements.guessHistory.innerHTML = '';
             [...gameState.guessHistory].reverse().forEach(item => {
-                const div = document.createElement('div');
-                div.className = 'guess-history-item flex items-center justify-between p-2 rounded-lg text-sm';
-                
-                let typeClass = '';
-                let typeIcon = '';
-                switch (item.type) {
-                    case 'success':
-                        typeClass = 'bg-green-50 text-green-800';
-                        typeIcon = '✓';
-                        break;
-                    case 'error':
-                        typeClass = 'bg-red-50 text-red-800';
-                        typeIcon = '✗';
-                        break;
-                    default:
-                        typeClass = 'bg-slate-50 text-slate-700';
-                        typeIcon = '•';
-                }
-                
-                div.className += ` ${typeClass}`;
-                div.innerHTML = `
-                    <div class="flex items-center gap-2">
-                        <span class="font-medium">${typeIcon}</span>
-                        <span>${item.action}</span>
-                        ${item.detail ? `<span class="text-xs opacity-75">- ${item.detail}</span>` : ''}
-                    </div>
-                    <span class="text-xs opacity-50">${item.timestamp}</span>
-                `;
-                elements.guessHistory.appendChild(div);
+                appendHistoryItem(item);
             });
         }
 
