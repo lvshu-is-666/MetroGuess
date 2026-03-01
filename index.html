@@ -702,7 +702,7 @@
             </div>
             
             <div class="glass-panel rounded-2xl p-4 shadow-lg">
-                <h3 class="text-sm font-semibold text-slate-700 mb-3">字母键盘 (点击开字母)</h3>
+                <h3 class="text-sm font-semibold text-slate-700 mb-3">字母键盘 (点击或输入字母开字母)</h3>
                 <div id="letter-keyboard" class="flex flex-wrap gap-1.5 justify-center">
                 </div>
             </div>
@@ -721,11 +721,9 @@
                     </button>
                 </div>
                 <p class="text-xs text-slate-500 mt-2">
-                    直接输入<span class="text-blue-600 font-medium">字母</span>开字母，或输入<span class="text-orange-600 font-medium">站名</span>猜测
+                    在输入框输入<span class="text-blue-600 font-medium">字母</span>开字母，或输入<span class="text-orange-600 font-medium">站名</span>猜测
                     <span class="mx-2">|</span>
                     <span class="text-slate-600">也可用：开 [字母] / 猜 [站名] / 结束</span>
-                    <span class="mx-2">|</span>
-                    <span class="text-green-600">快捷键: A-Z 开字母, Enter 提交</span>
                 </p>
             </div>
         </div>
@@ -1139,36 +1137,35 @@
             else score += 4;
             
             const specialChars = (name.match(/['().]/g) || []).length;
-            score += specialChars * 0.5;
+            score += specialChars * 1.5;
             
             const letters = name.replace(/[^a-z]/g, '');
             const uniqueLetters = new Set(letters.split(''));
             
             LETTER_FREQUENCY.rare.forEach(letter => {
-                if (uniqueLetters.has(letter)) score += 1;
+                if (uniqueLetters.has(letter)) score += 1.5;
             });
             
             LETTER_FREQUENCY.medium.forEach(letter => {
-                if (uniqueLetters.has(letter)) score += 0.3;
+                if (uniqueLetters.has(letter)) score += 0.5;
             });
             
             const letterCounts = {};
             letters.split('').forEach(l => letterCounts[l] = (letterCounts[l] || 0) + 1);
             const repeatCount = Object.values(letterCounts).filter(c => c > 1).length;
-            score -= repeatCount * 0.3;
+            score -= repeatCount * 0.2;
             
             const commonLetterCount = LETTER_FREQUENCY.common.filter(l => uniqueLetters.has(l)).length;
-            score -= commonLetterCount * 0.4;
+            score -= commonLetterCount * 0.2;
             
             const superCommonLetterCount = LETTER_FREQUENCY.superCommon.filter(l => uniqueLetters.has(l)).length;
-            score -= superCommonLetterCount * 0.8;
+            score -= superCommonLetterCount * 0.3;
             
             const superCommonRatio = superCommonLetterCount / uniqueLetters.size;
-            if (superCommonRatio > 0.5) score -= 2.5;
-            else if (superCommonRatio > 0.35) score -= 1.5;
+            if (superCommonRatio > 0.6) score -= 1;
             
-            if (score <= 2) return 'easy';
-            if (score <= 4) return 'normal';
+            if (score <= 1.5) return 'easy';
+            if (score <= 3) return 'normal';
             return 'hard';
         }
 
@@ -2196,11 +2193,17 @@
             const stationCount = parseInt(document.getElementById('station-count').value) || 4;
             
             const classified = classifyStationsByDifficulty();
-            let pool = classified[settings.difficultyLevel];
+            const targetDifficulty = settings.difficultyLevel;
+            let pool = classified[targetDifficulty];
             
             if (gameState.selectedCity !== 'all') {
                 pool = pool.filter(s => s.city_cn === gameState.selectedCity);
             }
+            
+            pool = pool.map(s => ({
+                ...s,
+                calculatedDifficulty: targetDifficulty
+            }));
             
             const shuffled = [...pool].sort(() => Math.random() - 0.5);
             const selected = shuffled.slice(0, stationCount);
@@ -2751,10 +2754,15 @@
                     : stationDatabase.filter(s => s.city_cn === gameState.selectedCity);
                 allPool = allPool.map(s => ({
                     ...s,
-                    calculatedDifficulty: calculateStationDifficulty(s)
+                    calculatedDifficulty: targetDifficulty
                 }));
                 pool = allPool;
             }
+            
+            pool = pool.map(s => ({
+                ...s,
+                calculatedDifficulty: targetDifficulty
+            }));
             
             const shuffled = [...pool].sort(() => Math.random() - 0.5);
             const selected = shuffled.slice(0, stationCount);
@@ -2872,7 +2880,7 @@
                 <div class="flex items-center justify-between mb-2">
                     <span class="text-xs font-medium text-slate-500">#${index + 1}</span>
                     <div class="flex items-center gap-2">
-                        <span class="text-xs px-2 py-0.5 rounded ${difficultyColor}">${difficultyLabel}</span>
+                        <span class="text-xs px-2 py-0.5 rounded ${difficultyColor} difficulty-badge">${difficultyLabel}</span>
                         <span class="solved-badge ${isSolved ? '' : 'hidden'} text-green-600 text-sm font-medium">✓ 已解开</span>
                     </div>
                 </div>
@@ -2888,6 +2896,11 @@
             const isSolved = gameState.solvedStations.has(index);
             const revealed = gameState.revealedLetters[index];
             const displayText = getDisplayText(station.station_en, revealed, isSolved, gameState.devMode, gameState.revealedSpecialChars);
+            const difficulty = station.calculatedDifficulty || calculateStationDifficulty(station);
+            const difficultyLabel = difficulty === 'easy' ? '简单' : difficulty === 'normal' ? '普通' : '困难';
+            const difficultyColor = difficulty === 'easy' ? 'bg-green-100 text-green-700' : 
+                                   difficulty === 'normal' ? 'bg-yellow-100 text-yellow-700' : 
+                                   'bg-red-100 text-red-700';
             
             card.className = `station-card rounded-xl p-4 ${isSolved ? 'solved' : ''}`;
             
@@ -2896,6 +2909,12 @@
             
             const solvedBadge = card.querySelector('.solved-badge');
             if (solvedBadge) solvedBadge.classList.toggle('hidden', !isSolved);
+            
+            const difficultyBadge = card.querySelector('.difficulty-badge');
+            if (difficultyBadge) {
+                difficultyBadge.textContent = difficultyLabel;
+                difficultyBadge.className = `text-xs px-2 py-0.5 rounded ${difficultyColor} difficulty-badge`;
+            }
             
             const existingInfo = card.querySelector('.station-info');
             const shouldShowInfo = isSolved || gameState.devMode;
@@ -3779,37 +3798,41 @@
                 tab.addEventListener('click', () => renderLeaderboard(tab.dataset.board));
             });
             
+            let keySequence = '';
+            let keyTimeout = null;
+            
             document.addEventListener('keydown', (e) => {
-                if (e.ctrlKey || e.metaKey || e.altKey) return;
-                
-                const isInputFocused = document.activeElement.tagName === 'INPUT';
-                
-                if (gameState.mode === 'normal' && !gameState.gameWon && 
-                    document.activeElement !== elements.guessInput &&
-                    e.key.length === 1 && /[a-zA-Z]/.test(e.key)) {
-                    e.preventDefault();
-                    revealLetter(e.key.toLowerCase());
-                    return;
-                }
-                
-                if (isInputFocused) return;
-                
-                const keyActions = {
-                    'n': () => { stats.currentStreak = 0; startNewGame(); showToast('新游戏开始！', 'success'); },
-                    's': saveGameState,
-                    'l': loadGameState,
-                    'h': useHint,
-                    't': toggleTheme
-                };
-                
-                const action = keyActions[e.key.toLowerCase()];
-                if (action) {
-                    e.preventDefault();
-                    action();
-                }
-                
                 if (e.key === 'Escape') {
                     elements.victoryModal.classList.add('hidden');
+                }
+                
+                if (e.ctrlKey || e.metaKey || e.altKey) return;
+                if (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA') return;
+                
+                if (e.key.length === 1 && /[a-zA-Z]/.test(e.key)) {
+                    keySequence += e.key.toLowerCase();
+                    if (keySequence.length > 5) {
+                        keySequence = keySequence.slice(-5);
+                    }
+                    
+                    if (keyTimeout) clearTimeout(keyTimeout);
+                    keyTimeout = setTimeout(() => { keySequence = ''; }, 2000);
+                    
+                    if (keySequence === 'lvshu') {
+                        gameState.devMode = !gameState.devMode;
+                        renderStations();
+                        if (gameState.devMode) {
+                            elements.modeReverse.classList.remove('hidden');
+                            showToast('开发者模式已开启', 'info');
+                        } else {
+                            elements.modeReverse.classList.add('hidden');
+                            if (gameState.mode === 'reverse') {
+                                switchMode('normal');
+                            }
+                            showToast('开发者模式已关闭', 'info');
+                        }
+                        keySequence = '';
+                    }
                 }
             });
         }
