@@ -1,195 +1,496 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
-
 <head>
-	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>页面未找到 - 正在跳转...</title>
-	<script src="https://cdn.tailwindcss.com"></script>
-	<link rel="preconnect" href="https://fonts.googleapis.com">
-	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet">
-	<style>
-		* {
-			font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-		}
-
-		.gradient-text {
-			background: linear-gradient(135deg, #0EA5E9 0%, #38BDF8 50%, #0C4A6E 100%);
-			-webkit-background-clip: text;
-			-webkit-text-fill-color: transparent;
-			background-clip: text;
-		}
-
-		.pulse-ring {
-			animation: pulse-ring 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-		}
-
-		@keyframes pulse-ring {
-			0% {
-				transform: scale(0.95);
-				opacity: 0.5;
-			}
-
-			50% {
-				transform: scale(1);
-				opacity: 0.3;
-			}
-
-			100% {
-				transform: scale(0.95);
-				opacity: 0.5;
-			}
-		}
-
-		.progress-bar {
-			animation: progress 3s ease-in-out forwards;
-		}
-
-		@keyframes progress {
-			from {
-				width: 0%;
-			}
-
-			to {
-				width: 100%;
-			}
-		}
-
-		.fade-in {
-			animation: fadeIn 0.6s ease-out forwards;
-		}
-
-		@keyframes fadeIn {
-			from {
-				opacity: 0;
-				transform: translateY(20px);
-			}
-
-			to {
-				opacity: 1;
-				transform: translateY(0);
-			}
-		}
-
-		@media (prefers-reduced-motion: reduce) {
-
-			.pulse-ring,
-			.progress-bar,
-			.fade-in {
-				animation: none;
-			}
-
-			.progress-bar {
-				width: 100%;
-			}
-		}
-	</style>
-	<script>
-		(function () {
-			var path = window.location.pathname;
-			var search = window.location.search;
-			var hash = window.location.hash;
-
-			var basePath = '/MetroGuess';
-			var redirectUrl;
-
-			if (path.startsWith(basePath)) {
-				var routePath = path.slice(basePath.length);
-				if (routePath === '' || routePath === '/') {
-					redirectUrl = basePath + '/' + search + hash;
-				} else {
-					redirectUrl = basePath + '/#' + routePath + search + hash;
-				}
-			} else {
-				var segments = path.split('/').filter(Boolean);
-				if (segments.length > 0) {
-					var newHash = '#/' + segments.join('/');
-					redirectUrl = '/' + newHash + search + hash;
-				} else {
-					redirectUrl = '/' + search + hash;
-				}
-			}
-
-			// Store redirect URL for manual click
-			window.redirectTarget = redirectUrl;
-
-			// Auto redirect after 3 seconds
-			setTimeout(function () {
-				window.location.replace(redirectUrl);
-			}, 3000);
-		})();
-
-		function manualRedirect() {
-			if (window.redirectTarget) {
-				window.location.href = window.redirectTarget;
-			}
-		}
-	</script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>页面未找到 - 地铁站名猜谜游戏</title>
+    
+    <meta name="description" content="您访问的页面不存在，正在为您跳转到地铁站名猜谜游戏首页。快来挑战全国地铁站点知识吧！">
+    <meta name="keywords" content="地铁,地铁站,站名猜谜,地铁游戏,全国地铁,城市轨道交通">
+    <meta name="author" content="MetroGuess">
+    <meta name="robots" content="noindex, follow">
+    <meta name="theme-color" content="#0ea5e9">
+    
+    <meta property="og:title" content="页面未找到 - 地铁站名猜谜游戏">
+    <meta property="og:description" content="您访问的页面不存在，正在为您跳转到地铁站名猜谜游戏首页。">
+    <meta property="og:type" content="website">
+    <meta property="og:locale" content="zh_CN">
+    
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2338bdf8'%3E%3Cpath d='M12 2C8 2 4 3 4 7v10c0 2.21 1.79 4 4 4h1l-2 2h2l2-2h2l2 2h2l-2-2h1c2.21 0 4-1.79 4-4V7c0-4-4-5-8-5zM8 18c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm8 0c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm2-7H6V7c0-1.1.9-2 2-2h8c1.1 0 2 .9 2 2v4z'/%3E%3C/svg%3E">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2338bdf8'%3E%3Crect width='24' height='24' rx='4' fill='%230f172a'/%3E%3Cpath d='M12 4c-3 0-6 .75-6 3.75v7.5c0 1.66 1.34 3 3 3h.75l-1.5 1.5h1.5l1.5-1.5h1.5l1.5 1.5h1.5l-1.5-1.5h.75c1.66 0 3-1.34 3-3v-7.5C18 4.75 15 4 12 4zM9 16.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm6 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm1.5-5.25h-9v-3c0-.83.67-1.5 1.5-1.5h6c.83 0 1.5.67 1.5 1.5v3z' fill='%2338bdf8'/%3E%3C/svg%3E">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            min-height: 100vh;
+            background: linear-gradient(-45deg, #0f172a, #1e3a5f, #0c4a6e, #1e293b);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+            position: relative;
+            overflow-x: hidden;
+        }
+        
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        
+        /* Floating particles */
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            pointer-events: none;
+            z-index: 0;
+        }
+        
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: rgba(56, 189, 248, 0.5);
+            border-radius: 50%;
+            animation: float 20s infinite linear;
+        }
+        
+        @keyframes float {
+            0% {
+                transform: translateY(100vh) rotate(0deg);
+                opacity: 0;
+            }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% {
+                transform: translateY(-100vh) rotate(720deg);
+                opacity: 0;
+            }
+        }
+        
+        /* Main container */
+        .container {
+            width: 100%;
+            max-width: 640px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 10;
+        }
+        
+        /* Glass card */
+        .card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 1.5rem;
+            padding: 2rem;
+            text-align: center;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            animation: fadeInUp 0.8s ease-out forwards;
+        }
+        
+        @media (min-width: 768px) {
+            .card {
+                padding: 3rem;
+            }
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        /* 404 Number */
+        .error-code {
+            position: relative;
+            margin-bottom: 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .glow-orb {
+            position: absolute;
+            width: 200px;
+            height: 200px;
+            background: radial-gradient(circle, rgba(56, 189, 248, 0.4) 0%, rgba(14, 165, 233, 0.1) 50%, transparent 70%);
+            border-radius: 50%;
+            animation: orbPulse 4s ease-in-out infinite;
+        }
+        
+        @keyframes orbPulse {
+            0%, 100% { 
+                transform: scale(1);
+                opacity: 0.6;
+            }
+            50% { 
+                transform: scale(1.3);
+                opacity: 0.3;
+            }
+        }
+        
+        .error-code h1 {
+            position: relative;
+            font-size: clamp(5rem, 18vw, 12rem);
+            font-weight: 900;
+            line-height: 1;
+            color: white;
+            letter-spacing: -0.05em;
+            text-shadow: 
+                0 1px 0 #0ea5e9,
+                0 2px 0 #0284c7,
+                0 3px 0 #0369a1,
+                0 4px 0 #075985,
+                0 5px 0 #0c4a6e,
+                0 6px 20px rgba(14, 165, 233, 0.4),
+                0 0 40px rgba(56, 189, 248, 0.3),
+                0 0 80px rgba(56, 189, 248, 0.2);
+            animation: textFloat 3s ease-in-out infinite;
+        }
+        
+        @keyframes textFloat {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        /* Icon */
+        .icon-wrapper {
+            margin-bottom: 1.5rem;
+            animation: fadeInUp 0.8s ease-out 0.1s forwards;
+            opacity: 0;
+        }
+        
+        .icon-wrapper svg {
+            width: 64px;
+            height: 64px;
+            color: #38bdf8;
+            animation: trainMove 2s ease-in-out infinite;
+        }
+        
+        @keyframes trainMove {
+            0%, 100% { transform: translateX(0); }
+            50% { transform: translateX(5px); }
+        }
+        
+        /* Title */
+        .title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 1rem;
+            animation: fadeInUp 0.8s ease-out 0.2s forwards;
+            opacity: 0;
+        }
+        
+        @media (min-width: 768px) {
+            .title {
+                font-size: 1.875rem;
+            }
+        }
+        
+        /* Description */
+        .description {
+            color: #cbd5e1;
+            font-size: 1rem;
+            margin-bottom: 2rem;
+            max-width: 400px;
+            margin-left: auto;
+            margin-right: auto;
+            line-height: 1.6;
+            animation: fadeInUp 0.8s ease-out 0.3s forwards;
+            opacity: 0;
+        }
+        
+        .description .highlight {
+            color: #38bdf8;
+        }
+        
+        /* Progress bar */
+        .progress-container {
+            width: 100%;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 9999px;
+            overflow: hidden;
+            margin-bottom: 2rem;
+            animation: fadeInUp 0.8s ease-out 0.3s forwards;
+            opacity: 0;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #0ea5e9, #38bdf8, #22d3ee);
+            background-size: 200% 100%;
+            border-radius: 9999px;
+            animation: progress 3s ease-in-out forwards, shimmer 2s linear infinite;
+            box-shadow: 0 0 20px rgba(56, 189, 248, 0.5);
+        }
+        
+        @keyframes progress {
+            from { width: 0%; }
+            to { width: 100%; }
+        }
+        
+        @keyframes shimmer {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+        }
+        
+        /* Button */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.75rem;
+            background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
+            color: white;
+            font-weight: 600;
+            font-size: 1.125rem;
+            padding: 1rem 2.5rem;
+            border-radius: 1rem;
+            border: none;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            animation: fadeInUp 0.8s ease-out 0.4s forwards;
+            opacity: 0;
+        }
+        
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: left 0.5s ease;
+        }
+        
+        .btn:hover::before {
+            left: 100%;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 40px -10px rgba(14, 165, 233, 0.6);
+        }
+        
+        .btn svg {
+            width: 20px;
+            height: 20px;
+            transition: transform 0.3s ease;
+        }
+        
+        .btn:hover svg {
+            transform: translateX(8px);
+        }
+        
+        /* Help text */
+        .help-text {
+            margin-top: 1.5rem;
+            font-size: 0.875rem;
+            color: #64748b;
+            animation: fadeInUp 0.8s ease-out 0.4s forwards;
+            opacity: 0;
+        }
+        
+        /* Footer */
+        .footer {
+            margin-top: 2rem;
+            text-align: center;
+            animation: fadeInUp 0.8s ease-out 0.4s forwards;
+            opacity: 0;
+        }
+        
+        .footer a {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #94a3b8;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+        
+        .footer a:hover {
+            color: #38bdf8;
+            gap: 0.75rem;
+        }
+        
+        .footer a svg {
+            width: 16px;
+            height: 16px;
+        }
+        
+        /* Reduced motion */
+        @media (prefers-reduced-motion: reduce) {
+            body,
+            .particle,
+            .error-code h1,
+            .glow-orb,
+            .progress-fill,
+            .card,
+            .icon-wrapper,
+            .title,
+            .description,
+            .progress-container,
+            .btn,
+            .help-text,
+            .footer,
+            .icon-wrapper svg {
+                animation: none;
+            }
+            .card,
+            .icon-wrapper,
+            .title,
+            .description,
+            .progress-container,
+            .btn,
+            .help-text,
+            .footer {
+                opacity: 1;
+            }
+            .progress-fill {
+                width: 100%;
+            }
+        }
+    </style>
+    
+    <script>
+        (function() {
+            var path = window.location.pathname;
+            var search = window.location.search;
+            var hash = window.location.hash;
+            
+            var basePath = '/MetroGuess';
+            var redirectUrl;
+            
+            if (path.startsWith(basePath)) {
+                var routePath = path.slice(basePath.length);
+                if (routePath === '' || routePath === '/') {
+                    redirectUrl = basePath + '/' + search + hash;
+                } else {
+                    redirectUrl = basePath + '/#' + routePath + search + hash;
+                }
+            } else {
+                var segments = path.split('/').filter(Boolean);
+                if (segments.length > 0) {
+                    var newHash = '#/' + segments.join('/');
+                    redirectUrl = '/' + newHash + search + hash;
+                } else {
+                    redirectUrl = '/' + search + hash;
+                }
+            }
+            
+            window.redirectTarget = redirectUrl;
+            
+            setTimeout(function() {
+                window.location.replace(redirectUrl);
+            }, 3000);
+        })();
+        
+        function manualRedirect() {
+            if (window.redirectTarget) {
+                window.location.href = window.redirectTarget;
+            }
+        }
+    </script>
 </head>
-
-<body class="min-h-screen bg-gradient-to-br from-sky-50 via-white to-blue-50 flex items-center justify-center p-4">
-	<div class="w-full max-w-2xl mx-auto">
-		<!-- Main Card -->
-		<div
-			class="bg-white/80 backdrop-blur-xl rounded-3xl shadow-2xl border border-sky-100 p-8 md:p-12 text-center fade-in">
-
-			<!-- 404 Number -->
-			<div class="relative mb-8">
-				<div class="absolute inset-0 flex items-center justify-center">
-					<div class="w-32 h-32 bg-sky-400/20 rounded-full pulse-ring"></div>
-				</div>
-				<h1
-					class="relative text-[clamp(4rem,15vw,10rem)] font-black leading-none gradient-text tracking-tighter">
-					404
-				</h1>
-			</div>
-
-			<!-- Title -->
-			<h2 class="text-2xl md:text-3xl font-bold text-slate-800 mb-4">
-				页面未找到
-			</h2>
-
-			<!-- Description -->
-			<p class="text-slate-600 text-base md:text-lg mb-8 max-w-md mx-auto leading-relaxed">
-				您访问的页面不存在或已被移动。正在为您自动跳转到正确的页面...
-			</p>
-
-			<!-- Progress Bar -->
-			<div class="w-full bg-slate-100 rounded-full h-2 mb-8 overflow-hidden">
-				<div class="progress-bar h-full bg-gradient-to-r from-sky-400 to-sky-600 rounded-full"></div>
-			</div>
-
-			<!-- Manual Redirect Button -->
-			<button onclick="manualRedirect()"
-				class="group inline-flex items-center gap-2 bg-sky-500 hover:bg-sky-600 text-white font-semibold py-4 px-8 rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl hover:-translate-y-0.5 cursor-pointer">
-				<span>立即跳转</span>
-				<svg xmlns="http://www.w3.org/2000/svg"
-					class="h-5 w-5 transition-transform duration-200 group-hover:translate-x-1" fill="none"
-					viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-					<path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
-				</svg>
-			</button>
-
-			<!-- Help Text -->
-			<p class="mt-6 text-sm text-slate-400">
-				如果页面没有自动跳转，请点击上方按钮
-			</p>
-		</div>
-
-		<!-- Footer -->
-		<div class="mt-8 text-center">
-			<a href="/"
-				class="inline-flex items-center gap-2 text-slate-500 hover:text-sky-600 transition-colors duration-200 cursor-pointer">
-				<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
-					stroke="currentColor" stroke-width="2">
-					<path stroke-linecap="round" stroke-linejoin="round"
-						d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-				</svg>
-				<span>返回首页</span>
-			</a>
-		</div>
-	</div>
+<body>
+    <!-- Floating Particles -->
+    <div class="particles" id="particles"></div>
+    
+    <!-- Main Content -->
+    <div class="container">
+        <!-- Main Card -->
+        <div class="card">
+            
+            <!-- 404 Number with 3D effect -->
+            <div class="error-code">
+                <div class="glow-orb"></div>
+                <h1>404</h1>
+            </div>
+            
+            <!-- Icon -->
+            <div class="icon-wrapper">
+                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                </svg>
+            </div>
+            
+            <!-- Title -->
+            <h2 class="title">页面未找到</h2>
+            
+            <!-- Description -->
+            <p class="description">
+                您访问的页面不存在或已被移动。<br>
+                <span class="highlight">正在为您自动跳转...</span>
+            </p>
+            
+            <!-- Progress Bar -->
+            <div class="progress-container">
+                <div class="progress-fill"></div>
+            </div>
+            
+            <!-- Manual Redirect Button -->
+            <button onclick="manualRedirect()" class="btn">
+                <span>立即跳转</span>
+                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                </svg>
+            </button>
+            
+            <!-- Help Text -->
+            <p class="help-text">如果页面没有自动跳转，请点击上方按钮</p>
+        </div>
+        
+        <!-- Footer -->
+        <div class="footer">
+            <a href="/">
+                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                </svg>
+                <span>返回首页</span>
+            </a>
+        </div>
+    </div>
+    
+    <!-- Generate particles -->
+    <script>
+        (function() {
+            var container = document.getElementById('particles');
+            for (var i = 0; i < 30; i++) {
+                var particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 20 + 's';
+                particle.style.animationDuration = (15 + Math.random() * 10) + 's';
+                particle.style.opacity = Math.random() * 0.5 + 0.2;
+                var size = Math.random() * 4 + 2;
+                particle.style.width = size + 'px';
+                particle.style.height = size + 'px';
+                container.appendChild(particle);
+            }
+        })();
+    </script>
 </body>
-
 </html>
