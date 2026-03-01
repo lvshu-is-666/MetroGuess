@@ -2073,12 +2073,14 @@
             elements.mpRoom.classList.remove('hidden');
             elements.roomCodeDisplay.textContent = roomCode;
             elements.chatMessages.innerHTML = '';
+            updateRoute('multiplayer', roomCode);
         }
 
         function showLobbyUI() {
             elements.mpLobby.classList.remove('hidden');
             elements.mpRoom.classList.add('hidden');
             elements.mpGame.classList.add('hidden');
+            updateRoute('multiplayer');
         }
 
         const ROOM_EXPIRE_TIME = 2 * 60 * 60 * 1000;
@@ -2713,6 +2715,89 @@
 
         // ========== 联机模块结束 ==========
 
+        // ========== 路由系统 ==========
+        let isRouteHandling = false;
+        
+        const ROUTES = {
+            'play': 'normal',
+            'battle': 'multiplayer',
+            'reverse': 'reverse',
+            'rank': 'leaderboard'
+        };
+
+        function handleRoute() {
+            let pathStr = '';
+            
+            if (window.location.hash && window.location.hash.length > 1) {
+                pathStr = window.location.hash.slice(1);
+            } else {
+                pathStr = window.location.pathname;
+            }
+            
+            const basePath = '/MetroGuess';
+            if (pathStr.startsWith(basePath)) {
+                pathStr = pathStr.slice(basePath.length);
+            }
+            
+            const path = pathStr.startsWith('/') ? pathStr.slice(1) : pathStr;
+            const parts = path.split('/').filter(Boolean);
+            
+            isRouteHandling = true;
+            
+            if (parts.length === 0) {
+                switchMode('normal');
+                isRouteHandling = false;
+                return;
+            }
+            
+            const route = parts[0].toLowerCase();
+            
+            if (route === 'room' && parts.length >= 2) {
+                const roomCode = parts[1].toUpperCase();
+                if (/^[A-Z0-9]{6}$/.test(roomCode)) {
+                    switchMode('multiplayer');
+                    setTimeout(() => {
+                        joinRoom(roomCode);
+                    }, 500);
+                } else {
+                    showToast('无效的房间号', 'error');
+                    switchMode('multiplayer');
+                }
+                isRouteHandling = false;
+                return;
+            }
+            
+            const mode = ROUTES[route];
+            if (mode) {
+                switchMode(mode);
+            } else {
+                switchMode('normal');
+            }
+            
+            isRouteHandling = false;
+        }
+
+        function updateRoute(mode, roomCode = null) {
+            let hash = '#';
+            
+            const routeEntries = Object.entries(ROUTES);
+            const route = routeEntries.find(([_, m]) => m === mode);
+            
+            if (mode === 'multiplayer' && roomCode) {
+                hash = '#/room/' + roomCode;
+            } else if (route) {
+                hash = '#/' + route[0];
+            }
+            
+            if (window.location.hash !== hash) {
+                history.pushState(null, '', hash);
+            }
+        }
+
+        window.addEventListener('hashchange', handleRoute);
+        
+        window.addEventListener('popstate', handleRoute);
+
         async function init() {
             stationDatabase = parseCSV(csvData);
             await loadCSVFromFile();
@@ -2730,6 +2815,8 @@
                     await loadFromCloud();
                 }
             }, 1000);
+            
+            handleRoute();
         }
 
         function startNewGame() {
@@ -3486,7 +3573,11 @@
             elements.hintsLeft.textContent = gameState.hintsLeft;
         }
 
-        function switchMode(mode) {
+        function switchMode(mode, updateUrl = true) {
+            if (isRouteHandling) {
+                updateUrl = false;
+            }
+            
             gameState.mode = mode;
             
             elements.modeNormal.classList.remove('active');
@@ -3521,6 +3612,10 @@
                 if (mpState.isHost) {
                     elements.gameSettings.classList.remove('hidden');
                 }
+            }
+            
+            if (updateUrl && !mpState.roomId) {
+                updateRoute(mode);
             }
         }
 

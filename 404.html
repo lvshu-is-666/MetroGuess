@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>页面未找到 - 正在跳转...</title>
+	<script src="https://cdn.tailwindcss.com"></script>
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+	<style>
+		* {
+			font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+		}
+
+		.gradient-text {
+			background: linear-gradient(135deg, #0EA5E9 0%, #38BDF8 50%, #0C4A6E 100%);
+			-webkit-background-clip: text;
+			-webkit-text-fill-color: transparent;
+			background-clip: text;
+		}
+
+		.pulse-ring {
+			animation: pulse-ring 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+		}
+
+		@keyframes pulse-ring {
+			0% {
+				transform: scale(0.95);
+				opacity: 0.5;
+			}
+
+			50% {
+				transform: scale(1);
+				opacity: 0.3;
+			}
+
+			100% {
+				transform: scale(0.95);
+				opacity: 0.5;
+			}
+		}
+
+		.progress-bar {
+			animation: progress 3s ease-in-out forwards;
+		}
+
+		@keyframes progress {
+			from {
+				width: 0%;
+			}
+
+			to {
+				width: 100%;
+			}
+		}
+
+		.fade-in {
+			animation: fadeIn 0.6s ease-out forwards;
+		}
+
+		@keyframes fadeIn {
+			from {
+				opacity: 0;
+				transform: translateY(20px);
+			}
+
+			to {
+				opacity: 1;
+				transform: translateY(0);
+			}
+		}
+
+		@media (prefers-reduced-motion: reduce) {
+
+			.pulse-ring,
+			.progress-bar,
+			.fade-in {
+				animation: none;
+			}
+
+			.progress-bar {
+				width: 100%;
+			}
+		}
+	</style>
+	<script>
+		(function () {
+			var path = window.location.pathname;
+			var search = window.location.search;
+			var hash = window.location.hash;
+
+			var basePath = '/MetroGuess';
+			var redirectUrl;
+
+			if (path.startsWith(basePath)) {
+				var routePath = path.slice(basePath.length);
+				if (routePath === '' || routePath === '/') {
+					redirectUrl = basePath + '/' + search + hash;
+				} else {
+					redirectUrl = basePath + '/#' + routePath + search + hash;
+				}
+			} else {
+				var segments = path.split('/').filter(Boolean);
+				if (segments.length > 0) {
+					var newHash = '#/' + segments.join('/');
+					redirectUrl = '/' + newHash + search + hash;
+				} else {
+					redirectUrl = '/' + search + hash;
+				}
+			}
+
+			// Store redirect URL for manual click
+			window.redirectTarget = redirectUrl;
+
+			// Auto redirect after 3 seconds
+			setTimeout(function () {
+				window.location.replace(redirectUrl);
+			}, 3000);
+		})();
+
+		function manualRedirect() {
+			if (window.redirectTarget) {
+				window.location.href = window.redirectTarget;
+			}
+		}
+	</script>
+</head>
+
+<body class="min-h-screen bg-gradient-to-br from-sky-50 via-white to-blue-50 flex items-center justify-center p-4">
+	<div class="w-full max-w-2xl mx-auto">
+		<!-- Main Card -->
+		<div
+			class="bg-white/80 backdrop-blur-xl rounded-3xl shadow-2xl border border-sky-100 p-8 md:p-12 text-center fade-in">
+
+			<!-- 404 Number -->
+			<div class="relative mb-8">
+				<div class="absolute inset-0 flex items-center justify-center">
+					<div class="w-32 h-32 bg-sky-400/20 rounded-full pulse-ring"></div>
+				</div>
+				<h1
+					class="relative text-[clamp(4rem,15vw,10rem)] font-black leading-none gradient-text tracking-tighter">
+					404
+				</h1>
+			</div>
+
+			<!-- Title -->
+			<h2 class="text-2xl md:text-3xl font-bold text-slate-800 mb-4">
+				页面未找到
+			</h2>
+
+			<!-- Description -->
+			<p class="text-slate-600 text-base md:text-lg mb-8 max-w-md mx-auto leading-relaxed">
+				您访问的页面不存在或已被移动。正在为您自动跳转到正确的页面...
+			</p>
+
+			<!-- Progress Bar -->
+			<div class="w-full bg-slate-100 rounded-full h-2 mb-8 overflow-hidden">
+				<div class="progress-bar h-full bg-gradient-to-r from-sky-400 to-sky-600 rounded-full"></div>
+			</div>
+
+			<!-- Manual Redirect Button -->
+			<button onclick="manualRedirect()"
+				class="group inline-flex items-center gap-2 bg-sky-500 hover:bg-sky-600 text-white font-semibold py-4 px-8 rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl hover:-translate-y-0.5 cursor-pointer">
+				<span>立即跳转</span>
+				<svg xmlns="http://www.w3.org/2000/svg"
+					class="h-5 w-5 transition-transform duration-200 group-hover:translate-x-1" fill="none"
+					viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+					<path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+				</svg>
+			</button>
+
+			<!-- Help Text -->
+			<p class="mt-6 text-sm text-slate-400">
+				如果页面没有自动跳转，请点击上方按钮
+			</p>
+		</div>
+
+		<!-- Footer -->
+		<div class="mt-8 text-center">
+			<a href="/"
+				class="inline-flex items-center gap-2 text-slate-500 hover:text-sky-600 transition-colors duration-200 cursor-pointer">
+				<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+					stroke="currentColor" stroke-width="2">
+					<path stroke-linecap="round" stroke-linejoin="round"
+						d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+				</svg>
+				<span>返回首页</span>
+			</a>
+		</div>
+	</div>
+</body>
+
+</html>
