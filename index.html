@@ -783,31 +783,6 @@
                 </h3>
                 
                 <div id="mp-lobby" class="space-y-4">
-                    <div class="flex gap-2 justify-center mb-2">
-                        <button id="mode-battle" class="mp-mode-btn active px-4 py-2 rounded-lg font-medium text-sm bg-blue-500 text-white cursor-pointer flex items-center gap-1.5">
-                            <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <polyline points="4 17 10 11 4 5"></polyline>
-                                <line x1="12" y1="19" x2="20" y2="19"></line>
-                            </svg>
-                            对战模式
-                        </button>
-                        <button id="mode-coop" class="mp-mode-btn px-4 py-2 rounded-lg font-medium text-sm border border-slate-200 bg-white text-slate-700 cursor-pointer flex items-center gap-1.5">
-                            <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
-                            </svg>
-                            合作模式
-                        </button>
-                    </div>
-                    
-                    <div id="coop-info" class="hidden bg-green-50 border border-green-200 rounded-lg p-3 text-sm text-green-700">
-                        <strong class="flex items-center gap-1">
-                            <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
-                            </svg>
-                            合作模式：
-                        </strong>所有玩家一起猜同一组站名，共同完成任务！任何玩家答对都算过关，比拼团队速度！
-                    </div>
-                    
                     <div class="flex gap-3 flex-wrap">
                         <button id="btn-create-room" class="btn-primary px-4 py-2 rounded-lg text-white font-medium text-sm cursor-pointer">
                             创建房间
@@ -890,13 +865,6 @@
                                 <div class="text-xs text-slate-500">提示</div>
                                 <div id="mp-hints-left" class="text-xl font-bold text-purple-600">3</div>
                             </div>
-                        </div>
-                        <div id="mp-mode-badge" class="text-sm font-medium px-2 py-1 rounded bg-blue-100 text-blue-700 flex items-center gap-1">
-                            <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <polyline points="4 17 10 11 4 5"></polyline>
-                                <line x1="12" y1="19" x2="20" y2="19"></line>
-                            </svg>
-                            对战
                         </div>
                     </div>
                     
@@ -1123,9 +1091,10 @@
         };
 
         const LETTER_FREQUENCY = {
-            common: ['e', 'a', 'r', 'i', 'o', 't', 'n', 's', 'l', 'c'],
-            medium: ['u', 'd', 'p', 'm', 'h', 'g', 'b', 'f', 'y', 'w'],
-            rare: ['k', 'v', 'x', 'z', 'j', 'q']
+            superCommon: ['a', 'e', 'i', 'n', 'o', 's', 'u'],
+            common: ['g', 'h', 't', 'l', 'r', 'd', 'c'],
+            medium: ['y', 'j', 'x', 'z', 'p', 'm', 'w', 'b'],
+            rare: ['q', 'f', 'k', 'v']
         };
 
         const ACHIEVEMENTS = [
@@ -1189,7 +1158,14 @@
             score -= repeatCount * 0.3;
             
             const commonLetterCount = LETTER_FREQUENCY.common.filter(l => uniqueLetters.has(l)).length;
-            score -= commonLetterCount * 0.1;
+            score -= commonLetterCount * 0.4;
+            
+            const superCommonLetterCount = LETTER_FREQUENCY.superCommon.filter(l => uniqueLetters.has(l)).length;
+            score -= superCommonLetterCount * 0.8;
+            
+            const superCommonRatio = superCommonLetterCount / uniqueLetters.size;
+            if (superCommonRatio > 0.5) score -= 2.5;
+            else if (superCommonRatio > 0.35) score -= 1.5;
             
             if (score <= 2) return 'easy';
             if (score <= 4) return 'normal';
@@ -1804,8 +1780,7 @@
             roomId: null,
             isHost: false,
             isReady: false,
-            gameStarted: false,
-            gameMode: 'battle' // 'battle' or 'coop'
+            gameStarted: false
         };
 
         let db = null;
@@ -1892,7 +1867,6 @@
                     host: mpState.playerId,
                     status: 'waiting',
                     createdAt: Date.now(),
-                    gameMode: mpState.gameMode,
                     settings: {
                         difficulty: gameState.difficulty,
                         stationCount: parseInt(document.getElementById('station-count').value) || 5
@@ -2164,13 +2138,12 @@
 
             Object.entries(rooms).forEach(([code, room]) => {
                 const playerCount = room.players ? Object.keys(room.players).length : 0;
-                const gameMode = room.gameMode === 'coop' ? '🤝 合作' : '⚔️ 对战';
                 const div = document.createElement('div');
                 div.className = 'flex items-center justify-between p-3 bg-slate-50 rounded-lg hover:bg-slate-100 cursor-pointer transition-all';
                 div.innerHTML = `
                     <div>
                         <span class="font-mono font-bold text-blue-600">${code}</span>
-                        <span class="text-xs text-slate-500 ml-2">${gameMode} · ${room.settings?.difficulty || '普通'} · ${playerCount}人</span>
+                        <span class="text-xs text-slate-500 ml-2">${room.settings?.difficulty || '普通'} · ${playerCount}人</span>
                     </div>
                     <button class="join-room-btn bg-green-500 hover:bg-green-600 px-3 py-1 rounded text-white text-sm cursor-pointer" data-room="${code}">
                         加入
@@ -2243,7 +2216,6 @@
                 stationCount: stationCount,
                 startedAt: Date.now(),
                 status: 'playing',
-                gameMode: mpState.gameMode,
                 difficulty: gameState.difficulty,
                 selectedCity: gameState.selectedCity,
                 revealedLetters: revealedLettersInit,
@@ -2258,10 +2230,6 @@
 
         function setupGameListeners() {
             if (!roomRef) return;
-            
-            roomRef.child('gameMode').on('value', (snapshot) => {
-                mpState.gameMode = snapshot.val() || 'battle';
-            });
             
             roomRef.child('game').on('value', (snapshot) => {
                 const gameData = snapshot.val();
@@ -2310,17 +2278,6 @@
                 return;
             }
             
-            // 显示游戏模式
-            const modeBadge = document.getElementById('mp-mode-badge');
-            if (gameData.gameMode === 'coop') {
-                modeBadge.textContent = '🤝 合作';
-                modeBadge.className = 'text-sm font-medium px-2 py-1 rounded bg-green-100 text-green-700';
-            } else {
-                modeBadge.textContent = '⚔️ 对战';
-                modeBadge.className = 'text-sm font-medium px-2 py-1 rounded bg-blue-100 text-blue-700';
-            }
-            
-            // 渲染站名卡片 - 与主游戏相同
             renderMpStations(gameData);
             
             // 渲染键盘
@@ -3769,20 +3726,6 @@
             elements.modeReverse.addEventListener('click', () => switchMode('reverse'));
             elements.modeLeaderboard.addEventListener('click', () => switchMode('leaderboard'));
             elements.modeMultiplayer.addEventListener('click', () => switchMode('multiplayer'));
-            
-            $('mode-battle').addEventListener('click', () => {
-                mpState.gameMode = 'battle';
-                $('mode-battle').className = 'mp-mode-btn active px-4 py-2 rounded-lg font-medium text-sm bg-blue-500 text-white cursor-pointer';
-                $('mode-coop').className = 'mp-mode-btn px-4 py-2 rounded-lg font-medium text-sm border border-slate-200 bg-white text-slate-700 cursor-pointer';
-                $('coop-info').classList.add('hidden');
-            });
-            
-            $('mode-coop').addEventListener('click', () => {
-                mpState.gameMode = 'coop';
-                $('mode-coop').className = 'mp-mode-btn active px-4 py-2 rounded-lg font-medium text-sm bg-green-500 text-white cursor-pointer';
-                $('mode-battle').className = 'mp-mode-btn px-4 py-2 rounded-lg font-medium text-sm border border-slate-200 bg-white text-slate-700 cursor-pointer';
-                $('coop-info').classList.remove('hidden');
-            });
             
             $('btn-create-room').addEventListener('click', createRoom);
             $('btn-quick-match').addEventListener('click', quickMatch);
