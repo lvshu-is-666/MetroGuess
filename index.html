@@ -21,15 +21,29 @@
     <meta name="twitter:title" content="地铁站名猜谜游戏 - 挑战全国地铁站点知识">
     <meta name="twitter:description" content="地铁站名猜谜游戏，挑战全国地铁站点知识！根据提示猜测地铁站名，测试你对城市轨道交通的了解程度。">
     
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='4' fill='%234F46E5'/%3E%3Cpath d='M12 4c-3 0-6 .75-6 3.75v7.5c0 1.66 1.34 3 3 3h.75l-1.5 1.5h1.5l1.5-1.5h1.5l1.5 1.5h1.5l-1.5-1.5h.75c1.66 0 3-1.34 3-3v-7.5C18 4.75 15 4 12 4zM9 16.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm6 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm1.5-5.25h-9v-3c0-.83.67-1.5 1.5-1.5h6c.83 0 1.5.67 1.5 1.5v3z' fill='white'/%3E%3C/svg%3E">
-    <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='4' fill='%234F46E5'/%3E%3Cpath d='M12 4c-3 0-6 .75-6 3.75v7.5c0 1.66 1.34 3 3 3h.75l-1.5 1.5h1.5l1.5-1.5h1.5l1.5 1.5h1.5l-1.5-1.5h.75c1.66 0 3-1.34 3-3v-7.5C18 4.75 15 4 12 4zM9 16.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm6 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm1.5-5.25h-9v-3c0-.83.67-1.5 1.5-1.5h6c.83 0 1.5.67 1.5 1.5v3z' fill='white'/%3E%3C/svg%3E">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='16' fill='%234F46E5'/%3E%3Cpath d='M50 12c-18 0-32 4-32 20v40c0 9 7 16 16 16h4l-8 8h8l8-8h8l8 8h8l-8-8h4c9 0 16-7 16-16v-40c0-16-14-20-32-20zM34 76c-5 0-8-3-8-8s3-8 8-8 8 3 8 8-3 8-8 8zm32 0c-5 0-8-3-8-8s3-8 8-8 8 3 8 8-3 8-8 8zm8-28H26V32c0-5 3-8 8-8h32c5 0 8 3 8 8v16z' fill='white'/%3E%3C/svg%3E">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='16' fill='%234F46E5'/%3E%3Cpath d='M50 12c-18 0-32 4-32 20v40c0 9 7 16 16 16h4l-8 8h8l8-8h8l8 8h8l-8-8h4c9 0 16-7 16-16v-40c0-16-14-20-32-20zM34 76c-5 0-8-3-8-8s3-8 8-8 8 3 8 8-3 8-8 8zm32 0c-5 0-8-3-8-8s3-8 8-8 8 3 8 8-3 8-8 8zm8-28H26V32c0-5 3-8 8-8h32c5 0 8 3 8 8v16z' fill='white'/%3E%3C/svg%3E">
     
+    <script>
+        if (!window.requestIdleCallback) {
+            window.requestIdleCallback = function(callback, options) {
+                const start = Date.now();
+                return setTimeout(function() {
+                    callback({
+                        didTimeout: false,
+                        timeRemaining: function() {
+                            return Math.max(0, 50 - (Date.now() - start));
+                        }
+                    });
+                }, options?.timeout || 1);
+            };
+        }
+    </script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="encrypted_data.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-database-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-auth-compat.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@300;400;500;600;700&display=swap" media="print" onload="this.media='all'">
     <style>
         .icon {
             display: inline-block;
@@ -85,7 +99,6 @@
             border: 2px solid rgba(129, 140, 248, 0.4);
             transition: border-color var(--transition-normal), box-shadow var(--transition-normal), transform var(--transition-normal);
             box-shadow: 0 4px 16px rgba(79, 70, 229, 0.08);
-            will-change: transform;
         }
         
         .station-card:hover {
@@ -109,7 +122,6 @@
             background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-light) 100%);
             transition: transform var(--transition-fast), box-shadow var(--transition-fast);
             box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
-            will-change: transform;
         }
         
         .btn-primary:hover {
@@ -121,7 +133,6 @@
             background: linear-gradient(135deg, var(--cta-color) 0%, #FB923C 100%);
             transition: transform var(--transition-fast), box-shadow var(--transition-fast);
             box-shadow: 0 4px 12px rgba(249, 115, 22, 0.3);
-            will-change: transform;
         }
         
         .btn-secondary:hover {
@@ -133,7 +144,6 @@
             background: linear-gradient(135deg, var(--hint-color) 0%, #A78BFA 100%);
             transition: transform var(--transition-fast), box-shadow var(--transition-fast);
             box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
-            will-change: transform;
         }
         
         .btn-hint:hover {
@@ -186,20 +196,16 @@
         
         .guess-history-item, .leaderboard-item { 
             animation: slideIn 0.25s ease-out;
-            will-change: transform, opacity;
         }
         .letter-reveal { 
             animation: popIn 0.3s ease-out;
-            will-change: transform, opacity;
         }
         .score-popup { 
             animation: popIn 0.4s ease-out;
-            will-change: transform, opacity;
         }
         .achievement-badge { animation: badgeShine 2s ease infinite; }
         .toast { 
             animation: fadeInUp 0.25s ease-out;
-            will-change: transform, opacity;
         }
         .toast-exit { animation: toastExit 0.25s ease-out forwards; }
         
@@ -225,7 +231,12 @@
                 0 0 20px rgba(129, 140, 248, 0.6),
                 0 0 40px rgba(79, 70, 229, 0.4),
                 0 0 80px rgba(79, 70, 229, 0.2);
-            animation: neonPulse 2s ease-in-out infinite alternate;
+        }
+        
+        @media (prefers-reduced-motion: no-preference) {
+            .neon-glow {
+                animation: neonPulse 3s ease-in-out infinite alternate;
+            }
         }
         
         @keyframes neonPulse {
@@ -251,7 +262,6 @@
         
         .letter-key {
             transition: transform var(--transition-fast), background-color var(--transition-fast), border-color var(--transition-fast);
-            will-change: transform;
         }
         
         .letter-key:hover {
@@ -281,7 +291,6 @@
         .progress-bar {
             background: linear-gradient(90deg, var(--success-color), #16a34a);
             transition: width 0.35s ease-out;
-            will-change: width;
         }
         
         .shake { animation: shake 0.5s ease; }
@@ -323,7 +332,6 @@
             position: fixed;
             pointer-events: none;
             animation: particleFall 0.7s ease-out forwards;
-            will-change: transform, opacity;
         }
         
         @keyframes particleFall {
@@ -342,7 +350,6 @@
             height: 5px;
             border-radius: 50%;
             animation: fireworkExplode 0.8s ease-out forwards;
-            will-change: transform, opacity;
         }
         
         @keyframes fireworkExplode {
@@ -582,6 +589,423 @@
         .dark .bg-blue-100 { background-color: rgba(59, 130, 246, 0.2); }
         .dark .text-blue-700 { color: #60a5fa; }
         .dark .bg-blue-50 { background-color: rgba(59, 130, 246, 0.1); }
+        
+        .tutorial-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+        
+        .tutorial-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .tutorial-card {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.98) 0%, rgba(238, 242, 255, 0.95) 100%);
+            border-radius: 1.5rem;
+            max-width: 480px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 40px rgba(79, 70, 229, 0.2);
+            border: 2px solid rgba(129, 140, 248, 0.3);
+            transform: scale(0.9) translateY(20px);
+            transition: transform 0.3s ease;
+        }
+        
+        .tutorial-overlay.active .tutorial-card {
+            transform: scale(1) translateY(0);
+        }
+        
+        .tutorial-header {
+            padding: 1.5rem 1.5rem 1rem;
+            text-align: center;
+            border-bottom: 1px solid rgba(129, 140, 248, 0.2);
+        }
+        
+        .tutorial-header h2 {
+            font-family: 'Fredoka', 'Nunito', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+        }
+        
+        .tutorial-step-indicator {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 0.75rem;
+        }
+        
+        .tutorial-step-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: rgba(129, 140, 248, 0.3);
+            transition: all 0.3s ease;
+        }
+        
+        .tutorial-step-dot.active {
+            background: var(--primary-color);
+            transform: scale(1.2);
+            box-shadow: 0 0 10px rgba(79, 70, 229, 0.5);
+        }
+        
+        .tutorial-step-dot.completed {
+            background: var(--success-color);
+        }
+        
+        .tutorial-content {
+            padding: 1.5rem;
+        }
+        
+        .tutorial-step {
+            display: none;
+            animation: tutorialFadeIn 0.4s ease;
+        }
+        
+        .tutorial-step.active {
+            display: block;
+        }
+        
+        @keyframes tutorialFadeIn {
+            from { opacity: 0; transform: translateX(20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        
+        .tutorial-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .tutorial-title .step-number {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 28px;
+            height: 28px;
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-light) 100%);
+            color: white;
+            border-radius: 50%;
+            font-size: 0.875rem;
+            font-weight: 700;
+        }
+        
+        .tutorial-description {
+            font-size: 0.9375rem;
+            color: #475569;
+            line-height: 1.6;
+            margin-bottom: 1rem;
+        }
+        
+        .tutorial-demo {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(238, 242, 255, 0.9) 100%);
+            border: 2px solid rgba(129, 140, 248, 0.4);
+            border-radius: 0.75rem;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .tutorial-demo-label {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            font-size: 0.75rem;
+            color: var(--primary-color);
+            background: rgba(129, 140, 248, 0.1);
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+        }
+        
+        .tutorial-station-card {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(238, 242, 255, 0.9) 100%);
+            border: 2px solid rgba(129, 140, 248, 0.4);
+            border-radius: 0.75rem;
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+        }
+        
+        .tutorial-station-name {
+            font-family: 'Courier New', monospace;
+            letter-spacing: 0.15em;
+            font-size: 1.25rem;
+            text-align: center;
+            color: #1e293b;
+            margin-bottom: 0.5rem;
+        }
+        
+        .tutorial-station-name .revealed {
+            color: var(--success-color);
+            font-weight: 700;
+        }
+        
+        .tutorial-station-name .hidden-letter {
+            color: #94a3b8;
+        }
+        
+        .tutorial-station-info {
+            text-align: center;
+            font-size: 0.875rem;
+            color: #64748b;
+        }
+        
+        .tutorial-keyboard-demo {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.375rem;
+            justify-content: center;
+            margin-top: 0.75rem;
+        }
+        
+        .tutorial-key {
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: white;
+            border: 2px solid rgba(129, 140, 248, 0.3);
+            border-radius: 0.375rem;
+            font-weight: 600;
+            font-size: 0.875rem;
+            color: #475569;
+            transition: all 0.2s ease;
+        }
+        
+        .tutorial-key.highlight {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+            transform: scale(1.1);
+            box-shadow: 0 0 15px rgba(79, 70, 229, 0.5);
+            animation: keyPulse 1s ease infinite;
+        }
+        
+        .tutorial-key.found {
+            background: var(--success-color);
+            color: white;
+            border-color: var(--success-color);
+        }
+        
+        @keyframes keyPulse {
+            0%, 100% { box-shadow: 0 0 15px rgba(79, 70, 229, 0.5); }
+            50% { box-shadow: 0 0 25px rgba(79, 70, 229, 0.8); }
+        }
+        
+        .tutorial-input-demo {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 0.75rem;
+        }
+        
+        .tutorial-input {
+            flex: 1;
+            padding: 0.625rem 0.875rem;
+            border: 2px solid rgba(129, 140, 248, 0.3);
+            border-radius: 0.5rem;
+            font-size: 0.875rem;
+            background: white;
+            color: #475569;
+        }
+        
+        .tutorial-input.highlight {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2);
+        }
+        
+        .tutorial-btn-demo {
+            padding: 0.625rem 1rem;
+            background: linear-gradient(135deg, #f97316 0%, #fb923c 100%);
+            color: white;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            font-size: 0.875rem;
+            border: none;
+            cursor: default;
+        }
+        
+        .tutorial-pointer {
+            position: absolute;
+            width: 24px;
+            height: 24px;
+            pointer-events: none;
+            animation: pointerBounce 1s ease infinite;
+        }
+        
+        @keyframes pointerBounce {
+            0%, 100% { transform: translate(0, 0); }
+            50% { transform: translate(5px, 5px); }
+        }
+        
+        .tutorial-footer {
+            padding: 1rem 1.5rem;
+            border-top: 1px solid rgba(129, 140, 248, 0.2);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        
+        .tutorial-btn {
+            padding: 0.625rem 1.25rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: none;
+        }
+        
+        .tutorial-btn-skip {
+            background: transparent;
+            color: #64748b;
+            border: 2px solid #e2e8f0;
+        }
+        
+        .tutorial-btn-skip:hover {
+            background: #f1f5f9;
+            border-color: #cbd5e1;
+        }
+        
+        .tutorial-btn-prev {
+            background: white;
+            color: var(--primary-color);
+            border: 2px solid rgba(129, 140, 248, 0.3);
+        }
+        
+        .tutorial-btn-prev:hover {
+            background: rgba(129, 140, 248, 0.1);
+        }
+        
+        .tutorial-btn-next {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-light) 100%);
+            color: white;
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+        }
+        
+        .tutorial-btn-next:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(79, 70, 229, 0.4);
+        }
+        
+        .tutorial-btn-start {
+            background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+            color: white;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        }
+        
+        .tutorial-btn-start:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+        }
+        
+        .tutorial-tip {
+            background: rgba(139, 92, 246, 0.1);
+            border-left: 3px solid var(--hint-color);
+            padding: 0.75rem;
+            border-radius: 0 0.5rem 0.5rem 0;
+            font-size: 0.8125rem;
+            color: #6d28d9;
+            margin-top: 0.75rem;
+        }
+        
+        .tutorial-score-demo {
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            margin-top: 0.75rem;
+        }
+        
+        .tutorial-score-item {
+            text-align: center;
+        }
+        
+        .tutorial-score-label {
+            font-size: 0.75rem;
+            color: #64748b;
+        }
+        
+        .tutorial-score-value {
+            font-size: 1.25rem;
+            font-weight: 700;
+        }
+        
+        .tutorial-score-value.score { color: #16a34a; }
+        .tutorial-score-value.combo { color: #ea580c; }
+        .tutorial-score-value.hint { color: #7c3aed; }
+        
+        .dark .tutorial-card {
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            border-color: #475569;
+        }
+        
+        .dark .tutorial-header h2 { color: #a5b4fc; }
+        
+        .dark .tutorial-title { color: #f1f5f9; }
+        
+        .dark .tutorial-description { color: #94a3b8; }
+        
+        .dark .tutorial-demo {
+            background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+            border-color: #475569;
+        }
+        
+        .dark .tutorial-station-card {
+            background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+            border-color: #475569;
+        }
+        
+        .dark .tutorial-station-name { color: #e2e8f0; }
+        
+        .dark .tutorial-key {
+            background: #334155;
+            border-color: #475569;
+            color: #e2e8f0;
+        }
+        
+        .dark .tutorial-input {
+            background: #1e293b;
+            border-color: #475569;
+            color: #e2e8f0;
+        }
+        
+        .dark .tutorial-btn-skip {
+            color: #94a3b8;
+            border-color: #475569;
+        }
+        
+        .dark .tutorial-btn-skip:hover {
+            background: #334155;
+        }
+        
+        .dark .tutorial-btn-prev {
+            background: #334155;
+            border-color: #475569;
+        }
+        
+        .dark .tutorial-tip {
+            background: rgba(139, 92, 246, 0.2);
+            color: #c4b5fd;
+        }
     </style>
 </head>
 <body class="bg-gradient-to-br from-indigo-50 via-purple-50 to-blue-100 min-h-screen text-slate-800 transition-colors duration-300">
@@ -698,6 +1122,12 @@
                     <a id="btn-hint" href="#" class="text-purple-600 hover:text-purple-700 cursor-pointer">提示</a>
                     <span class="text-slate-300">|</span>
                     <span class="text-slate-500">已猜 <span id="guess-count" class="text-slate-700">0</span> 次</span>
+                    <span class="text-slate-300">|</span>
+                    <a id="btn-rules" href="#" class="inline-flex items-center justify-center w-6 h-6 text-slate-400 hover:text-indigo-600 cursor-pointer transition-colors duration-200" title="游戏规则">
+                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" />
+                        </svg>
+                    </a>
                 </div>
             </div>
         </section>
@@ -1020,36 +1450,6 @@
             </div>
         </div>
         
-        <div class="glass-panel rounded-2xl p-4 md:p-6 shadow-lg mt-4">
-            <h3 class="text-lg font-semibold text-slate-800 mb-4">游戏规则</h3>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-slate-600">
-                <div>
-                    <h4 class="font-medium text-slate-800 mb-2">普通模式</h4>
-                    <ul class="space-y-1 list-disc list-inside">
-                        <li>系统根据难度选择对应难度的站名</li>
-                        <li>简单模式：短站名、常见字母</li>
-                        <li>普通模式：中等长度、适中难度</li>
-                        <li>困难模式：长站名、稀有字母</li>
-                        <li>可自定义站名数量（1-20个）</li>
-                        <li>输入 <span class="font-mono bg-slate-100 px-1 rounded">开 [字母]</span> 揭开字母</li>
-                        <li>输入 <span class="font-mono bg-slate-100 px-1 rounded">猜 [站名]</span> 猜测站名</li>
-                    </ul>
-                </div>
-                <div>
-                    <h4 class="font-medium text-slate-800 mb-2">得分规则</h4>
-                    <ul class="space-y-1 list-disc list-inside">
-                        <li>猜对站名: +100分</li>
-                        <li>开字母猜对: -5分</li>
-                        <li>开字母猜错: -15分</li>
-                        <li>连击奖励: 连击数×5分</li>
-                        <li>使用提示: -30分</li>
-                        <li>时间奖励: 剩余时间×2分</li>
-                        <li>难度加成: 简单×1, 普通×1.5, 困难×2</li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-        
         <footer class="text-center mt-6 text-sm text-slate-500">
             <p>制作者：<a href="https://space.bilibili.com/1944366810" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:text-blue-700 font-medium">bilibili@lvshu</a></p>
         </footer>
@@ -1096,6 +1496,161 @@
                     <button id="btn-play-again" class="btn-secondary px-6 py-2.5 rounded-lg text-white font-medium cursor-pointer">
                         再玩一次
                     </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="rules-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 opacity-0 transition-opacity duration-200" role="dialog" aria-modal="true" aria-labelledby="rules-title">
+        <div class="bg-white rounded-2xl p-6 md:p-8 max-w-lg w-full shadow-2xl transform scale-95 transition-transform duration-200" id="rules-modal-content">
+            <div class="flex items-center justify-between mb-4">
+                <h2 id="rules-title" class="flex items-center gap-2 text-xl font-bold text-slate-900 font-display">
+                    <svg class="w-6 h-6 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+                    </svg>
+                    游戏规则
+                </h2>
+                <button id="btn-close-rules" class="p-1 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg cursor-pointer transition-colors duration-200" aria-label="关闭">
+                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-slate-600">
+                <div>
+                    <h4 class="font-medium text-slate-800 mb-2">普通模式</h4>
+                    <ul class="space-y-1 list-disc list-inside">
+                        <li>系统根据难度选择对应难度的站名</li>
+                        <li>简单模式：短站名、常见字母</li>
+                        <li>普通模式：中等长度、适中难度</li>
+                        <li>困难模式：长站名、稀有字母</li>
+                        <li>可自定义站名数量（1-20个）</li>
+                        <li>输入 <span class="font-mono bg-slate-100 px-1 rounded">开 [字母]</span> 揭开字母</li>
+                        <li>输入 <span class="font-mono bg-slate-100 px-1 rounded">猜 [站名]</span> 猜测站名</li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-medium text-slate-800 mb-2">得分规则</h4>
+                    <ul class="space-y-1 list-disc list-inside">
+                        <li>猜对站名: +100分</li>
+                        <li>开字母猜对: -5分</li>
+                        <li>开字母猜错: -15分</li>
+                        <li>连击奖励: 连击数×5分</li>
+                        <li>使用提示: -30分</li>
+                        <li>时间奖励: 剩余时间×2分</li>
+                        <li>难度加成: 简单×1, 普通×1.5, 困难×2</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="tutorial-modal" class="tutorial-overlay" role="dialog" aria-modal="true" aria-labelledby="tutorial-title">
+        <div class="tutorial-card">
+            <div class="tutorial-header">
+                <h2 id="tutorial-title" class="flex items-center justify-center gap-2">
+                    <svg class="w-6 h-6 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                    </svg>
+                    新手引导
+                </h2>
+                <div class="tutorial-step-indicator">
+                    <div class="tutorial-step-dot active" data-step="0"></div>
+                    <div class="tutorial-step-dot" data-step="1"></div>
+                    <div class="tutorial-step-dot" data-step="2"></div>
+                </div>
+            </div>
+            
+            <div class="tutorial-content">
+                <div class="tutorial-step active" data-step="0">
+                    <div class="tutorial-title">
+                        <span class="step-number">1</span>
+                        开字母
+                    </div>
+                    <div class="tutorial-description">
+                        点击字母键盘，揭示站名中包含的字母。
+                    </div>
+                    <div class="tutorial-demo">
+                        <div id="tutorial-station-demo-1" class="station-card rounded-xl p-4" style="margin-bottom: 0.75rem;">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-xs font-medium text-slate-500">#1</span>
+                                <span class="text-xs px-2 py-0.5 rounded bg-yellow-100 text-yellow-700">普通</span>
+                            </div>
+                            <div id="tutorial-letter-display-1" class="letter-display text-lg md:text-xl font-bold text-slate-800 mb-3 text-center py-2 bg-white/50 rounded-lg" style="font-family: 'Courier New', monospace; letter-spacing: 0.15em;">
+                                *************
+                            </div>
+                        </div>
+                        <div id="tutorial-keyboard-demo-1" class="flex flex-wrap gap-1.5 justify-center" style="margin-bottom: 0.5rem;">
+                        </div>
+                        <div id="tutorial-step1-status" class="text-center text-sm text-slate-500" style="min-height: 1.5rem;"></div>
+                    </div>
+                </div>
+                
+                <div class="tutorial-step" data-step="1">
+                    <div class="tutorial-title">
+                        <span class="step-number">2</span>
+                        猜站名
+                    </div>
+                    <div class="tutorial-description">
+                        输入完整站名（中/英文）进行猜测。
+                    </div>
+                    <div class="tutorial-demo">
+                        <div id="tutorial-station-demo-2" class="station-card rounded-xl p-4" style="margin-bottom: 0.75rem;">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-xs font-medium text-slate-500">#1</span>
+                                <span class="text-xs px-2 py-0.5 rounded bg-yellow-100 text-yellow-700">普通</span>
+                            </div>
+                            <div id="tutorial-letter-display-2" class="letter-display text-lg md:text-xl font-bold text-slate-800 mb-3 text-center py-2 bg-white/50 rounded-lg" style="font-family: 'Courier New', monospace; letter-spacing: 0.15em;">
+                                <span class="letter-reveal text-blue-600">R</span><span class="letter-reveal text-blue-600">e</span><span class="letter-reveal text-blue-600">n</span><span class="letter-reveal text-blue-600">m</span><span class="letter-reveal text-blue-600">i</span><span class="letter-reveal text-blue-600">n</span> <span class="letter-reveal text-blue-600">S</span>**<span class="letter-reveal text-blue-600">a</span><span class="letter-reveal text-blue-600">r</span><span class="letter-reveal text-blue-600">e</span>
+                            </div>
+                        </div>
+                        <div id="tutorial-input-area" class="flex flex-col md:flex-row gap-3" style="margin-bottom: 0.5rem;">
+                            <input type="text" id="tutorial-guess-input" class="flex-1 px-4 py-3 rounded-lg border border-slate-200 bg-white text-slate-800 placeholder-slate-400 input-glow focus:outline-none focus:border-blue-500 transition-all" placeholder="输入站名..." autocomplete="off" readonly>
+                            <button id="tutorial-submit-btn" class="btn-secondary px-6 py-3 rounded-lg text-white font-medium" style="cursor: default;">
+                                提交
+                            </button>
+                        </div>
+                        <div id="tutorial-step2-status" class="text-center text-sm" style="min-height: 1.5rem;"></div>
+                    </div>
+                </div>
+                
+                <div class="tutorial-step" data-step="2">
+                    <div class="tutorial-title">
+                        <span class="step-number">3</span>
+                        开始游戏
+                    </div>
+                    <div class="tutorial-description" style="text-align: center; margin-bottom: 1rem;">
+                        选择难度，开始挑战！
+                    </div>
+                    <div class="tutorial-demo">
+                        <div style="display: flex; gap: 0.5rem; justify-content: center; margin-bottom: 1rem;">
+                            <span style="padding: 0.5rem 1rem; background: #dcfce7; color: #166534; border-radius: 0.5rem; font-weight: 600;">简单</span>
+                            <span style="padding: 0.5rem 1rem; background: #fef3c7; color: #92400e; border-radius: 0.5rem; font-weight: 600;">普通</span>
+                            <span style="padding: 0.5rem 1rem; background: #fee2e2; color: #991b1b; border-radius: 0.5rem; font-weight: 600;">困难</span>
+                        </div>
+                        <div class="flex flex-col gap-2 text-sm text-slate-600 text-center">
+                            <div class="flex items-center justify-center gap-2">
+                                <span class="w-3 h-3 rounded-full bg-green-500"></span>
+                                <span>短站名、常见字母</span>
+                            </div>
+                            <div class="flex items-center justify-center gap-2">
+                                <span class="w-3 h-3 rounded-full bg-yellow-500"></span>
+                                <span>中等长度</span>
+                            </div>
+                            <div class="flex items-center justify-center gap-2">
+                                <span class="w-3 h-3 rounded-full bg-red-500"></span>
+                                <span>长站名、稀有字母</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="tutorial-footer">
+                <button id="tutorial-skip" class="tutorial-btn tutorial-btn-skip">跳过</button>
+                <div style="display: flex; gap: 0.5rem;">
+                    <button id="tutorial-prev" class="tutorial-btn tutorial-btn-prev" style="display: none;">上一步</button>
+                    <button id="tutorial-next" class="tutorial-btn tutorial-btn-next">下一步</button>
                 </div>
             </div>
         </div>
@@ -1297,7 +1852,11 @@
             onlineRooms: $('online-rooms'),
             roomPlayers: $('room-players'),
             chatMessages: $('chat-messages'),
-            chatInput: $('chat-input')
+            chatInput: $('chat-input'),
+            btnRules: $('btn-rules'),
+            rulesModal: $('rules-modal'),
+            rulesModalContent: $('rules-modal-content'),
+            btnCloseRules: $('btn-close-rules')
         };
 
         const csvData = `city_cn,city_en,station_cn,station_en
@@ -1501,7 +2060,7 @@
         }
 
         const particlePool = [];
-        const MAX_PARTICLES = 20;
+        const MAX_PARTICLES = 10;
         
         function getParticle() {
             return particlePool.pop() || document.createElement('div');
@@ -1519,10 +2078,10 @@
 
         function createParticles(x, y, count = 5) {
             const colors = ['#22c55e', '#3b82f6', '#f97316'];
-            const reducedCount = Math.min(count, 4);
+            const reducedCount = Math.min(count, 3);
             
-            requestAnimationFrame(() => {
-                for (let i = 0; i < reducedCount; i++) {
+            for (let i = 0; i < reducedCount; i++) {
+                requestAnimationFrame(() => {
                     const particle = getParticle();
                     particle.className = 'particle';
                     particle.style.left = `${x + (Math.random() - 0.5) * 50}px`;
@@ -1537,28 +2096,28 @@
                         particle.remove();
                         returnParticle(particle);
                     }, 600);
-                }
-            });
+                });
+            }
         }
 
         function createFireworks() {
             const colors = ['#ff0000', '#00ff00', '#0000ff', '#ffff00'];
             
-            requestAnimationFrame(() => {
-                for (let f = 0; f < 2; f++) {
-                    setTimeout(() => {
-                        const x = Math.random() * window.innerWidth;
-                        const y = Math.random() * window.innerHeight * 0.5;
-                        
-                        for (let i = 0; i < 10; i++) {
+            for (let f = 0; f < 1; f++) {
+                setTimeout(() => {
+                    const x = Math.random() * window.innerWidth;
+                    const y = Math.random() * window.innerHeight * 0.5;
+                    
+                    for (let i = 0; i < 6; i++) {
+                        requestAnimationFrame(() => {
                             const particle = getParticle();
                             particle.className = 'firework-particle';
                             particle.style.left = `${x}px`;
                             particle.style.top = `${y}px`;
                             particle.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
                             
-                            const angle = (i / 10) * Math.PI * 2;
-                            const distance = 35 + Math.random() * 50;
+                            const angle = (i / 6) * Math.PI * 2;
+                            const distance = 30 + Math.random() * 40;
                             const endX = Math.cos(angle) * distance;
                             const endY = Math.sin(angle) * distance;
                             
@@ -1575,10 +2134,10 @@
                                 firework.remove();
                                 returnParticle(particle);
                             }, 700);
-                        }
-                    }, f * 180);
-                }
-            });
+                        });
+                    }
+                }, f * 200);
+            }
         }
 
         function parseCSV(data) {
@@ -1808,11 +2367,9 @@
         let cloudLeaderboards = { easy: [], normal: [], hard: [] };
 
         function initFirebase() {
-            try {
-                if (typeof firebase !== 'undefined') {
-                    if (!firebase.apps.length) {
-                        firebase.initializeApp(MULTIPLAYER_CONFIG);
-                    }
+            if (mpState.connected || typeof firebase !== 'undefined') {
+                if (typeof firebase !== 'undefined' && !firebase.apps.length) {
+                    firebase.initializeApp(MULTIPLAYER_CONFIG);
                     db = firebase.database();
                     mpState.connected = true;
                     mpState.playerId = localStorage.getItem('mp_player_id') || generatePlayerId();
@@ -1820,19 +2377,45 @@
                     console.log('Firebase initialized successfully');
                     loadOnlineRooms();
                     initLeaderboardListener();
-                } else {
-                    console.log('Firebase SDK not loaded');
                 }
-            } catch (e) {
-                console.log('Firebase init failed, running in offline mode:', e);
+                return;
             }
+            
+            const loadScript = (src) => {
+                return new Promise((resolve, reject) => {
+                    const script = document.createElement('script');
+                    script.src = src;
+                    script.async = true;
+                    script.onload = resolve;
+                    script.onerror = reject;
+                    document.head.appendChild(script);
+                });
+            };
+            
+            Promise.all([
+                loadScript('https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js'),
+                loadScript('https://www.gstatic.com/firebasejs/10.7.0/firebase-database-compat.js')
+            ]).then(() => {
+                if (typeof firebase !== 'undefined' && !firebase.apps.length) {
+                    firebase.initializeApp(MULTIPLAYER_CONFIG);
+                    db = firebase.database();
+                    mpState.connected = true;
+                    mpState.playerId = localStorage.getItem('mp_player_id') || generatePlayerId();
+                    localStorage.setItem('mp_player_id', mpState.playerId);
+                    console.log('Firebase initialized successfully');
+                    loadOnlineRooms();
+                    initLeaderboardListener();
+                }
+            }).catch(e => {
+                console.log('Firebase load failed, running in offline mode:', e);
+            });
         }
 
         function initLeaderboardListener() {
             if (!db) return;
             
             leaderboardRef = db.ref('leaderboards');
-            leaderboardRef.on('value', (snapshot) => {
+            leaderboardRef.on('value', throttle((snapshot) => {
                 if (snapshot.exists()) {
                     const data = snapshot.val();
                     cloudLeaderboards = {
@@ -1844,7 +2427,7 @@
                         renderLeaderboard(gameState.difficulty);
                     }
                 }
-            });
+            }, 500));
         }
 
         function generatePlayerId() {
@@ -1957,7 +2540,7 @@
             roomRef.child('players').on('value', debounce((snapshot) => {
                 const players = snapshot.val() || {};
                 renderRoomPlayers(players);
-            }, 100));
+            }, 200));
 
             roomRef.child('status').on('value', (snapshot) => {
                 const status = snapshot.val();
@@ -1967,10 +2550,10 @@
             });
 
             chatRef = roomRef.child('chat');
-            chatRef.limitToLast(50).on('child_added', (snapshot) => {
+            chatRef.limitToLast(30).on('child_added', throttle((snapshot) => {
                 const msg = snapshot.val();
                 addChatMessage(msg.name, msg.text, msg.time);
-            });
+            }, 100));
         }
         
         function debounce(func, wait) {
@@ -1982,6 +2565,17 @@
                 };
                 clearTimeout(timeout);
                 timeout = setTimeout(later, wait);
+            };
+        }
+        
+        function throttle(func, limit) {
+            let inThrottle;
+            return function executedFunction(...args) {
+                if (!inThrottle) {
+                    func(...args);
+                    inThrottle = true;
+                    setTimeout(() => inThrottle = false, limit);
+                }
             };
         }
 
@@ -2150,12 +2744,14 @@
         function renderOnlineRooms(rooms) {
             elements.onlineRooms.innerHTML = '';
             
-            if (Object.keys(rooms).length === 0) {
+            const roomEntries = Object.entries(rooms);
+            if (roomEntries.length === 0) {
                 elements.onlineRooms.innerHTML = '<p class="text-slate-500 text-sm text-center">暂无在线房间</p>';
                 return;
             }
 
-            Object.entries(rooms).forEach(([code, room]) => {
+            const fragment = document.createDocumentFragment();
+            roomEntries.forEach(([code, room]) => {
                 const playerCount = room.players ? Object.keys(room.players).length : 0;
                 const div = document.createElement('div');
                 div.className = 'flex items-center justify-between p-3 bg-slate-50 rounded-lg hover:bg-slate-100 cursor-pointer transition-all';
@@ -2168,8 +2764,10 @@
                         加入
                     </button>
                 `;
-                elements.onlineRooms.appendChild(div);
+                fragment.appendChild(div);
             });
+            
+            elements.onlineRooms.appendChild(fragment);
 
             document.querySelectorAll('.join-room-btn').forEach(btn => {
                 btn.addEventListener('click', (e) => {
@@ -2256,13 +2854,12 @@
         function setupGameListeners() {
             if (!roomRef) return;
             
-            roomRef.child('game').on('value', (snapshot) => {
+            roomRef.child('game').on('value', throttle((snapshot) => {
                 const gameData = snapshot.val();
                 if (!gameData) return;
                 
                 mpState.gameData = gameData;
                 
-                // 从服务器同步状态
                 if (gameData.revealedLetters) {
                     mpState.revealedLetters = {};
                     Object.entries(gameData.revealedLetters).forEach(([index, letters]) => {
@@ -2283,12 +2880,12 @@
                 }
                 
                 renderMultiplayerGame(gameData);
-            });
+            }, 150));
             
-            roomRef.child('players').on('value', (snapshot) => {
+            roomRef.child('players').on('value', throttle((snapshot) => {
                 const players = snapshot.val() || {};
                 renderPlayersStatus(players);
-            });
+            }, 200));
         }
 
         function renderMultiplayerGame(gameData) {
@@ -2325,6 +2922,7 @@
             const container = document.getElementById('mp-stations-container');
             container.innerHTML = '';
             
+            const fragment = document.createDocumentFragment();
             gameData.stations.forEach((station, index) => {
                 const isSolved = mpState.solvedStations && mpState.solvedStations.has(index);
                 const revealed = mpState.revealedLetters && mpState.revealedLetters[index] ? mpState.revealedLetters[index] : new Set();
@@ -2356,8 +2954,9 @@
                         </div>
                     ` : ''}
                 `;
-                container.appendChild(card);
+                fragment.appendChild(card);
             });
+            container.appendChild(fragment);
         }
         
         function getMpDisplayText(stationName, revealedLetters, isSolved, revealedSpecialChars) {
@@ -2914,18 +3513,366 @@
                 elements.modeReverse.classList.remove('hidden');
             }
             
+            initTutorial();
+            
             startNewGame();
             setupEventListeners();
             initAudio();
-            initFirebase();
+            
+            requestIdleCallback(() => {
+                initFirebase();
+            }, { timeout: 2000 });
             
             setTimeout(async () => {
                 if (mpState.connected && db) {
                     await loadFromCloud();
                 }
-            }, 1000);
+            }, 3000);
             
             handleRoute();
+        }
+        
+        let tutorialState = {
+            currentStep: 0,
+            totalSteps: 3,
+            completed: false,
+            demoStation: 'Renmin Square',
+            demoRevealed: new Set(),
+            demoAnimationRunning: false
+        };
+        
+        function initTutorial() {
+            const tutorialCompleted = localStorage.getItem('tutorialCompleted');
+            if (tutorialCompleted === 'true') {
+                tutorialState.completed = true;
+                return;
+            }
+            
+            setTimeout(() => {
+                showTutorial();
+            }, 500);
+        }
+        
+        function showTutorial() {
+            const modal = $('tutorial-modal');
+            if (modal) {
+                modal.classList.add('active');
+                updateTutorialStep();
+                initTutorialDemo();
+            }
+        }
+        
+        function hideTutorial() {
+            const modal = $('tutorial-modal');
+            if (modal) {
+                modal.classList.remove('active');
+                stopTutorialDemo();
+            }
+        }
+        
+        function initTutorialDemo() {
+            tutorialState.demoRevealed = new Set();
+            if (tutorialState.currentStep === 0) {
+                renderTutorialKeyboard();
+                renderTutorialStation();
+                startLetterRevealDemo();
+            } else if (tutorialState.currentStep === 1) {
+                startGuessDemo();
+            }
+        }
+        
+        function stopTutorialDemo() {
+            tutorialState.demoAnimationRunning = false;
+        }
+        
+        function renderTutorialKeyboard() {
+            const container = $('tutorial-keyboard-demo-1');
+            if (!container) return;
+            
+            container.innerHTML = '';
+            const letters = 'abcdefghijklmnopqrstuvwxyz'.split('');
+            
+            letters.forEach(letter => {
+                const btn = document.createElement('button');
+                btn.className = 'letter-key w-8 h-8 rounded text-sm font-medium bg-slate-100 text-slate-700';
+                btn.textContent = letter.toUpperCase();
+                btn.id = `tutorial-key-${letter}`;
+                
+                if (tutorialState.demoRevealed.has(letter)) {
+                    if (tutorialState.demoStation.toLowerCase().includes(letter)) {
+                        btn.style.background = 'var(--success-color)';
+                        btn.style.color = 'white';
+                    } else {
+                        btn.style.background = 'var(--error-color)';
+                        btn.style.color = 'white';
+                        btn.style.opacity = '0.5';
+                    }
+                }
+                
+                container.appendChild(btn);
+            });
+        }
+        
+        function renderTutorialStation() {
+            const display = $('tutorial-letter-display-1');
+            if (!display) return;
+            
+            const stationName = tutorialState.demoStation;
+            const parts = [];
+            
+            for (let i = 0; i < stationName.length; i++) {
+                const char = stationName[i];
+                const lowerChar = char.toLowerCase();
+                
+                if (char === ' ') {
+                    parts.push(' ');
+                } else if (/[a-z]/.test(lowerChar)) {
+                    if (tutorialState.demoRevealed.has(lowerChar)) {
+                        parts.push(`<span class="letter-reveal text-blue-600">${char}</span>`);
+                    } else {
+                        parts.push('*');
+                    }
+                } else {
+                    parts.push(char);
+                }
+            }
+            
+            display.innerHTML = parts.join('');
+        }
+        
+        function startLetterRevealDemo() {
+            if (tutorialState.currentStep !== 0) return;
+            
+            tutorialState.demoAnimationRunning = true;
+            const statusEl = $('tutorial-step1-status');
+            
+            const sequence = [
+                { letter: 'a', found: true },
+                { letter: 'e', found: true },
+                { letter: 'i', found: true },
+                { letter: 'o', found: false },
+                { letter: 'u', found: true },
+                { letter: 'n', found: true },
+                { letter: 'r', found: true },
+                { letter: 'm', found: true },
+                { letter: 's', found: true }
+            ];
+            let currentIndex = 0;
+            
+            function revealNext() {
+                if (!tutorialState.demoAnimationRunning || tutorialState.currentStep !== 0) return;
+                
+                if (currentIndex < sequence.length) {
+                    const { letter, found } = sequence[currentIndex];
+                    const keyBtn = $(`tutorial-key-${letter}`);
+                    
+                    if (keyBtn) {
+                        keyBtn.style.background = 'var(--primary-color)';
+                        keyBtn.style.color = 'white';
+                        keyBtn.style.transform = 'scale(1.15)';
+                        keyBtn.style.boxShadow = '0 0 12px rgba(79, 70, 229, 0.6)';
+                        keyBtn.style.transition = 'all 0.2s ease';
+                        
+                        if (statusEl) {
+                            statusEl.innerHTML = `开 <strong>${letter.toUpperCase()}</strong>...`;
+                        }
+                        
+                        setTimeout(() => {
+                            tutorialState.demoRevealed.add(letter);
+                            
+                            if (found) {
+                                renderTutorialStation();
+                                keyBtn.style.background = 'var(--success-color)';
+                                if (statusEl) statusEl.innerHTML = `<span style="color: var(--success-color);">找到 ${letter.toUpperCase()}</span>`;
+                            } else {
+                                keyBtn.style.background = 'var(--error-color)';
+                                keyBtn.style.opacity = '0.5';
+                                if (statusEl) statusEl.innerHTML = `<span style="color: var(--error-color);">没有 ${letter.toUpperCase()}</span>`;
+                            }
+                            keyBtn.style.transform = 'scale(1)';
+                            keyBtn.style.boxShadow = 'none';
+                            
+                            currentIndex++;
+                            setTimeout(revealNext, 1200);
+                        }, 600);
+                    }
+                } else {
+                    setTimeout(() => {
+                        if (tutorialState.demoAnimationRunning && tutorialState.currentStep === 0) {
+                            tutorialState.demoRevealed = new Set();
+                            renderTutorialKeyboard();
+                            renderTutorialStation();
+                            if (statusEl) statusEl.innerHTML = '';
+                            currentIndex = 0;
+                            setTimeout(revealNext, 500);
+                        }
+                    }, 2000);
+                }
+            }
+            
+            setTimeout(revealNext, 800);
+        }
+        
+        function startGuessDemo() {
+            const input = $('tutorial-guess-input');
+            const submitBtn = $('tutorial-submit-btn');
+            const statusEl = $('tutorial-step2-status');
+            
+            if (!input || !submitBtn || !statusEl) return;
+            
+            input.value = '';
+            statusEl.innerHTML = '';
+            
+            function simulateClick(btn) {
+                btn.style.transform = 'scale(0.9)';
+                btn.style.boxShadow = '0 0 0 4px rgba(249, 115, 22, 0.4)';
+                btn.style.transition = 'all 0.1s ease';
+                
+                setTimeout(() => {
+                    btn.style.transform = 'scale(1)';
+                    btn.style.boxShadow = '';
+                }, 150);
+            }
+            
+            function typeText(text, callback) {
+                input.style.borderColor = 'var(--primary-color)';
+                input.style.boxShadow = '0 0 0 3px rgba(79, 70, 229, 0.2)';
+                let charIndex = 0;
+                
+                function typeChar() {
+                    if (charIndex < text.length && tutorialState.currentStep === 1) {
+                        input.value = text.substring(0, charIndex + 1);
+                        charIndex++;
+                        setTimeout(typeChar, 100);
+                    } else {
+                        input.style.borderColor = '';
+                        input.style.boxShadow = '';
+                        callback();
+                    }
+                }
+                typeChar();
+            }
+            
+            function runDemo() {
+                if (tutorialState.currentStep !== 1) return;
+                
+                input.value = '';
+                statusEl.innerHTML = '';
+                
+                const display2 = $('tutorial-letter-display-2');
+                if (display2) {
+                    display2.innerHTML = '<span class="letter-reveal text-blue-600">R</span><span class="letter-reveal text-blue-600">e</span><span class="letter-reveal text-blue-600">n</span><span class="letter-reveal text-blue-600">m</span><span class="letter-reveal text-blue-600">i</span><span class="letter-reveal text-blue-600">n</span> <span class="letter-reveal text-blue-600">S</span>**<span class="letter-reveal text-blue-600">a</span><span class="letter-reveal text-blue-600">r</span><span class="letter-reveal text-blue-600">e</span>';
+                }
+                
+                setTimeout(() => {
+                    typeText('Renmin Gongyuan', () => {
+                        setTimeout(() => {
+                            simulateClick(submitBtn);
+                            setTimeout(() => {
+                                statusEl.innerHTML = '<span style="color: var(--error-color);">不正确</span>';
+                                input.style.borderColor = 'var(--error-color)';
+                                setTimeout(() => {
+                                    input.style.borderColor = '';
+                                    input.value = '';
+                                    statusEl.innerHTML = '';
+                                    
+                                    setTimeout(() => {
+                                        typeText('人民广场', () => {
+                                            setTimeout(() => {
+                                                simulateClick(submitBtn);
+                                                setTimeout(() => {
+                                                    const display2 = $('tutorial-letter-display-2');
+                                                    if (display2) {
+                                                        display2.innerHTML = '<span class="letter-reveal text-blue-600">R</span><span class="letter-reveal text-blue-600">e</span><span class="letter-reveal text-blue-600">n</span><span class="letter-reveal text-blue-600">m</span><span class="letter-reveal text-blue-600">i</span><span class="letter-reveal text-blue-600">n</span> <span class="letter-reveal text-blue-600">S</span><span class="letter-reveal text-blue-600">q</span><span class="letter-reveal text-blue-600">u</span><span class="letter-reveal text-blue-600">a</span><span class="letter-reveal text-blue-600">r</span><span class="letter-reveal text-blue-600">e</span>';
+                                                    }
+                                                    statusEl.innerHTML = '<span style="color: var(--success-color);">正确！人民广场</span>';
+                                                    input.style.borderColor = 'var(--success-color)';
+                                                    
+                                                    setTimeout(() => {
+                                                        runDemo();
+                                                    }, 2000);
+                                                }, 300);
+                                            }, 400);
+                                        });
+                                    }, 500);
+                                }, 800);
+                            }, 300);
+                        }, 400);
+                    });
+                }, 500);
+            }
+            
+            runDemo();
+        }
+        
+        function updateTutorialStep() {
+            const steps = $all('.tutorial-step');
+            const dots = $all('.tutorial-step-dot');
+            const prevBtn = $('tutorial-prev');
+            const nextBtn = $('tutorial-next');
+            
+            steps.forEach((step, index) => {
+                step.classList.toggle('active', index === tutorialState.currentStep);
+            });
+            
+            dots.forEach((dot, index) => {
+                dot.classList.remove('active', 'completed');
+                if (index === tutorialState.currentStep) {
+                    dot.classList.add('active');
+                } else if (index < tutorialState.currentStep) {
+                    dot.classList.add('completed');
+                }
+            });
+            
+            if (prevBtn) {
+                prevBtn.style.display = tutorialState.currentStep > 0 ? 'block' : 'none';
+            }
+            
+            if (nextBtn) {
+                if (tutorialState.currentStep === tutorialState.totalSteps - 1) {
+                    nextBtn.textContent = '开始游戏';
+                    nextBtn.className = 'tutorial-btn tutorial-btn-start';
+                } else {
+                    nextBtn.textContent = '下一步';
+                    nextBtn.className = 'tutorial-btn tutorial-btn-next';
+                }
+            }
+            
+            initTutorialDemo();
+        }
+        
+        function nextTutorialStep() {
+            if (tutorialState.currentStep < tutorialState.totalSteps - 1) {
+                tutorialState.currentStep++;
+                updateTutorialStep();
+            } else {
+                completeTutorial();
+            }
+        }
+        
+        function prevTutorialStep() {
+            if (tutorialState.currentStep > 0) {
+                tutorialState.currentStep--;
+                updateTutorialStep();
+            }
+        }
+        
+        function skipTutorial() {
+            completeTutorial();
+        }
+        
+        function completeTutorial() {
+            tutorialState.completed = true;
+            localStorage.setItem('tutorialCompleted', 'true');
+            hideTutorial();
+            showToast('指引完成，祝游戏愉快！', 'success');
+        }
+        
+        function resetTutorial() {
+            localStorage.removeItem('tutorialCompleted');
+            tutorialState.currentStep = 0;
+            tutorialState.completed = false;
+            showTutorial();
         }
 
         function startNewGame() {
@@ -3036,19 +3983,23 @@
             const currentCards = container.children;
             
             if (currentCards.length !== gameState.stations.length) {
-                container.innerHTML = '';
+                const fragment = document.createDocumentFragment();
                 gameState.stations.forEach((station, index) => {
                     const card = createStationCard(station, index);
-                    container.appendChild(card);
+                    fragment.appendChild(card);
                 });
+                container.innerHTML = '';
+                container.appendChild(fragment);
                 return;
             }
             
-            for (let i = 0; i < gameState.stations.length; i++) {
-                const station = gameState.stations[i];
-                const card = currentCards[i];
-                updateStationCard(card, station, i);
-            }
+            requestAnimationFrame(() => {
+                for (let i = 0; i < gameState.stations.length; i++) {
+                    const station = gameState.stations[i];
+                    const card = currentCards[i];
+                    updateStationCard(card, station, i);
+                }
+            });
         }
         
         function createStationCard(station, index) {
@@ -3155,6 +4106,7 @@
             const keyboard = elements.letterKeyboard;
             
             if (keyboard.children.length === 0) {
+                const fragment = document.createDocumentFragment();
                 const letters = 'abcdefghijklmnopqrstuvwxyz'.split('');
                 letters.forEach(letter => {
                     const btn = document.createElement('button');
@@ -3162,22 +4114,25 @@
                     btn.textContent = letter.toUpperCase();
                     btn.dataset.letter = letter;
                     btn.addEventListener('click', () => revealLetter(letter));
-                    keyboard.appendChild(btn);
+                    fragment.appendChild(btn);
                 });
+                keyboard.appendChild(fragment);
             }
             
-            const buttons = keyboard.children;
-            for (let i = 0; i < buttons.length; i++) {
-                const btn = buttons[i];
-                const letter = btn.dataset.letter;
-                const isUsed = gameState.usedLetters.has(letter);
-                const isFound = gameState.foundLetters.has(letter);
-                
-                btn.className = `letter-key w-8 h-8 rounded text-sm font-medium cursor-pointer ${
-                    isFound ? 'found' : isUsed ? 'not-found used' : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
-                }`;
-                btn.disabled = isUsed || gameState.gameWon;
-            }
+            requestAnimationFrame(() => {
+                const buttons = keyboard.children;
+                for (let i = 0; i < buttons.length; i++) {
+                    const btn = buttons[i];
+                    const letter = btn.dataset.letter;
+                    const isUsed = gameState.usedLetters.has(letter);
+                    const isFound = gameState.foundLetters.has(letter);
+                    
+                    btn.className = `letter-key w-8 h-8 rounded text-sm font-medium cursor-pointer ${
+                        isFound ? 'found' : isUsed ? 'not-found used' : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
+                    }`;
+                    btn.disabled = isUsed || gameState.gameWon;
+                }
+            });
         }
 
         function handleGuess() {
@@ -3942,6 +4897,50 @@
                 showToast('新游戏开始！', 'success');
             });
             
+            if (elements.btnRules) {
+                elements.btnRules.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    elements.rulesModal.classList.remove('hidden');
+                    requestAnimationFrame(() => {
+                        elements.rulesModal.classList.remove('opacity-0');
+                        elements.rulesModalContent.classList.remove('scale-95');
+                        elements.rulesModalContent.classList.add('scale-100');
+                    });
+                });
+            }
+            if (elements.btnCloseRules) {
+                elements.btnCloseRules.addEventListener('click', () => {
+                    elements.rulesModal.classList.add('opacity-0');
+                    elements.rulesModalContent.classList.remove('scale-100');
+                    elements.rulesModalContent.classList.add('scale-95');
+                    setTimeout(() => {
+                        elements.rulesModal.classList.add('hidden');
+                    }, 200);
+                });
+            }
+            if (elements.rulesModal) {
+                elements.rulesModal.addEventListener('click', (e) => {
+                    if (e.target === elements.rulesModal) {
+                        elements.rulesModal.classList.add('opacity-0');
+                        elements.rulesModalContent.classList.remove('scale-100');
+                        elements.rulesModalContent.classList.add('scale-95');
+                        setTimeout(() => {
+                            elements.rulesModal.classList.add('hidden');
+                        }, 200);
+                    }
+                });
+            }
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && !elements.rulesModal.classList.contains('hidden')) {
+                    elements.rulesModal.classList.add('opacity-0');
+                    elements.rulesModalContent.classList.remove('scale-100');
+                    elements.rulesModalContent.classList.add('scale-95');
+                    setTimeout(() => {
+                        elements.rulesModal.classList.add('hidden');
+                    }, 200);
+                }
+            });
+            
             if (elements.btnSave) elements.btnSave.addEventListener('click', saveGameState);
             if (elements.btnLoad) elements.btnLoad.addEventListener('click', loadGameState);
             elements.btnHint.addEventListener('click', useHint);
@@ -4011,6 +5010,29 @@
             $all('.leaderboard-tab').forEach(tab => {
                 tab.addEventListener('click', () => renderLeaderboard(tab.dataset.board));
             });
+            
+            const tutorialSkip = $('tutorial-skip');
+            const tutorialPrev = $('tutorial-prev');
+            const tutorialNext = $('tutorial-next');
+            
+            if (tutorialSkip) {
+                tutorialSkip.addEventListener('click', skipTutorial);
+            }
+            if (tutorialPrev) {
+                tutorialPrev.addEventListener('click', prevTutorialStep);
+            }
+            if (tutorialNext) {
+                tutorialNext.addEventListener('click', nextTutorialStep);
+            }
+            
+            const tutorialModal = $('tutorial-modal');
+            if (tutorialModal) {
+                tutorialModal.addEventListener('click', (e) => {
+                    if (e.target === tutorialModal) {
+                        skipTutorial();
+                    }
+                });
+            }
             
             let keySequence = '';
             let keyTimeout = null;
