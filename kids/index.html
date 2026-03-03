@@ -1,0 +1,2437 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>儿童模式 - 单词猜谜游戏</title>
+    
+    <meta name="description" content="儿童模式单词猜谜游戏，通过关卡挑战学习英语单词！">
+    <meta name="keywords" content="儿童游戏,单词学习,英语学习,猜谜游戏">
+    <meta name="author" content="MetroGuess">
+    <meta name="theme-color" content="#4F46E5">
+    
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='16' fill='%234F46E5'/%3E%3Ccircle cx='50' cy='35' r='20' fill='white'/%3E%3Cpath d='M25 85 Q50 60 75 85' fill='white'/%3E%3C/svg%3E">
+    
+    <script>
+        if (!window.requestIdleCallback) {
+            window.requestIdleCallback = function(callback, options) {
+                const start = Date.now();
+                return setTimeout(function() {
+                    callback({
+                        didTimeout: false,
+                        timeRemaining: function() {
+                            return Math.max(0, 50 - (Date.now() - start));
+                        }
+                    });
+                }, options?.timeout || 1);
+            };
+        }
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;500;600;700;800&family=Comic+Neue:wght@300;400;700&display=swap" media="print" onload="this.media='all'">
+    <style>
+        .icon {
+            display: inline-block;
+            width: 1.25em;
+            height: 1.25em;
+            vertical-align: middle;
+        }
+        .icon-sm { width: 1em; height: 1em; }
+        .icon-lg { width: 1.5em; height: 1.5em; }
+        
+        :root {
+            --primary-color: #4F46E5;
+            --primary-light: #818CF8;
+            --primary-dark: #3730A3;
+            --success-color: #22C55E;
+            --warning-color: #F97316;
+            --hint-color: #A855F7;
+            --error-color: #EF4444;
+            --cta-color: #22C55E;
+            --bg-color: #EEF2FF;
+            --text-color: #312E81;
+            --transition-fast: 0.2s ease-out;
+            --transition-normal: 0.3s ease-out;
+            --shadow-sm: 0 4px 12px;
+            --shadow-glow: 0 0 20px;
+            --radius-lg: 1rem;
+            --radius-xl: 1.5rem;
+            --clay-shadow: 6px 6px 12px rgba(79, 70, 229, 0.15), -6px -6px 12px rgba(255, 255, 255, 0.8);
+            --clay-shadow-inset: inset 4px 4px 8px rgba(79, 70, 229, 0.1), inset -4px -4px 8px rgba(255, 255, 255, 0.9);
+            --clay-border: 3px solid rgba(79, 70, 229, 0.2);
+        }
+        
+        html {
+            scroll-behavior: smooth;
+        }
+        
+        * {
+            font-family: 'Comic Neue', 'Baloo 2', -apple-system, BlinkMacSystemFont, sans-serif;
+            box-sizing: border-box;
+        }
+        
+        h1, h2, h3, h4, h5, h6, .font-display {
+            font-family: 'Baloo 2', 'Comic Neue', sans-serif;
+        }
+        
+        .glass-panel {
+            background: linear-gradient(145deg, rgba(238, 242, 255, 0.95) 0%, rgba(226, 231, 255, 0.9) 100%);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: var(--clay-border);
+            box-shadow: var(--clay-shadow);
+            border-radius: var(--radius-xl);
+        }
+        
+        .word-card {
+            background: linear-gradient(145deg, rgba(255, 255, 255, 0.95) 0%, rgba(238, 242, 255, 0.9) 100%);
+            border: 3px solid rgba(79, 70, 229, 0.25);
+            transition: border-color var(--transition-normal), box-shadow var(--transition-normal), transform var(--transition-normal);
+            box-shadow: var(--clay-shadow);
+            border-radius: var(--radius-xl);
+        }
+        
+        .word-card:hover {
+            border-color: var(--primary-light);
+            box-shadow: 8px 8px 16px rgba(79, 70, 229, 0.2), -8px -8px 16px rgba(255, 255, 255, 0.9);
+            transform: translateY(-3px);
+        }
+        
+        .word-card.solved {
+            background: linear-gradient(145deg, rgba(34, 197, 94, 0.15) 0%, rgba(34, 197, 94, 0.1) 100%);
+            border-color: var(--success-color);
+            box-shadow: 0 0 20px rgba(34, 197, 94, 0.3), var(--clay-shadow);
+        }
+        
+        .letter-display {
+            font-family: 'Courier New', monospace;
+            letter-spacing: 0.15em;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(145deg, var(--primary-color) 0%, var(--primary-light) 100%);
+            transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+            box-shadow: 6px 6px 12px rgba(79, 70, 229, 0.25), -4px -4px 10px rgba(255, 255, 255, 0.6);
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: var(--radius-lg);
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 8px 8px 16px rgba(79, 70, 229, 0.3), -6px -6px 12px rgba(255, 255, 255, 0.7);
+        }
+        
+        .btn-secondary {
+            background: linear-gradient(145deg, var(--cta-color) 0%, #4ADE80 100%);
+            transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+            box-shadow: 6px 6px 12px rgba(34, 197, 94, 0.25), -4px -4px 10px rgba(255, 255, 255, 0.6);
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: var(--radius-lg);
+        }
+        
+        .btn-secondary:hover {
+            transform: translateY(-3px);
+            box-shadow: 8px 8px 16px rgba(34, 197, 94, 0.3), -6px -6px 12px rgba(255, 255, 255, 0.7);
+        }
+        
+        .btn-hint {
+            background: linear-gradient(145deg, var(--hint-color) 0%, #C084FC 100%);
+            transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+            box-shadow: 6px 6px 12px rgba(168, 85, 247, 0.25), -4px -4px 10px rgba(255, 255, 255, 0.6);
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: var(--radius-lg);
+        }
+        
+        .btn-hint:hover {
+            transform: translateY(-3px);
+            box-shadow: 8px 8px 16px rgba(168, 85, 247, 0.3), -6px -6px 12px rgba(255, 255, 255, 0.7);
+        }
+        
+        .level-btn {
+            transition: background-color var(--transition-normal), border-color var(--transition-normal), box-shadow var(--transition-normal), transform var(--transition-normal);
+            background: linear-gradient(145deg, rgba(255, 255, 255, 0.95) 0%, rgba(238, 242, 255, 0.9) 100%);
+            border: 3px solid rgba(79, 70, 229, 0.2);
+            box-shadow: var(--clay-shadow);
+            border-radius: var(--radius-lg);
+        }
+        
+        .level-btn:hover {
+            background: linear-gradient(145deg, rgba(238, 242, 255, 0.95) 0%, rgba(226, 231, 255, 0.9) 100%);
+            border-color: var(--primary-light);
+            box-shadow: 8px 8px 16px rgba(79, 70, 229, 0.2), -8px -8px 16px rgba(255, 255, 255, 0.9);
+            transform: translateY(-2px);
+        }
+        
+        .level-btn.active {
+            background: linear-gradient(145deg, var(--primary-color) 0%, var(--primary-light) 100%);
+            color: white;
+            border-color: transparent;
+            box-shadow: 6px 6px 12px rgba(79, 70, 229, 0.3), -4px -4px 10px rgba(255, 255, 255, 0.4);
+        }
+        
+        .level-btn.completed {
+            background: linear-gradient(145deg, #16A34A 0%, #22C55E 100%);
+            color: white;
+            border-color: transparent;
+            box-shadow: 6px 6px 12px rgba(34, 197, 94, 0.3), -4px -4px 10px rgba(255, 255, 255, 0.4);
+        }
+        
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-10px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        
+        @keyframes popIn {
+            0% { transform: scale(0.5); opacity: 0; }
+            50% { transform: scale(1.15); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .guess-history-item, .leaderboard-item { 
+            animation: slideIn 0.25s ease-out;
+        }
+        .letter-reveal { 
+            animation: popIn 0.3s ease-out;
+        }
+        .score-popup { 
+            animation: popIn 0.4s ease-out;
+        }
+        .achievement-badge { animation: badgeShine 2s ease infinite; }
+        .toast { 
+            animation: fadeInUp 0.25s ease-out;
+        }
+        .toast-exit { animation: toastExit 0.25s ease-out forwards; }
+        
+        @keyframes badgeShine {
+            0%, 100% { filter: brightness(1); }
+            50% { filter: brightness(1.2); }
+        }
+        
+        .neon-glow {
+            text-shadow: 
+                0 0 10px rgba(129, 140, 248, 0.8),
+                0 0 20px rgba(129, 140, 248, 0.6),
+                0 0 40px rgba(79, 70, 229, 0.4),
+                0 0 80px rgba(79, 70, 229, 0.2);
+        }
+        
+        @media (prefers-reduced-motion: no-preference) {
+            .neon-glow {
+                animation: neonPulse 3s ease-in-out infinite alternate;
+            }
+        }
+        
+        @keyframes neonPulse {
+            from {
+                text-shadow: 
+                    0 0 10px rgba(129, 140, 248, 0.8),
+                    0 0 20px rgba(129, 140, 248, 0.6),
+                    0 0 40px rgba(79, 70, 229, 0.4),
+                    0 0 80px rgba(79, 70, 229, 0.2);
+            }
+            to {
+                text-shadow: 
+                    0 0 15px rgba(129, 140, 248, 1),
+                    0 0 30px rgba(129, 140, 248, 0.8),
+                    0 0 60px rgba(79, 70, 229, 0.6),
+                    0 0 100px rgba(79, 70, 229, 0.3);
+            }
+        }
+        
+        .input-glow:focus {
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
+        }
+        
+        .letter-key {
+            transition: transform var(--transition-fast), background-color var(--transition-fast), border-color var(--transition-fast), box-shadow var(--transition-fast);
+            border-radius: var(--radius-lg);
+            border: 2px solid rgba(79, 70, 229, 0.2);
+            box-shadow: 4px 4px 8px rgba(79, 70, 229, 0.1), -2px -2px 6px rgba(255, 255, 255, 0.8);
+        }
+        
+        .letter-key:hover {
+            transform: scale(1.08);
+            box-shadow: 6px 6px 12px rgba(79, 70, 229, 0.15), -3px -3px 8px rgba(255, 255, 255, 0.9);
+        }
+        
+        .letter-key.used {
+            opacity: 0.4;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .letter-key.found {
+            background: linear-gradient(145deg, var(--success-color), #4ADE80);
+            color: white;
+            border-color: transparent;
+        }
+        
+        .letter-key.not-found {
+            background: linear-gradient(145deg, var(--error-color), #F87171);
+            color: white;
+            border-color: transparent;
+        }
+        
+        .timer-display {
+            font-variant-numeric: tabular-nums;
+        }
+        
+        .progress-bar {
+            background: linear-gradient(90deg, var(--success-color), #16a34a);
+            transition: width 0.35s ease-out;
+        }
+        
+        .shake { animation: shake 0.5s ease; }
+        .pulse-success { animation: pulseSuccess 0.5s ease; }
+        .combo-display { animation: comboPop 0.3s ease; }
+        .float-score {
+            animation: floatScore 1s ease forwards;
+            pointer-events: none;
+        }
+        
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-5px); }
+            40%, 80% { transform: translateX(5px); }
+        }
+        
+        @keyframes pulseSuccess {
+            0% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7); }
+            70% { box-shadow: 0 0 0 15px rgba(34, 197, 94, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
+        }
+        
+        @keyframes floatScore {
+            0% { opacity: 1; transform: translateY(0) scale(1); }
+            100% { opacity: 0; transform: translateY(-40px) scale(1.3); }
+        }
+        
+        @keyframes comboPop {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+        
+        @keyframes toastExit {
+            to { opacity: 0; transform: translateY(-15px); }
+        }
+        
+        .particle {
+            position: fixed;
+            pointer-events: none;
+            animation: particleFall 0.7s ease-out forwards;
+        }
+        
+        @keyframes particleFall {
+            0% { opacity: 1; transform: translateY(0) rotate(0deg); }
+            100% { opacity: 0; transform: translateY(80px) rotate(360deg); }
+        }
+        
+        .firework {
+            position: fixed;
+            pointer-events: none;
+        }
+        
+        .firework-particle {
+            position: absolute;
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            animation: fireworkExplode 0.8s ease-out forwards;
+        }
+        
+        @keyframes fireworkExplode {
+            0% { opacity: 1; transform: translate(0, 0) scale(1); }
+            100% { opacity: 0; transform: var(--end-pos) scale(0); }
+        }
+        
+        .hidden {
+            display: none !important;
+        }
+        
+        .sound-toggle {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 100;
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .sound-toggle:hover {
+            transform: scale(1.1);
+        }
+        
+        .dark .glass-panel {
+            background: rgba(30, 27, 75, 0.95);
+            border: 1px solid rgba(99, 102, 241, 0.3);
+        }
+        
+        .dark .word-card {
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%);
+            border-color: #4338ca;
+        }
+        
+        .dark .word-card:hover {
+            border-color: #818cf8;
+            box-shadow: 0 4px 20px rgba(129, 140, 248, 0.2);
+        }
+        
+        .dark .word-card.solved {
+            background: linear-gradient(135deg, #14532d 0%, #166534 100%);
+            border-color: var(--success-color);
+        }
+        
+        .dark h1 { color: #f1f5f9; }
+        .dark h2, .dark h3, .dark h4 { color: #e2e8f0; }
+        .dark .text-slate-900 { color: #f1f5f9; }
+        .dark .text-slate-800 { color: #e2e8f0; }
+        .dark .text-slate-700 { color: #cbd5e1; }
+        .dark .text-slate-600 { color: #94a3b8; }
+        .dark .text-slate-500 { color: #64748b; }
+        .dark .bg-slate-200 { background-color: #334155; }
+        .dark .bg-slate-100, .dark .bg-slate-50, .dark .bg-white { background-color: #1e1b4b; }
+        .dark .border-slate-200 { border-color: #4338ca; }
+        .dark .hover\:bg-slate-300:hover { background-color: #475569; }
+        .dark .hover\:bg-slate-200:hover { background-color: #334155; }
+        
+        .dark input[type="text"],
+        .dark input[type="number"],
+        .dark select,
+        .dark textarea {
+            background-color: #1e1b4b;
+            border-color: #4338ca;
+            color: #e2e8f0;
+        }
+        
+        .dark input[type="text"]::placeholder,
+        .dark input[type="number"]::placeholder {
+            color: #64748b;
+        }
+        
+        .dark input[type="text"]:focus,
+        .dark input[type="number"]:focus,
+        .dark select:focus {
+            border-color: var(--primary-light);
+            box-shadow: 0 0 0 3px rgba(129, 140, 248, 0.3);
+        }
+        
+        .dark .level-btn {
+            background-color: #1e1b4b;
+            border-color: #4338ca;
+            color: #cbd5e1;
+        }
+        
+        .dark .level-btn:hover {
+            background-color: #312e81;
+        }
+        
+        .dark .level-btn.active {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-light) 100%);
+            color: white;
+        }
+        
+        .dark .letter-key {
+            background-color: #312e81;
+            border-color: #4338ca;
+            color: #e2e8f0;
+        }
+        
+        .dark .letter-key:hover {
+            background-color: #3730a3;
+            border-color: #818cf8;
+        }
+        
+        .dark .letter-key.used {
+            background-color: #1e1b4b;
+            color: #64748b;
+        }
+        
+        .dark .letter-key.found {
+            background: linear-gradient(135deg, #16A34A 0%, #22C55E 100%);
+            color: white;
+        }
+        
+        .dark .letter-key.not-found {
+            background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%);
+            color: white;
+        }
+        
+        .dark .neon-glow {
+            text-shadow: 0 0 10px rgba(129, 140, 248, 0.6),
+                         0 0 20px rgba(129, 140, 248, 0.4),
+                         0 0 30px rgba(129, 140, 248, 0.3);
+        }
+        
+        .dark .progress-bar {
+            background: linear-gradient(90deg, var(--success-color), #4ade80);
+            box-shadow: 0 0 10px rgba(34, 197, 94, 0.5);
+        }
+        
+        .dark #victory-modal > div {
+            background: linear-gradient(135deg, #1e1b4b 0%, #0f0d24 100%);
+            border: 1px solid #4338ca;
+        }
+        
+        .dark #victory-modal h2 { color: #f1f5f9; }
+        .dark #victory-modal p { color: #94a3b8; }
+        .dark #victory-modal .bg-slate-100 { background-color: #0f0d24; }
+        
+        .dark .sound-toggle {
+            background: rgba(30, 27, 75, 0.95);
+            border: 1px solid rgba(99, 102, 241, 0.3);
+        }
+        
+        .dark a { color: #818cf8; }
+        .dark a:hover { color: #a5b4fc; }
+        
+        .dark ::-webkit-scrollbar { width: 8px; height: 8px; }
+        .dark ::-webkit-scrollbar-track { background: #1e1b4b; }
+        .dark ::-webkit-scrollbar-thumb { background: #4338ca; border-radius: 4px; }
+        .dark ::-webkit-scrollbar-thumb:hover { background: #6366f1; }
+        
+        .dark .bg-green-50 { background-color: rgba(34, 197, 94, 0.1); }
+        .dark .border-green-200 { border-color: rgba(34, 197, 94, 0.3); }
+        .dark .text-green-700 { color: #4ade80; }
+        .dark .bg-blue-100 { background-color: rgba(99, 102, 241, 0.2); }
+        .dark .text-blue-700 { color: #818cf8; }
+        .dark .bg-blue-50 { background-color: rgba(99, 102, 241, 0.1); }
+        
+        .level-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+            gap: 8px;
+        }
+        
+        .star-rating {
+            display: flex;
+            gap: 4px;
+        }
+        
+        .star {
+            color: #fbbf24;
+        }
+        
+        .star.empty {
+            color: #d1d5db;
+        }
+        
+        .star-icon {
+            width: 0.75rem;
+            height: 0.75rem;
+        }
+        
+        .star-icon.filled {
+            color: #fbbf24;
+        }
+        
+        .star-icon.empty {
+            color: #d1d5db;
+        }
+        
+        .level-stars {
+            display: flex;
+            gap: 1px;
+            justify-content: center;
+            margin-top: 2px;
+        }
+        
+        .hint-meaning {
+            background: linear-gradient(145deg, rgba(168, 85, 247, 0.1) 0%, rgba(192, 132, 252, 0.1) 100%);
+            border: 2px solid rgba(168, 85, 247, 0.3);
+            border-radius: var(--radius-lg);
+            padding: 0.75rem;
+            margin-top: 0.5rem;
+            font-size: 0.875rem;
+            color: #7c3aed;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .hint-meaning svg {
+            flex-shrink: 0;
+        }
+        
+        @media (max-width: 640px) {
+            .letter-display {
+                letter-spacing: 0.08em;
+                font-size: 0.875rem;
+            }
+            .level-grid {
+                grid-template-columns: repeat(5, 1fr);
+            }
+        }
+        
+        @media (prefers-reduced-motion: reduce) {
+            *,
+            *::before,
+            *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+            
+            .neon-glow {
+                animation: none;
+            }
+            
+            .word-card:hover,
+            .btn-primary:hover,
+            .btn-secondary:hover,
+            .btn-hint:hover {
+                transform: none;
+            }
+            
+            .particle,
+            .firework-particle {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-indigo-50 via-purple-50 to-blue-100 min-h-screen text-slate-800 transition-colors duration-300">
+
+    <div id="toast-container" class="fixed top-4 right-4 z-50 space-y-2" role="alert" aria-live="polite"></div>
+    
+    <div id="floating-scores" class="fixed inset-0 pointer-events-none z-40" aria-hidden="true"></div>
+    
+    <button id="sound-toggle" class="sound-toggle glass-panel shadow-lg cursor-pointer" title="切换音效" aria-label="切换音效">
+        <svg id="sound-on-icon" class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+            <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+        </svg>
+        <svg id="sound-off-icon" class="icon hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+            <line x1="23" y1="9" x2="17" y2="15"></line>
+            <line x1="17" y1="9" x2="23" y2="15"></line>
+        </svg>
+    </button>
+    
+    <main class="relative z-10 container mx-auto px-4 py-6 max-w-6xl">
+        <header class="text-center mb-6">
+            <div class="flex justify-center items-center gap-4 mb-2">
+                <h1 class="text-3xl md:text-4xl font-bold text-slate-900 neon-glow flex items-center gap-3">
+                    <svg class="w-10 h-10 text-indigo-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="8" r="5"></circle>
+                        <path d="M20 21a8 8 0 1 0-16 0"></path>
+                    </svg>
+                    儿童模式
+                </h1>
+                <button id="btn-theme" class="p-2 rounded-lg bg-slate-200 hover:bg-slate-300 transition-all cursor-pointer" title="切换主题 (T)" aria-label="切换主题">
+                    <svg id="theme-moon-icon" class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg id="theme-sun-icon" class="icon hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+            </div>
+            <p class="text-slate-600 text-sm md:text-base">
+                开字母 · 猜单词 · 学习英语
+            </p>
+        </header>
+        
+        <section id="level-select-area" class="glass-panel rounded-2xl p-4 mb-4 shadow-lg">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-semibold text-slate-800 flex items-center gap-2">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="3" width="7" height="7"></rect>
+                        <rect x="14" y="3" width="7" height="7"></rect>
+                        <rect x="14" y="14" width="7" height="7"></rect>
+                        <rect x="3" y="14" width="7" height="7"></rect>
+                    </svg>
+                    选择关卡
+                </h3>
+                <div class="flex items-center gap-4">
+                    <div class="text-center cursor-pointer hover:bg-indigo-100 px-2 py-1 rounded-lg transition-colors" id="player-name-display" title="点击修改名字">
+                        <div class="text-xs text-slate-500">玩家</div>
+                        <div class="text-sm font-bold text-indigo-600 flex items-center gap-1">
+                            <span id="display-player-name">小朋友</span>
+                            <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-xs text-slate-500">总星星</div>
+                        <div id="total-stars" class="text-xl font-bold text-yellow-500">⭐ 0</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-xs text-slate-500">已通关</div>
+                        <div id="completed-levels" class="text-xl font-bold text-green-600">0/40</div>
+                    </div>
+                </div>
+            </div>
+            <div id="level-grid" class="level-grid">
+            </div>
+        </section>
+        
+        <section id="game-area" class="hidden">
+            <section id="game-header" class="glass-panel rounded-2xl p-4 mb-4 shadow-lg">
+                <div class="flex flex-col md:flex-row gap-4 items-center justify-between">
+                    <div class="flex items-center gap-2">
+                        <span class="text-lg font-bold text-indigo-600" id="current-level-display">第1关</span>
+                    </div>
+                    <div class="flex items-center gap-4">
+                        <div class="text-center">
+                            <div class="text-xs text-slate-500">计时</div>
+                            <div id="timer" class="text-xl font-bold text-blue-600 timer-display">00:00</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-xs text-slate-500">得分</div>
+                            <div id="score" class="text-xl font-bold text-indigo-600">0</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-xs text-slate-500">连击</div>
+                            <div id="combo" class="text-xl font-bold text-orange-600">0</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-xs text-slate-500">提示</div>
+                            <div id="hints-left" class="text-xl font-bold text-purple-600">3</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mt-3">
+                    <div class="flex justify-between text-xs text-slate-500 mb-1">
+                        <span>进度</span>
+                        <span id="progress-text">0/4</span>
+                    </div>
+                    <div class="h-2 bg-slate-200 rounded-full overflow-hidden">
+                        <div id="progress-bar" class="progress-bar h-full rounded-full" style="width: 0%"></div>
+                    </div>
+                </div>
+                
+                <div id="game-controls" class="mt-3 pt-3 border-t border-slate-200/50 text-center">
+                    <div class="flex items-center justify-center gap-4 text-sm">
+                        <a id="btn-back-levels" href="#" class="text-indigo-600 hover:text-indigo-700 font-medium cursor-pointer">返回关卡</a>
+                        <span class="text-slate-300">|</span>
+                        <a id="btn-restart" href="#" class="text-slate-600 hover:text-slate-800 cursor-pointer">重新开始</a>
+                        <span class="text-slate-300">|</span>
+                        <a id="btn-hint" href="#" class="text-purple-600 hover:text-purple-700 cursor-pointer">提示</a>
+                        <span class="text-slate-300">|</span>
+                        <span class="text-slate-500">已猜 <span id="guess-count" class="text-slate-700">0</span> 次</span>
+                    </div>
+                </div>
+            </section>
+            
+            <div id="words-container" class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            </div>
+            
+            <div class="glass-panel rounded-2xl p-4 shadow-lg mb-4">
+                <h3 class="text-sm font-semibold text-slate-700 mb-3">字母键盘 (点击或输入字母开字母)</h3>
+                <div id="letter-keyboard" class="flex flex-wrap gap-1.5 justify-center">
+                </div>
+            </div>
+            
+            <div class="glass-panel rounded-2xl p-4 md:p-6 shadow-lg">
+                <div class="flex flex-col md:flex-row gap-3">
+                    <input 
+                        type="text" 
+                        id="guess-input" 
+                        placeholder="输入字母开字母，或输入单词猜测" 
+                        class="flex-1 px-4 py-3 rounded-lg border border-slate-200 bg-white text-slate-800 placeholder-slate-400 input-glow focus:outline-none focus:border-indigo-500 transition-all"
+                        autocomplete="off"
+                    >
+                    <button id="btn-submit" class="btn-secondary px-6 py-3 rounded-lg text-white font-medium cursor-pointer">
+                        提交
+                    </button>
+                </div>
+                <p class="text-xs text-slate-500 mt-2">
+                    在输入框输入<span class="text-indigo-600 font-medium">字母</span>开字母，或输入<span class="text-orange-600 font-medium">单词</span>猜测
+                </p>
+            </div>
+            
+            <div class="glass-panel rounded-2xl p-4 md:p-6 shadow-lg mt-4">
+                <h3 class="text-lg font-semibold text-slate-800 mb-4">猜测记录</h3>
+                <div id="guess-history" class="space-y-2 max-h-48 overflow-y-auto">
+                    <p class="text-slate-400 text-sm italic">暂无记录</p>
+                </div>
+            </div>
+        </section>
+        
+        <section id="leaderboard-area" class="hidden">
+            <div class="glass-panel rounded-2xl p-4 md:p-6 shadow-lg">
+                <h3 class="text-lg font-semibold text-slate-800 mb-4 flex items-center gap-2">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path>
+                        <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path>
+                        <path d="M4 22h16"></path>
+                        <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"></path>
+                        <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"></path>
+                        <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"></path>
+                    </svg>
+                    排行榜
+                </h3>
+                <div class="flex gap-2 mb-4">
+                    <button id="tab-overall" class="leaderboard-tab active px-3 py-1.5 rounded-lg text-sm font-medium bg-indigo-500 text-white cursor-pointer">全通关榜</button>
+                    <select id="leaderboard-level-select" class="px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-700 text-sm cursor-pointer">
+                    </select>
+                </div>
+                <div id="leaderboard-list" class="space-y-2">
+                </div>
+            </div>
+            
+            <div class="glass-panel rounded-2xl p-4 md:p-6 shadow-lg mt-4">
+                <h3 class="text-lg font-semibold text-slate-800 mb-4 flex items-center gap-2">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="8" r="7"></circle>
+                        <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline>
+                    </svg>
+                    成就
+                </h3>
+                <div id="achievements-list" class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                </div>
+            </div>
+        </section>
+        
+        <nav class="flex justify-center gap-3 mb-4 flex-wrap" aria-label="游戏模式">
+            <button id="mode-levels" class="level-btn active px-4 py-2 rounded-lg font-medium text-sm text-slate-700 cursor-pointer">
+                关卡选择
+            </button>
+            <button id="mode-leaderboard" class="level-btn px-4 py-2 rounded-lg font-medium text-sm text-slate-700 cursor-pointer">
+                排行榜
+            </button>
+        </nav>
+        
+        <footer class="text-center mt-6 text-sm text-slate-500">
+            <p>制作者：<a href="https://space.bilibili.com/1944366810" target="_blank" rel="noopener noreferrer" class="text-indigo-600 hover:text-indigo-700 font-medium">bilibili@lvshu</a></p>
+        </footer>
+    </main>
+    
+    <div id="victory-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl p-6 md:p-8 max-w-md w-full shadow-2xl transform scale-100 transition-transform">
+            <div class="text-center">
+                <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-green-400 to-emerald-500 flex items-center justify-center shadow-lg">
+                    <svg class="w-8 h-8 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                        <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                    </svg>
+                </div>
+                <h2 class="text-2xl font-bold text-slate-900 mb-2 font-display flex items-center justify-center gap-2">
+                    <svg class="w-7 h-7 text-yellow-500" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                    恭喜过关！
+                    <svg class="w-7 h-7 text-yellow-500" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                </h2>
+                <p class="text-slate-600 mb-4">你成功猜对了所有单词！</p>
+                <div id="stars-display" class="flex justify-center gap-2 mb-4 text-3xl">
+                </div>
+                <div class="bg-slate-100 rounded-lg p-4 mb-4">
+                    <div class="grid grid-cols-2 gap-4 text-center">
+                        <div>
+                            <div class="text-sm text-slate-500">用时</div>
+                            <div id="final-time" class="text-xl font-bold text-indigo-600">00:00</div>
+                        </div>
+                        <div>
+                            <div class="text-sm text-slate-500">得分</div>
+                            <div id="final-score" class="text-xl font-bold text-green-600 score-popup">0</div>
+                        </div>
+                        <div>
+                            <div class="text-sm text-slate-500">猜测次数</div>
+                            <div id="final-guesses" class="text-xl font-bold text-orange-600">0</div>
+                        </div>
+                        <div>
+                            <div class="text-sm text-slate-500">使用提示</div>
+                            <div id="final-hints" class="text-xl font-bold text-purple-600">0</div>
+                        </div>
+                    </div>
+                </div>
+                <div id="first-level-name-input" class="mb-4 hidden">
+                    <input type="text" id="player-name" placeholder="输入你的名字" maxlength="20" class="w-full px-4 py-2 rounded-lg border border-slate-200 bg-white text-slate-800 placeholder-slate-400 focus:outline-none focus:border-indigo-500">
+                </div>
+                <div class="flex justify-center gap-3">
+                    <button id="btn-next-level" class="btn-secondary px-6 py-2.5 rounded-lg text-white font-medium cursor-pointer">
+                        下一关
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="name-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl p-6 max-w-sm w-full shadow-2xl">
+            <div class="text-center">
+                <div class="w-14 h-14 mx-auto mb-3 rounded-full bg-gradient-to-br from-green-400 to-emerald-500 flex items-center justify-center shadow-lg">
+                    <svg class="w-7 h-7 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="12" cy="7" r="4"></circle>
+                    </svg>
+                </div>
+                <h2 class="text-xl font-bold text-slate-900 mb-2 font-display">设置你的名字</h2>
+                <p class="text-slate-500 text-sm mb-4">这个名字会显示在排行榜上</p>
+                <input type="text" id="name-input" placeholder="输入你的名字" maxlength="12" class="w-full px-4 py-3 rounded-lg border border-slate-200 bg-white text-slate-800 placeholder-slate-400 focus:outline-none focus:border-green-500 text-center text-lg font-medium mb-4">
+                <div class="flex justify-center gap-3">
+                    <button id="btn-cancel-name" class="px-5 py-2 rounded-lg border border-slate-200 text-slate-600 font-medium cursor-pointer hover:bg-slate-50 transition-colors">
+                        取消
+                    </button>
+                    <button id="btn-save-name" class="btn-primary px-5 py-2 rounded-lg text-white font-medium cursor-pointer">
+                        保存
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const WORD_TRANSLATIONS = {
+            'bird': '鸟', 'fish': '鱼', 'frog': '青蛙', 'duck': '鸭子',
+            'wolf': '狼', 'hawk': '鹰', 'swan': '天鹅', 'crow': '乌鸦',
+            'milk': '牛奶', 'salt': '盐', 'desk': '书桌', 'lamp': '灯',
+            'hand': '手', 'neck': '脖子', 'back': '背', 'bell': '铃铛',
+            'tent': '帐篷', 'belt': '腰带', 'bank': '银行', 'tank': '坦克',
+            'sand': '沙子', 'land': '陆地', 'band': '乐队', 'dust': '灰尘',
+            'must': '必须', 'just': '刚刚', 'bump': '碰撞', 'jump': '跳',
+            'camp': '露营', 'pink': '粉色', 'gray': '灰色', 'star': '星星',
+            'snow': '雪', 'wind': '风', 'many': '许多', 'long': '长',
+            'king': '国王', 'ring': '戒指', 'wing': '翅膀', 'song': '歌',
+            'apple': '苹果', 'tiger': '老虎', 'zebra': '斑马', 'panda': '熊猫',
+            'camel': '骆驼', 'horse': '马', 'bread': '面包', 'peach': '桃子',
+            'grape': '葡萄', 'lemon': '柠檬', 'melon': '瓜', 'sugar': '糖',
+            'chair': '椅子', 'table': '桌子', 'phone': '电话', 'green': '绿色',
+            'white': '白色', 'seven': '七', 'eight': '八', 'mouth': '嘴',
+            'train': '火车', 'plane': '飞机', 'stone': '石头', 'smoke': '烟',
+            'smile': '微笑', 'snake': '蛇', 'fruit': '水果', 'beach': '海滩',
+            'flame': '火焰', 'globe': '地球仪', 'spade': '铲子', 'shade': '阴影',
+            'brain': '大脑', 'chain': '链子', 'grain': '谷物', 'crane': '起重机',
+            'plate': '盘子', 'skate': '滑冰', 'space': '太空', 'trace': '痕迹',
+            'turtle': '海龟', 'rabbit': '兔子', 'kitten': '小猫', 'puppy': '小狗',
+            'yellow': '黄色', 'purple': '紫色', 'circle': '圆', 'square': '正方形',
+            'cookie': '饼干', 'banana': '香蕉', 'orange': '橙子', 'carrot': '胡萝卜',
+            'flower': '花', 'river': '河', 'cloud': '云', 'grass': '草',
+            'bottle': '瓶子', 'pillow': '枕头', 'window': '窗户', 'candle': '蜡烛',
+            'sleep': '睡觉', 'throw': '扔', 'catch': '抓住', 'climb': '爬',
+            'bicycle': '自行车', 'rocket': '火箭', 'tractor': '拖拉机', 'wagon': '马车',
+            'dolphin': '海豚', 'penguin': '企鹅', 'leopard': '豹子', 'giraffe': '长颈鹿',
+            'butterfly': '蝴蝶', 'elephant': '大象', 'umbrella': '雨伞', 'dinosaur': '恐龙',
+            'rainbow': '彩虹', 'pumpkin': '南瓜', 'monster': '怪物', 'treasure': '宝藏',
+            'crystal': '水晶', 'jungle': '丛林', 'pirate': '海盗', 'rocket': '火箭',
+            'guitar': '吉他', 'violin': '小提琴', 'tunnel': '隧道', 'saddle': '马鞍',
+            'blanket': '毯子', 'compass': '指南针', 'diamond': '钻石', 'fortress': '堡垒',
+            'whistle': '哨子', 'sprinkle': '撒', 'twinkle': '闪烁', 'crumble': '崩溃',
+            'dragonfly': '蜻蜓', 'grasshopper': '蚱蜢', 'caterpillar': '毛毛虫', 'ladybug': '瓢虫',
+            'volcano': '火山', 'tornado': '龙卷风', 'hurricane': '飓风', 'earthquake': '地震',
+            'chocolate': '巧克力', 'vanilla': '香草', 'strawberry': '草莓', 'caramel': '焦糖',
+            'mystery': '神秘', 'library': '图书馆', 'history': '历史', 'factory': '工厂',
+            'astronaut': '宇航员', 'telescope': '望远镜', 'satellite': '卫星', 'universe': '宇宙',
+            'rhinoceros': '犀牛', 'hippopotamus': '河马', 'crocodile': '鳄鱼', 'chimpanzee': '黑猩猩'
+        };
+
+        const LEVEL_DATA = `第1关：bird, fish, frog, duck  
+第2关：wolf, hawk, swan, crow  
+第3关：milk, salt, desk, lamp  
+第4关：hand, neck, back, bell  
+第5关：tent, belt, bank, tank  
+第6关：sand, land, band, dust  
+第7关：must, just, bump, jump  
+第8关：camp, pink, gray, star  
+第9关：snow, wind, many, long  
+第10关：king, ring, wing, song  
+第11关：apple, tiger, zebra, panda  
+第12关：camel, horse, bread, peach  
+第13关：grape, lemon, melon, sugar  
+第14关：chair, table, phone, green  
+第15关：white, seven, eight, mouth  
+第16关：train, plane, stone, smoke  
+第17关：smile, snake, fruit, beach  
+第18关：flame, globe, spade, shade  
+第19关：brain, chain, grain, crane  
+第20关：plate, skate, space, trace
+第21关：turtle, rabbit, kitten, puppy  
+第22关：yellow, purple, circle, square  
+第23关：cookie, banana, orange, carrot  
+第24关：flower, river, cloud, grass  
+第25关：bottle, pillow, window, candle  
+第26关：sleep, throw, catch, climb  
+第27关：bicycle, rocket, tractor, wagon  
+第28关：dolphin, penguin, leopard, giraffe  
+第29关：butterfly, elephant, umbrella, dinosaur  
+第30关：rainbow, pumpkin, monster, treasure
+第31关：crystal, jungle, pirate, rocket  
+第32关：guitar, violin, tunnel, saddle  
+第33关：blanket, compass, diamond, fortress  
+第34关：whistle, sprinkle, twinkle, crumble  
+第35关：dragonfly, grasshopper, caterpillar, ladybug  
+第36关：volcano, tornado, hurricane, earthquake  
+第37关：chocolate, vanilla, strawberry, caramel  
+第38关：mystery, library, history, factory  
+第39关：astronaut, telescope, satellite, universe  
+第40关：rhinoceros, hippopotamus, crocodile, chimpanzee`;
+
+        const ACHIEVEMENTS = [
+            { id: 'first_level', name: '初次通关', desc: '完成第一关', icon: 'star' },
+            { id: 'speed_star', name: '速度之星', desc: '30秒内完成一关', icon: 'zap' },
+            { id: 'no_hint', name: '独立思考', desc: '不使用提示完成一关', icon: 'brain' },
+            { id: 'level_10', name: '小有成就', desc: '通关10关', icon: 'trophy' },
+            { id: 'level_20', name: '渐入佳境', desc: '通关20关', icon: 'award' },
+            { id: 'level_40', name: '单词大师', desc: '通关全部40关', icon: 'crown' },
+            { id: 'combo_5', name: '连击高手', desc: '达成5连击', icon: 'flame' },
+            { id: 'all_stars', name: '完美收集', desc: '获得120颗星星', icon: 'gem' }
+        ];
+        
+        const ACHIEVEMENT_ICONS = {
+            star: '<svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>',
+            zap: '<svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>',
+            brain: '<svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96.44 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 4.44-1.54"></path><path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96.44 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-4.44-1.54"></path></svg>',
+            trophy: '<svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path><path d="M4 22h16"></path><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"></path><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"></path><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"></path></svg>',
+            award: '<svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"></circle><path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11"></path></svg>',
+            crown: '<svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 4l3 12h14l3-12-6 7-4-7-4 7-6-7zm3 16h14"></path></svg>',
+            flame: '<svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"></path></svg>',
+            gem: '<svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12l4 6-10 13L2 9z"></path><path d="M11 3 8 9l4 13 4-13-3-6"></path><path d="M2 9h20"></path></svg>'
+        };
+
+        const MEDAL_ICONS = {
+            gold: '<svg class="w-6 h-6 text-yellow-500" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="8" r="6"></circle><path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11" fill="currentColor"/></svg>',
+            silver: '<svg class="w-6 h-6 text-slate-400" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="8" r="6"></circle><path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11" fill="currentColor"/></svg>',
+            bronze: '<svg class="w-6 h-6 text-amber-600" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="8" r="6"></circle><path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11" fill="currentColor"/></svg>'
+        };
+
+        const $ = id => document.getElementById(id);
+        const $all = sel => document.querySelectorAll(sel);
+        const createEl = (tag, className, innerHTML) => {
+            const el = document.createElement(tag);
+            if (className) el.className = className;
+            if (innerHTML) el.innerHTML = innerHTML;
+            return el;
+        };
+
+        function renderStarsSVG(count, maxStars = 3) {
+            const starSVG = '<svg class="star-icon filled inline-block" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>';
+            const emptyStarSVG = '<svg class="star-icon empty inline-block" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>';
+            return starSVG.repeat(count) + emptyStarSVG.repeat(maxStars - count);
+        }
+
+        function parseLevelData() {
+            const levels = [];
+            const lines = LEVEL_DATA.trim().split('\n');
+            
+            lines.forEach(line => {
+                const match = line.match(/第(\d+)关：(.+)/);
+                if (match) {
+                    const levelNum = parseInt(match[1]);
+                    const words = match[2].split(',').map(w => w.trim().toLowerCase()).filter(w => w);
+                    levels.push({
+                        level: levelNum,
+                        words: words
+                    });
+                }
+            });
+            
+            return levels;
+        }
+
+        const LEVELS = parseLevelData();
+        
+        let gameState = {
+            currentLevel: 1,
+            words: [],
+            revealedLetters: {},
+            solvedWords: new Set(),
+            guessCount: 0,
+            guessHistory: [],
+            gameWon: false,
+            score: 0,
+            hintsUsed: 0,
+            hintsLeft: 3,
+            startTime: null,
+            elapsedTime: 0,
+            usedLetters: new Set(),
+            foundLetters: new Set(),
+            combo: 0,
+            lastCorrectTime: 0
+        };
+
+        let playerStats = {
+            completedLevels: new Set(),
+            levelStars: {},
+            levelBestTimes: {},
+            totalStars: 0,
+            achievements: new Set(),
+            leaderboards: {},
+            playerName: '小朋友',
+            totalTime: 0
+        };
+
+        let timerInterval = null;
+        let isDarkMode = false;
+        let soundEnabled = true;
+        let audioContext = null;
+
+        const MULTIPLAYER_CONFIG = {
+            apiKey: "AIzaSyDPs3vZRgXUCEYJ6qWJc69YYKVfRfj8PuM",
+            authDomain: "metroguess-lvshu.firebaseapp.com",
+            databaseURL: "https://metroguess-lvshu-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "metroguess-lvshu",
+            storageBucket: "metroguess-lvshu.firebasestorage.app",
+            messagingSenderId: "331461414999",
+            appId: "1:331461414999:web:50beeb73a94ca4ba971312",
+            measurementId: "G-YWSMLL0YNC"
+        };
+
+        let db = null;
+        let kidsLeaderboardRef = null;
+        let cloudLeaderboards = { overall: [], levels: {} };
+
+        const elements = {
+            levelSelectArea: $('level-select-area'),
+            gameArea: $('game-area'),
+            leaderboardArea: $('leaderboard-area'),
+            levelGrid: $('level-grid'),
+            wordsContainer: $('words-container'),
+            guessInput: $('guess-input'),
+            btnSubmit: $('btn-submit'),
+            btnBackLevels: $('btn-back-levels'),
+            btnRestart: $('btn-restart'),
+            btnHint: $('btn-hint'),
+            btnTheme: $('btn-theme'),
+            btnNextLevel: $('btn-next-level'),
+            modeLevels: $('mode-levels'),
+            modeLeaderboard: $('mode-leaderboard'),
+            guessHistory: $('guess-history'),
+            victoryModal: $('victory-modal'),
+            guessCount: $('guess-count'),
+            timer: $('timer'),
+            score: $('score'),
+            hintsLeft: $('hints-left'),
+            letterKeyboard: $('letter-keyboard'),
+            leaderboardList: $('leaderboard-list'),
+            achievementsList: $('achievements-list'),
+            playerName: $('player-name'),
+            finalTime: $('final-time'),
+            finalScore: $('final-score'),
+            finalGuesses: $('final-guesses'),
+            finalHints: $('final-hints'),
+            progressBar: $('progress-bar'),
+            progressText: $('progress-text'),
+            combo: $('combo'),
+            toastContainer: $('toast-container'),
+            floatingScores: $('floating-scores'),
+            soundToggle: $('sound-toggle'),
+            currentLevelDisplay: $('current-level-display'),
+            totalStars: $('total-stars'),
+            completedLevels: $('completed-levels'),
+            starsDisplay: $('stars-display'),
+            leaderboardLevelSelect: $('leaderboard-level-select'),
+            tabOverall: $('tab-overall'),
+            firstLevelNameInput: $('first-level-name-input'),
+            playerNameDisplay: $('player-name-display'),
+            displayPlayerName: $('display-player-name'),
+            nameModal: $('name-modal'),
+            nameInput: $('name-input'),
+            btnSaveName: $('btn-save-name'),
+            btnCancelName: $('btn-cancel-name')
+        };
+
+        function initAudio() {
+            try {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            } catch (e) {
+                console.log('Web Audio API not supported');
+            }
+        }
+
+        function initFirebase() {
+            if (db) return;
+            
+            const loadScript = (src) => {
+                return new Promise((resolve, reject) => {
+                    const script = document.createElement('script');
+                    script.src = src;
+                    script.async = true;
+                    script.onload = resolve;
+                    script.onerror = reject;
+                    document.head.appendChild(script);
+                });
+            };
+            
+            Promise.all([
+                loadScript('https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js'),
+                loadScript('https://www.gstatic.com/firebasejs/10.7.0/firebase-database-compat.js')
+            ]).then(() => {
+                if (typeof firebase !== 'undefined' && !firebase.apps.length) {
+                    firebase.initializeApp(MULTIPLAYER_CONFIG);
+                    db = firebase.database();
+                    console.log('Firebase initialized for kids mode');
+                    initKidsLeaderboardListener();
+                }
+            }).catch(e => {
+                console.log('Firebase load failed, running in offline mode:', e);
+            });
+        }
+
+        function initKidsLeaderboardListener() {
+            if (!db) return;
+            
+            kidsLeaderboardRef = db.ref('kidsLeaderboard');
+            kidsLeaderboardRef.on('value', (snapshot) => {
+                if (snapshot.exists()) {
+                    const data = snapshot.val();
+                    cloudLeaderboards = {
+                        overall: data.overall ? Object.values(data.overall) : [],
+                        levels: data.levels || {}
+                    };
+                    
+                    Object.keys(cloudLeaderboards.levels).forEach(level => {
+                        cloudLeaderboards.levels[level] = Object.values(cloudLeaderboards.levels[level])
+                            .sort((a, b) => b.score - a.score).slice(0, 10);
+                    });
+                    
+                    cloudLeaderboards.overall = cloudLeaderboards.overall
+                        .sort((a, b) => {
+                            if (b.levelsCompleted !== a.levelsCompleted) return b.levelsCompleted - a.levelsCompleted;
+                            return a.totalTime - b.totalTime;
+                        }).slice(0, 20);
+                    
+                    if (!elements.leaderboardArea.classList.contains('hidden')) {
+                        if (elements.tabOverall.classList.contains('bg-green-500')) {
+                            renderOverallLeaderboard();
+                        } else {
+                            renderLeaderboard(parseInt(elements.leaderboardLevelSelect.value));
+                        }
+                    }
+                }
+            });
+        }
+
+        async function saveToCloudLeaderboard(entry, levelNum) {
+            if (!db) {
+                initFirebase();
+                await new Promise(resolve => setTimeout(resolve, 500));
+            }
+            
+            if (db) {
+                try {
+                    const levelRef = db.ref('kidsLeaderboard/levels/' + levelNum);
+                    const newEntryRef = levelRef.push();
+                    await newEntryRef.set(entry);
+                    
+                    const snapshot = await levelRef.orderByChild('score').once('value');
+                    const allEntries = [];
+                    snapshot.forEach(child => {
+                        allEntries.push({ key: child.key, ...child.val() });
+                    });
+                    allEntries.sort((a, b) => b.score - a.score);
+                    
+                    if (allEntries.length > 20) {
+                        const toRemove = allEntries.slice(20);
+                        for (const item of toRemove) {
+                            await db.ref('kidsLeaderboard/levels/' + levelNum + '/' + item.key).remove();
+                        }
+                    }
+                    
+                    await updateOverallCloudLeaderboard();
+                    console.log('Saved to cloud leaderboard');
+                } catch (e) {
+                    console.error('Failed to save to cloud:', e);
+                }
+            }
+        }
+
+        async function updateOverallCloudLeaderboard() {
+            if (!db) return;
+            
+            try {
+                const snapshot = await db.ref('kidsLeaderboard/levels').once('value');
+                if (!snapshot.exists()) return;
+                
+                const allPlayers = {};
+                const levelsData = snapshot.val();
+                
+                Object.entries(levelsData).forEach(([levelNum, entries]) => {
+                    Object.values(entries).forEach(entry => {
+                        if (!allPlayers[entry.name]) {
+                            allPlayers[entry.name] = {
+                                name: entry.name,
+                                levelsCompleted: 0,
+                                totalStars: 0,
+                                totalTime: 0,
+                                lastUpdate: 0
+                            };
+                        }
+                        allPlayers[entry.name].levelsCompleted++;
+                        allPlayers[entry.name].totalStars += entry.stars || 1;
+                        allPlayers[entry.name].totalTime += entry.time || 0;
+                        if (entry.timestamp > allPlayers[entry.name].lastUpdate) {
+                            allPlayers[entry.name].lastUpdate = entry.timestamp;
+                        }
+                    });
+                });
+                
+                const overallRef = db.ref('kidsLeaderboard/overall');
+                await overallRef.set(allPlayers);
+            } catch (e) {
+                console.error('Failed to update overall leaderboard:', e);
+            }
+        }
+
+        function playSound(type) {
+            if (!soundEnabled || !audioContext) return;
+            
+            const now = audioContext.currentTime;
+            
+            switch (type) {
+                case 'reveal':
+                    playTone(440, 0.1, 0.08, now, 880);
+                    break;
+                case 'correct':
+                    playTone(523, 0.3, 0.12, now);
+                    playTone(659, 0.3, 0.12, now + 0.1);
+                    playTone(784, 0.3, 0.12, now + 0.2);
+                    break;
+                case 'wrong':
+                    playTone(200, 0.2, 0.08, now, 100);
+                    break;
+                case 'victory':
+                    const notes = [523, 587, 659, 698, 784, 880, 988, 1047];
+                    notes.forEach((freq, i) => {
+                        playTone(freq, 0.15, 0.08, now + i * 0.1);
+                    });
+                    break;
+                case 'hint':
+                    playTone(600, 0.15, 0.08, now, 400);
+                    break;
+                case 'combo':
+                    playTone(800 + gameState.combo * 50, 0.08, 0.06, now);
+                    break;
+            }
+        }
+        
+        function playTone(freq, duration, volume, startTime, endFreq = null) {
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.frequency.setValueAtTime(freq, startTime);
+            if (endFreq) {
+                oscillator.frequency.exponentialRampToValueAtTime(endFreq, startTime + duration);
+            }
+            
+            gainNode.gain.setValueAtTime(volume, startTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, startTime + duration);
+            
+            oscillator.start(startTime);
+            oscillator.stop(startTime + duration);
+        }
+
+        function toggleSound() {
+            soundEnabled = !soundEnabled;
+            const soundOnIcon = $('sound-on-icon');
+            const soundOffIcon = $('sound-off-icon');
+            if (soundOnIcon && soundOffIcon) {
+                if (soundEnabled) {
+                    soundOnIcon.classList.remove('hidden');
+                    soundOffIcon.classList.add('hidden');
+                } else {
+                    soundOnIcon.classList.add('hidden');
+                    soundOffIcon.classList.remove('hidden');
+                }
+            }
+            if (soundEnabled && !audioContext) {
+                initAudio();
+            }
+            showToast(soundEnabled ? '音效已开启' : '音效已关闭', 'info');
+        }
+
+        function showToast(message, type = 'info') {
+            requestAnimationFrame(() => {
+                const toast = document.createElement('div');
+                toast.className = `toast px-4 py-2 rounded-lg shadow-lg text-sm font-medium cursor-pointer ${
+                    type === 'success' ? 'bg-green-500 text-white' :
+                    type === 'error' ? 'bg-red-500 text-white' :
+                    'bg-slate-700 text-white'
+                }`;
+                toast.textContent = message;
+                elements.toastContainer.appendChild(toast);
+                
+                setTimeout(() => {
+                    toast.classList.add('toast-exit');
+                    setTimeout(() => toast.remove(), 250);
+                }, 1800);
+            });
+        }
+
+        function showFloatingScore(points, x, y) {
+            requestAnimationFrame(() => {
+                const scoreEl = document.createElement('div');
+                scoreEl.className = 'float-score text-2xl font-bold text-green-500';
+                scoreEl.textContent = `+${points}`;
+                scoreEl.style.left = `${x}px`;
+                scoreEl.style.top = `${y}px`;
+                elements.floatingScores.appendChild(scoreEl);
+                
+                setTimeout(() => scoreEl.remove(), 800);
+            });
+        }
+
+        function createParticles(x, y, count = 5) {
+            const colors = ['#22c55e', '#3b82f6', '#f97316'];
+            const reducedCount = Math.min(count, 3);
+            
+            for (let i = 0; i < reducedCount; i++) {
+                requestAnimationFrame(() => {
+                    const particle = document.createElement('div');
+                    particle.className = 'particle';
+                    particle.style.left = `${x + (Math.random() - 0.5) * 50}px`;
+                    particle.style.style.top = `${y}px`;
+                    particle.style.width = `${Math.random() * 5 + 3}px`;
+                    particle.style.height = particle.style.width;
+                    particle.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                    particle.style.borderRadius = '50%';
+                    document.body.appendChild(particle);
+                    
+                    setTimeout(() => particle.remove(), 600);
+                });
+            }
+        }
+
+        function createFireworks() {
+            const colors = ['#ff0000', '#00ff00', '#0000ff', '#ffff00'];
+            
+            for (let f = 0; f < 1; f++) {
+                setTimeout(() => {
+                    const x = Math.random() * window.innerWidth;
+                    const y = Math.random() * window.innerHeight * 0.5;
+                    
+                    for (let i = 0; i < 6; i++) {
+                        requestAnimationFrame(() => {
+                            const particle = document.createElement('div');
+                            particle.className = 'firework-particle';
+                            particle.style.left = `${x}px`;
+                            particle.style.top = `${y}px`;
+                            particle.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                            
+                            const angle = (i / 6) * Math.PI * 2;
+                            const distance = 30 + Math.random() * 40;
+                            const endX = Math.cos(angle) * distance;
+                            const endY = Math.sin(angle) * distance;
+                            
+                            particle.style.setProperty('--end-pos', `translate(${endX}px, ${endY}px)`);
+                            
+                            const firework = document.createElement('div');
+                            firework.className = 'firework';
+                            firework.style.left = '0';
+                            firework.style.top = '0';
+                            firework.appendChild(particle);
+                            document.body.appendChild(firework);
+                            
+                            setTimeout(() => firework.remove(), 700);
+                        });
+                    }
+                }, f * 200);
+            }
+        }
+
+        function loadStats() {
+            const saved = localStorage.getItem('kidsGameStats');
+            if (saved) {
+                try {
+                    const parsed = JSON.parse(saved);
+                    playerStats = {
+                        ...playerStats,
+                        ...parsed,
+                        completedLevels: new Set(parsed.completedLevels || []),
+                        achievements: new Set(parsed.achievements || [])
+                    };
+                } catch (e) {
+                    console.error('Failed to load stats:', e);
+                }
+            }
+        }
+
+        function saveStats() {
+            const toSave = {
+                ...playerStats,
+                completedLevels: Array.from(playerStats.completedLevels),
+                achievements: Array.from(playerStats.achievements)
+            };
+            localStorage.setItem('kidsGameStats', JSON.stringify(toSave));
+        }
+
+        function renderLevelGrid() {
+            elements.levelGrid.innerHTML = '';
+            
+            LEVELS.forEach(level => {
+                const btn = document.createElement('button');
+                const isCompleted = playerStats.completedLevels.has(level.level);
+                const stars = playerStats.levelStars[level.level] || 0;
+                
+                btn.className = `level-btn w-14 h-14 rounded-lg font-bold text-sm cursor-pointer ${
+                    isCompleted ? 'completed' : ''
+                }`;
+                
+                if (isCompleted) {
+                    btn.innerHTML = `<span class="text-base">${level.level}</span><div class="level-stars">${renderStarsSVG(stars)}</div>`;
+                } else {
+                    btn.innerHTML = `<span class="text-base">${level.level}</span>`;
+                }
+                
+                btn.addEventListener('click', () => startLevel(level.level));
+                
+                elements.levelGrid.appendChild(btn);
+            });
+            
+            updateStatsDisplay();
+        }
+
+        function updateStatsDisplay() {
+            const completedCount = playerStats.completedLevels.size;
+            let totalStars = 0;
+            Object.values(playerStats.levelStars).forEach(stars => totalStars += stars);
+            playerStats.totalStars = totalStars;
+            
+            elements.totalStars.innerHTML = `<svg class="w-5 h-5 inline-block text-yellow-400" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg> ${totalStars}`;
+            elements.completedLevels.textContent = `${completedCount}/40`;
+            elements.displayPlayerName.textContent = playerStats.playerName || '小朋友';
+        }
+
+        function showNameModal() {
+            elements.nameInput.value = playerStats.playerName || '';
+            elements.nameModal.classList.remove('hidden');
+            setTimeout(() => elements.nameInput.focus(), 100);
+        }
+
+        function hideNameModal() {
+            elements.nameModal.classList.add('hidden');
+        }
+
+        async function savePlayerName(newName) {
+            const trimmedName = newName.trim();
+            if (!trimmedName) {
+                showToast('请输入有效的名字', 'error');
+                return false;
+            }
+            
+            const oldName = playerStats.playerName;
+            playerStats.playerName = trimmedName;
+            saveStats();
+            updateStatsDisplay();
+            
+            if (db && oldName && oldName !== trimmedName) {
+                await updatePlayerNameInCloud(oldName, trimmedName);
+            }
+            
+            showToast(`名字已设置为：${trimmedName}`, 'success');
+            hideNameModal();
+            return true;
+        }
+
+        async function updatePlayerNameInCloud(oldName, newName) {
+            if (!db) return;
+            
+            try {
+                const levelsRef = db.ref('kidsLeaderboard/levels');
+                const snapshot = await levelsRef.once('value');
+                
+                if (!snapshot.exists()) return;
+                
+                const updates = {};
+                const levelsData = snapshot.val();
+                
+                Object.entries(levelsData).forEach(([levelNum, entries]) => {
+                    Object.entries(entries).forEach(([key, entry]) => {
+                        if (entry.name === oldName) {
+                            updates[`kidsLeaderboard/levels/${levelNum}/${key}/name`] = newName;
+                        }
+                    });
+                });
+                
+                if (Object.keys(updates).length > 0) {
+                    await db.ref().update(updates);
+                    await updateOverallCloudLeaderboard();
+                    console.log('Player name updated in cloud');
+                }
+            } catch (e) {
+                console.error('Failed to update player name in cloud:', e);
+            }
+        }
+
+        function startLevel(levelNum) {
+            const level = LEVELS.find(l => l.level === levelNum);
+            if (!level) return;
+            
+            gameState = {
+                currentLevel: levelNum,
+                words: level.words.map(word => ({ 
+                    word: word, 
+                    word_en: word,
+                    translation: WORD_TRANSLATIONS[word] || word
+                })),
+                revealedLetters: {},
+                solvedWords: new Set(),
+                guessCount: 0,
+                guessHistory: [],
+                gameWon: false,
+                score: 0,
+                hintsUsed: 0,
+                hintsLeft: 3,
+                startTime: Date.now(),
+                elapsedTime: 0,
+                usedLetters: new Set(),
+                foundLetters: new Set(),
+                combo: 0,
+                lastCorrectTime: 0
+            };
+            
+            level.words.forEach((_, index) => {
+                gameState.revealedLetters[index] = new Set();
+            });
+            
+            elements.currentLevelDisplay.textContent = `第${levelNum}关`;
+            
+            switchMode('game');
+            renderWords();
+            renderLetterKeyboard();
+            updateStats();
+            startTimer();
+            updateProgressBar();
+            elements.guessInput.focus();
+        }
+
+        function startTimer() {
+            stopTimer();
+            timerInterval = setInterval(() => {
+                gameState.elapsedTime = Math.floor((Date.now() - gameState.startTime) / 1000);
+                updateTimerDisplay();
+            }, 1000);
+        }
+
+        function stopTimer() {
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+            }
+        }
+
+        function updateTimerDisplay() {
+            const minutes = Math.floor(gameState.elapsedTime / 60);
+            const seconds = gameState.elapsedTime % 60;
+            elements.timer.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+        }
+
+        function updateProgressBar() {
+            const total = gameState.words.length;
+            const solved = gameState.solvedWords.size;
+            const percent = total > 0 ? (solved / total) * 100 : 0;
+            elements.progressBar.style.width = `${percent}%`;
+            elements.progressText.textContent = `${solved}/${total}`;
+        }
+
+        function renderWords() {
+            const container = elements.wordsContainer;
+            container.innerHTML = '';
+            
+            gameState.words.forEach((wordObj, index) => {
+                const card = createWordCard(wordObj, index);
+                container.appendChild(card);
+            });
+        }
+
+        function createWordCard(wordObj, index) {
+            const isSolved = gameState.solvedWords.has(index);
+            const revealed = gameState.revealedLetters[index];
+            const displayText = getDisplayText(wordObj.word, revealed, isSolved);
+            
+            const card = document.createElement('div');
+            card.className = `word-card rounded-xl p-4 ${isSolved ? 'solved' : ''}`;
+            card.id = `word-${index}`;
+            
+            const translationHtml = isSolved ? `
+                <div class="text-center text-sm mt-2">
+                    <p class="text-purple-600 font-medium">${wordObj.translation}</p>
+                </div>
+            ` : '';
+            
+            card.innerHTML = `
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-xs font-medium text-slate-500">#${index + 1}</span>
+                    <span class="solved-badge ${isSolved ? '' : 'hidden'} text-green-600 text-sm font-medium flex items-center gap-1">
+                        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                        已解开
+                    </span>
+                </div>
+                <div class="letter-display text-lg md:text-xl font-bold text-slate-800 mb-3 text-center py-2 bg-white/50 rounded-lg dark:bg-slate-700/50 dark:text-slate-200">
+                    ${displayText}
+                </div>
+                ${translationHtml}
+            `;
+            return card;
+        }
+
+        function getDisplayText(word, revealedLetters, isSolved) {
+            if (isSolved) {
+                return word;
+            }
+            
+            return word.split('').map(char => {
+                const lowerChar = char.toLowerCase();
+                if (/[a-z]/.test(lowerChar)) {
+                    if (revealedLetters.has(lowerChar)) {
+                        return `<span class="letter-reveal text-indigo-600">${char}</span>`;
+                    }
+                    return '*';
+                }
+                return char;
+            }).join('');
+        }
+
+        function renderLetterKeyboard() {
+            const keyboard = elements.letterKeyboard;
+            keyboard.innerHTML = '';
+            
+            const letters = 'abcdefghijklmnopqrstuvwxyz'.split('');
+            letters.forEach(letter => {
+                const btn = document.createElement('button');
+                const isUsed = gameState.usedLetters.has(letter);
+                const isFound = gameState.foundLetters.has(letter);
+                
+                btn.className = `letter-key w-8 h-8 rounded text-sm font-medium cursor-pointer ${
+                    isFound ? 'found' : isUsed ? 'not-found used' : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
+                }`;
+                btn.textContent = letter.toUpperCase();
+                btn.disabled = isUsed || gameState.gameWon;
+                btn.dataset.letter = letter;
+                
+                if (!isUsed && !gameState.gameWon) {
+                    btn.addEventListener('click', () => revealLetter(letter));
+                }
+                
+                keyboard.appendChild(btn);
+            });
+        }
+
+        function handleGuess() {
+            const input = elements.guessInput.value.trim();
+            if (!input) return;
+            
+            elements.guessInput.value = '';
+            
+            gameState.guessCount++;
+            
+            const command = input.toLowerCase();
+            
+            if (command.length === 1 && /[a-z]/.test(command)) {
+                revealLetter(command);
+            } else if (command.length > 1) {
+                guessWord(command);
+            }
+            
+            updateStats();
+        }
+
+        function revealLetter(letter) {
+            if (gameState.usedLetters.has(letter)) {
+                showToast('该字母已使用', 'error');
+                return;
+            }
+            
+            gameState.usedLetters.add(letter);
+            let found = false;
+            let matchCount = 0;
+            
+            gameState.words.forEach((wordObj, index) => {
+                if (gameState.solvedWords.has(index)) return;
+                
+                const wordLower = wordObj.word.toLowerCase();
+                if (wordLower.includes(letter)) {
+                    found = true;
+                    gameState.revealedLetters[index].add(letter);
+                    matchCount++;
+                }
+            });
+            
+            if (found) {
+                gameState.foundLetters.add(letter);
+                gameState.score = Math.max(0, gameState.score - 5);
+                playSound('reveal');
+                addToHistory(`开 ${letter.toUpperCase()}`, 'success', `在 ${matchCount} 个单词中找到 (-5分)`);
+                
+                const btn = document.querySelector(`[data-letter="${letter}"]`);
+                if (btn) {
+                    createParticles(btn.getBoundingClientRect().left + 16, btn.getBoundingClientRect().top + 16, 5);
+                }
+            } else {
+                gameState.score = Math.max(0, gameState.score - 15);
+                playSound('wrong');
+                addToHistory(`开 ${letter.toUpperCase()}`, 'error', '未找到该字母 (-15分)');
+                
+                elements.wordsContainer.classList.add('shake');
+                setTimeout(() => elements.wordsContainer.classList.remove('shake'), 500);
+            }
+            
+            renderWords();
+            renderLetterKeyboard();
+            updateScoreDisplay();
+        }
+
+        function guessWord(guess) {
+            let correct = false;
+            let matchedIndex = -1;
+            
+            gameState.words.forEach((wordObj, index) => {
+                if (gameState.solvedWords.has(index)) return;
+                
+                if (guess.toLowerCase() === wordObj.word.toLowerCase()) {
+                    correct = true;
+                    matchedIndex = index;
+                }
+            });
+            
+            if (correct && matchedIndex !== -1) {
+                gameState.solvedWords.add(matchedIndex);
+                
+                const now = Date.now();
+                if (now - gameState.lastCorrectTime < 5000) {
+                    gameState.combo++;
+                    playSound('combo');
+                } else {
+                    gameState.combo = 1;
+                }
+                gameState.lastCorrectTime = now;
+                
+                const comboBonus = gameState.combo * 5;
+                const totalPoints = 100 + comboBonus;
+                gameState.score += totalPoints;
+                
+                playSound('correct');
+                const wordObj = gameState.words[matchedIndex];
+                addToHistory(`猜 ${guess}`, 'success', `正确！${wordObj.translation} (+${totalPoints}分)`);
+                
+                const card = document.getElementById(`word-${matchedIndex}`);
+                if (card) {
+                    card.classList.add('pulse-success');
+                    const rect = card.getBoundingClientRect();
+                    showFloatingScore(totalPoints, rect.left + rect.width / 2, rect.top);
+                    createParticles(rect.left + rect.width / 2, rect.top + rect.height / 2, 15);
+                }
+                
+                renderWords();
+                updateScoreDisplay();
+                updateProgressBar();
+                updateComboDisplay();
+                checkWinCondition();
+            } else {
+                gameState.combo = 0;
+                updateComboDisplay();
+                playSound('wrong');
+                addToHistory(`猜 ${guess}`, 'error', '不正确');
+                
+                elements.wordsContainer.classList.add('shake');
+                setTimeout(() => elements.wordsContainer.classList.remove('shake'), 500);
+            }
+        }
+
+        function updateComboDisplay() {
+            elements.combo.textContent = gameState.combo;
+            if (gameState.combo > 1) {
+                elements.combo.classList.add('combo-display');
+                setTimeout(() => elements.combo.classList.remove('combo-display'), 300);
+            }
+        }
+
+        function useHint() {
+            if (gameState.hintsLeft <= 0) {
+                showToast('提示次数已用完', 'error');
+                return;
+            }
+            
+            const unsolvedIndices = gameState.words
+                .map((_, index) => index)
+                .filter(index => !gameState.solvedWords.has(index));
+            
+            if (unsolvedIndices.length === 0) return;
+            
+            const randomIndex = unsolvedIndices[Math.floor(Math.random() * unsolvedIndices.length)];
+            const wordObj = gameState.words[randomIndex];
+            
+            if (Math.random() < 0.5) {
+                const word = wordObj.word.toLowerCase();
+                const unrevealedLetters = word
+                    .split('')
+                    .filter(char => /[a-z]/.test(char) && !gameState.revealedLetters[randomIndex].has(char));
+                
+                if (unrevealedLetters.length > 0) {
+                    const randomLetter = unrevealedLetters[Math.floor(Math.random() * unrevealedLetters.length)];
+                    gameState.revealedLetters[randomIndex].add(randomLetter);
+                    gameState.usedLetters.add(randomLetter);
+                    gameState.foundLetters.add(randomLetter);
+                    gameState.hintsLeft--;
+                    gameState.hintsUsed++;
+                    gameState.score = Math.max(0, gameState.score - 30);
+                    
+                    playSound('hint');
+                    addToHistory(`使用提示`, 'info', `揭示字母 ${randomLetter.toUpperCase()} (-30分)`);
+                    showToast(`提示：字母 ${randomLetter.toUpperCase()}`, 'info');
+                    
+                    renderWords();
+                    renderLetterKeyboard();
+                } else {
+                    showMeaningHint(randomIndex, wordObj);
+                }
+            } else {
+                showMeaningHint(randomIndex, wordObj);
+            }
+            
+            updateScoreDisplay();
+            elements.hintsLeft.textContent = gameState.hintsLeft;
+        }
+
+        function showMeaningHint(index, wordObj) {
+            gameState.hintsLeft--;
+            gameState.hintsUsed++;
+            gameState.score = Math.max(0, gameState.score - 30);
+            
+            playSound('hint');
+            addToHistory(`使用提示`, 'info', `#${index + 1} 的意思是：${wordObj.translation} (-30分)`);
+            showToast(`提示：#${index + 1} 的意思是「${wordObj.translation}」`, 'info');
+            
+            const card = document.getElementById(`word-${index}`);
+            if (card && !gameState.solvedWords.has(index)) {
+                let hintDiv = card.querySelector('.hint-meaning');
+                if (!hintDiv) {
+                    hintDiv = document.createElement('div');
+                    hintDiv.className = 'hint-meaning';
+                    card.appendChild(hintDiv);
+                }
+                hintDiv.innerHTML = `<svg class="w-5 h-5 text-purple-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg> 意思：${wordObj.translation}`;
+            }
+        }
+
+        function checkWinCondition() {
+            if (gameState.solvedWords.size === gameState.words.length) {
+                gameState.gameWon = true;
+                stopTimer();
+                
+                const stars = calculateStars();
+                
+                playerStats.completedLevels.add(gameState.currentLevel);
+                const prevStars = playerStats.levelStars[gameState.currentLevel] || 0;
+                if (stars > prevStars) {
+                    playerStats.levelStars[gameState.currentLevel] = stars;
+                }
+                
+                const prevBestTime = playerStats.levelBestTimes[gameState.currentLevel];
+                if (!prevBestTime || gameState.elapsedTime < prevBestTime) {
+                    playerStats.levelBestTimes[gameState.currentLevel] = gameState.elapsedTime;
+                }
+                
+                playerStats.totalTime = (playerStats.totalTime || 0) + gameState.elapsedTime;
+                
+                checkAchievements();
+                saveStats();
+                updateStatsDisplay();
+                
+                playSound('victory');
+                createFireworks();
+                
+                setTimeout(() => {
+                    elements.finalTime.textContent = formatTime(gameState.elapsedTime);
+                    elements.finalScore.textContent = gameState.score;
+                    elements.finalGuesses.textContent = gameState.guessCount;
+                    elements.finalHints.textContent = gameState.hintsUsed;
+                    elements.starsDisplay.innerHTML = renderStarsSVG(stars);
+                    
+                    if (gameState.currentLevel === 1 && !playerStats.playerName) {
+                        elements.firstLevelNameInput.classList.remove('hidden');
+                    } else {
+                        elements.firstLevelNameInput.classList.add('hidden');
+                    }
+                    
+                    elements.victoryModal.classList.remove('hidden');
+                }, 500);
+            }
+        }
+
+        function calculateStars() {
+            let stars = 1;
+            
+            if (gameState.elapsedTime <= 30) {
+                stars = 3;
+            } else if (gameState.elapsedTime <= 60) {
+                stars = 2;
+            }
+            
+            if (gameState.hintsUsed > 0) {
+                stars = Math.max(1, stars - 1);
+            }
+            
+            return stars;
+        }
+
+        function checkAchievements() {
+            const trophyIcon = '<svg class="w-5 h-5 inline-block text-yellow-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path><path d="M4 22h16"></path><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"></path><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"></path><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"></path></svg>';
+            
+            if (!playerStats.achievements.has('first_level')) {
+                playerStats.achievements.add('first_level');
+                showToast(`${trophyIcon} 成就解锁：初次通关！`, 'success');
+            }
+            
+            if (gameState.elapsedTime <= 30 && !playerStats.achievements.has('speed_star')) {
+                playerStats.achievements.add('speed_star');
+                showToast(`${trophyIcon} 成就解锁：速度之星！`, 'success');
+            }
+            
+            if (gameState.hintsUsed === 0 && !playerStats.achievements.has('no_hint')) {
+                playerStats.achievements.add('no_hint');
+                showToast(`${trophyIcon} 成就解锁：独立思考！`, 'success');
+            }
+            
+            if (playerStats.completedLevels.size >= 10 && !playerStats.achievements.has('level_10')) {
+                playerStats.achievements.add('level_10');
+                showToast(`${trophyIcon} 成就解锁：小有成就！`, 'success');
+            }
+            
+            if (playerStats.completedLevels.size >= 20 && !playerStats.achievements.has('level_20')) {
+                playerStats.achievements.add('level_20');
+                showToast(`${trophyIcon} 成就解锁：渐入佳境！`, 'success');
+            }
+            
+            if (playerStats.completedLevels.size >= 40 && !playerStats.achievements.has('level_40')) {
+                playerStats.achievements.add('level_40');
+                showToast(`${trophyIcon} 成就解锁：单词大师！`, 'success');
+            }
+            
+            if (gameState.combo >= 5 && !playerStats.achievements.has('combo_5')) {
+                playerStats.achievements.add('combo_5');
+                showToast(`${trophyIcon} 成就解锁：连击高手！`, 'success');
+            }
+            
+            let totalStars = 0;
+            Object.values(playerStats.levelStars).forEach(s => totalStars += s);
+            if (totalStars >= 120 && !playerStats.achievements.has('all_stars')) {
+                playerStats.achievements.add('all_stars');
+                showToast(`${trophyIcon} 成就解锁：完美收集！`, 'success');
+            }
+            
+            renderAchievements();
+        }
+
+        function renderAchievements() {
+            elements.achievementsList.innerHTML = '';
+            
+            ACHIEVEMENTS.forEach(achievement => {
+                const unlocked = playerStats.achievements.has(achievement.id);
+                const div = document.createElement('div');
+                div.className = `p-3 rounded-xl border-2 ${unlocked ? 'bg-gradient-to-br from-yellow-50 to-amber-50 border-yellow-300' : 'bg-slate-50 border-slate-200 opacity-50'}`;
+                const iconSvg = ACHIEVEMENT_ICONS[achievement.icon] || '';
+                div.innerHTML = `
+                    <div class="flex items-center gap-2 mb-1">
+                        <span class="${unlocked ? 'achievement-badge text-yellow-600' : 'text-slate-400'}">${iconSvg}</span>
+                        <span class="font-medium text-sm ${unlocked ? 'text-slate-800' : 'text-slate-500'}">${achievement.name}</span>
+                    </div>
+                    <p class="text-xs text-slate-500">${achievement.desc}</p>
+                `;
+                elements.achievementsList.appendChild(div);
+            });
+        }
+
+        function formatTime(seconds) {
+            const minutes = Math.floor(seconds / 60);
+            const secs = seconds % 60;
+            return `${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+        }
+
+        function updateScoreDisplay() {
+            elements.score.textContent = gameState.score;
+        }
+
+        function addToHistory(action, type, detail = '') {
+            const timestamp = new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
+            const historyItem = { action, type, detail, timestamp };
+            gameState.guessHistory.push(historyItem);
+            appendHistoryItem(historyItem);
+        }
+        
+        function appendHistoryItem(item) {
+            if (gameState.guessHistory.length === 1) {
+                elements.guessHistory.innerHTML = '';
+            }
+            
+            const div = document.createElement('div');
+            div.className = 'guess-history-item flex items-center justify-between p-2 rounded-lg text-sm';
+            
+            let typeClass = '';
+            let typeIcon = '';
+            switch (item.type) {
+                case 'success':
+                    typeClass = 'bg-green-50 text-green-800';
+                    typeIcon = '✓';
+                    break;
+                case 'error':
+                    typeClass = 'bg-red-50 text-red-800';
+                    typeIcon = '✗';
+                    break;
+                default:
+                    typeClass = 'bg-slate-50 text-slate-700';
+                    typeIcon = '•';
+            }
+            
+            div.className += ` ${typeClass}`;
+            div.innerHTML = `
+                <div class="flex items-center gap-2">
+                    <span class="font-medium">${typeIcon}</span>
+                    <span>${item.action}</span>
+                    ${item.detail ? `<span class="text-xs opacity-75">- ${item.detail}</span>` : ''}
+                </div>
+                <span class="text-xs opacity-50">${item.timestamp}</span>
+            `;
+            elements.guessHistory.insertBefore(div, elements.guessHistory.firstChild);
+            
+            while (elements.guessHistory.children.length > 50) {
+                elements.guessHistory.removeChild(elements.guessHistory.lastChild);
+            }
+        }
+
+        function renderGuessHistory() {
+            if (gameState.guessHistory.length === 0) {
+                elements.guessHistory.innerHTML = '<p class="text-slate-400 text-sm italic">暂无记录</p>';
+                return;
+            }
+            
+            elements.guessHistory.innerHTML = '';
+            [...gameState.guessHistory].reverse().forEach(item => {
+                appendHistoryItem(item);
+            });
+        }
+
+        function updateStats() {
+            elements.guessCount.textContent = gameState.guessCount;
+            elements.hintsLeft.textContent = gameState.hintsLeft;
+        }
+
+        function switchMode(mode) {
+            elements.levelSelectArea.classList.add('hidden');
+            elements.gameArea.classList.add('hidden');
+            elements.leaderboardArea.classList.add('hidden');
+            elements.modeLevels.classList.remove('active');
+            elements.modeLeaderboard.classList.remove('active');
+            
+            if (mode === 'levels') {
+                elements.levelSelectArea.classList.remove('hidden');
+                elements.modeLevels.classList.add('active');
+                renderLevelGrid();
+            } else if (mode === 'game') {
+                elements.gameArea.classList.remove('hidden');
+            } else if (mode === 'leaderboard') {
+                elements.leaderboardArea.classList.remove('hidden');
+                elements.modeLeaderboard.classList.add('active');
+                renderLeaderboardLevelSelect();
+                renderOverallLeaderboard();
+                renderAchievements();
+            }
+        }
+
+        function renderLeaderboardLevelSelect() {
+            elements.leaderboardLevelSelect.innerHTML = '';
+            LEVELS.forEach(level => {
+                const option = document.createElement('option');
+                option.value = level.level;
+                option.textContent = `第${level.level}关`;
+                elements.leaderboardLevelSelect.appendChild(option);
+            });
+        }
+
+        function renderOverallLeaderboard() {
+            let allPlayers = {};
+            
+            if (cloudLeaderboards.overall && cloudLeaderboards.overall.length > 0) {
+                allPlayers = {};
+                cloudLeaderboards.overall.forEach(entry => {
+                    allPlayers[entry.name] = entry;
+                });
+            } else {
+                Object.entries(playerStats.leaderboards).forEach(([levelNum, entries]) => {
+                    entries.forEach(entry => {
+                        if (!allPlayers[entry.name]) {
+                            allPlayers[entry.name] = {
+                                name: entry.name,
+                                levelsCompleted: 0,
+                                totalStars: 0,
+                                totalTime: 0,
+                                totalScore: 0
+                            };
+                        }
+                        allPlayers[entry.name].levelsCompleted++;
+                        allPlayers[entry.name].totalStars += entry.stars || 1;
+                        allPlayers[entry.name].totalTime += entry.time || 0;
+                        allPlayers[entry.name].totalScore += entry.score || 0;
+                    });
+                });
+            }
+            
+            let totalBestTime = 0;
+            Object.values(playerStats.levelBestTimes).forEach(time => {
+                totalBestTime += time || 0;
+            });
+            
+            const currentEntry = {
+                name: playerStats.playerName,
+                levelsCompleted: playerStats.completedLevels.size,
+                totalStars: playerStats.totalStars,
+                totalTime: totalBestTime,
+                totalScore: Object.values(playerStats.levelStars).reduce((a, b) => a + (b || 0) * 100, 0)
+            };
+            
+            if (currentEntry.levelsCompleted > 0) {
+                if (!allPlayers[currentEntry.name] || allPlayers[currentEntry.name].levelsCompleted < currentEntry.levelsCompleted) {
+                    allPlayers[currentEntry.name] = currentEntry;
+                }
+            }
+            
+            const sortedPlayers = Object.values(allPlayers).sort((a, b) => {
+                if (b.levelsCompleted !== a.levelsCompleted) return b.levelsCompleted - a.levelsCompleted;
+                return a.totalTime - b.totalTime;
+            });
+            
+            elements.leaderboardList.innerHTML = '';
+            
+            if (sortedPlayers.length === 0) {
+                elements.leaderboardList.innerHTML = '<p class="text-slate-500 text-center py-4">暂无记录，快来挑战吧！</p>';
+                return;
+            }
+            
+            sortedPlayers.slice(0, 10).forEach((entry, index) => {
+                const item = document.createElement('div');
+                item.className = 'leaderboard-item flex items-center justify-between p-3 bg-white rounded-lg border border-slate-200';
+                item.style.animationDelay = `${index * 0.1}s`;
+                
+                let medal;
+                if (index === 0) medal = MEDAL_ICONS.gold;
+                else if (index === 1) medal = MEDAL_ICONS.silver;
+                else if (index === 2) medal = MEDAL_ICONS.bronze;
+                else medal = `<span class="text-lg font-bold text-slate-500">${index + 1}.</span>`;
+                
+                item.innerHTML = `
+                    <div class="flex items-center gap-3">
+                        <span class="text-xl">${medal}</span>
+                        <div>
+                            <p class="font-medium text-slate-800">${entry.name}</p>
+                            <p class="text-xs text-slate-500">通关 ${entry.levelsCompleted} 关 · <svg class="w-3 h-3 inline-block text-yellow-400" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg> ${entry.totalStars}</p>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <p class="font-bold text-indigo-600">${formatTime(entry.totalTime || 0)}</p>
+                        <p class="text-xs text-slate-500">总用时</p>
+                    </div>
+                `;
+                elements.leaderboardList.appendChild(item);
+            });
+        }
+
+        function renderLeaderboard(levelNum) {
+            let leaderboard = [];
+            
+            if (cloudLeaderboards.levels[levelNum] && cloudLeaderboards.levels[levelNum].length > 0) {
+                leaderboard = cloudLeaderboards.levels[levelNum];
+            } else {
+                leaderboard = playerStats.leaderboards[levelNum] || [];
+            }
+            
+            elements.leaderboardList.innerHTML = '';
+            
+            if (leaderboard.length === 0) {
+                elements.leaderboardList.innerHTML = '<p class="text-slate-500 text-center py-4">暂无记录，快来挑战吧！</p>';
+                return;
+            }
+            
+            leaderboard.slice(0, 10).forEach((entry, index) => {
+                const item = document.createElement('div');
+                item.className = 'leaderboard-item flex items-center justify-between p-3 bg-white rounded-lg border border-slate-200';
+                item.style.animationDelay = `${index * 0.1}s`;
+                
+                let medal;
+                if (index === 0) medal = MEDAL_ICONS.gold;
+                else if (index === 1) medal = MEDAL_ICONS.silver;
+                else if (index === 2) medal = MEDAL_ICONS.bronze;
+                else medal = `<span class="text-lg font-bold text-slate-500">${index + 1}.</span>`;
+                
+                item.innerHTML = `
+                    <div class="flex items-center gap-3">
+                        <span class="text-xl">${medal}</span>
+                        <div>
+                            <p class="font-medium text-slate-800">${entry.name}</p>
+                            <p class="text-xs text-slate-500">${entry.date}</p>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <p class="font-bold text-indigo-600">${entry.score}</p>
+                        <p class="text-xs text-slate-500">${formatTime(entry.time)} · ${entry.guesses}次</p>
+                    </div>
+                `;
+                elements.leaderboardList.appendChild(item);
+            });
+        }
+
+        async function saveCurrentProgress() {
+            const name = playerStats.playerName || '小朋友';
+            const stars = playerStats.levelStars[gameState.currentLevel] || 1;
+            
+            const entry = {
+                name,
+                score: gameState.score,
+                time: gameState.elapsedTime,
+                guesses: gameState.guessCount,
+                hints: gameState.hintsUsed,
+                stars: stars,
+                date: new Date().toLocaleDateString('zh-CN'),
+                timestamp: Date.now()
+            };
+            
+            if (!playerStats.leaderboards[gameState.currentLevel]) {
+                playerStats.leaderboards[gameState.currentLevel] = [];
+            }
+            
+            playerStats.leaderboards[gameState.currentLevel].push(entry);
+            playerStats.leaderboards[gameState.currentLevel].sort((a, b) => b.score - a.score);
+            playerStats.leaderboards[gameState.currentLevel] = playerStats.leaderboards[gameState.currentLevel].slice(0, 10);
+            
+            saveStats();
+            
+            await saveToCloudLeaderboard(entry, gameState.currentLevel);
+        }
+
+        function goToNextLevel() {
+            const nextLevel = gameState.currentLevel + 1;
+            if (nextLevel <= 40) {
+                startLevel(nextLevel);
+            } else {
+                showToast('🎉 恭喜你通关全部关卡！', 'success');
+                switchMode('levels');
+            }
+        }
+
+        function toggleTheme() {
+            isDarkMode = !isDarkMode;
+            document.body.classList.toggle('dark', isDarkMode);
+            
+            const moonIcon = $('theme-moon-icon');
+            const sunIcon = $('theme-sun-icon');
+            
+            if (isDarkMode) {
+                document.body.classList.remove('bg-gradient-to-br', 'from-indigo-50', 'via-purple-50', 'to-blue-100');
+                document.body.classList.add('bg-gradient-to-br', 'from-slate-950', 'via-indigo-950', 'to-slate-950', 'text-slate-200');
+                if (moonIcon) moonIcon.classList.add('hidden');
+                if (sunIcon) sunIcon.classList.remove('hidden');
+            } else {
+                document.body.classList.remove('bg-gradient-to-br', 'from-slate-950', 'via-indigo-950', 'to-slate-950', 'text-slate-200');
+                document.body.classList.add('bg-gradient-to-br', 'from-indigo-50', 'via-purple-50', 'to-blue-100', 'text-slate-800');
+                if (moonIcon) moonIcon.classList.remove('hidden');
+                if (sunIcon) sunIcon.classList.add('hidden');
+            }
+            showToast(isDarkMode ? '已切换到暗色模式' : '已切换到亮色模式', 'info');
+        }
+
+        function setupEventListeners() {
+            elements.btnSubmit.addEventListener('click', handleGuess);
+            elements.guessInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') handleGuess();
+            });
+            
+            elements.btnBackLevels.addEventListener('click', (e) => {
+                e.preventDefault();
+                stopTimer();
+                switchMode('levels');
+            });
+            
+            elements.btnRestart.addEventListener('click', (e) => {
+                e.preventDefault();
+                startLevel(gameState.currentLevel);
+            });
+            
+            elements.btnHint.addEventListener('click', (e) => {
+                e.preventDefault();
+                useHint();
+            });
+            
+            elements.btnTheme.addEventListener('click', toggleTheme);
+            elements.soundToggle.addEventListener('click', toggleSound);
+            
+            elements.btnNextLevel.addEventListener('click', () => {
+                if (gameState.currentLevel === 1 && elements.playerName.value.trim()) {
+                    playerStats.playerName = elements.playerName.value.trim();
+                }
+                saveCurrentProgress();
+                elements.victoryModal.classList.add('hidden');
+                goToNextLevel();
+            });
+            
+            elements.modeLevels.addEventListener('click', () => switchMode('levels'));
+            elements.modeLeaderboard.addEventListener('click', () => switchMode('leaderboard'));
+            
+            elements.tabOverall.addEventListener('click', () => {
+                elements.tabOverall.classList.add('bg-indigo-500', 'text-white');
+                elements.leaderboardLevelSelect.value = '1';
+                renderOverallLeaderboard();
+            });
+            
+            elements.leaderboardLevelSelect.addEventListener('change', (e) => {
+                elements.tabOverall.classList.remove('bg-indigo-500', 'text-white');
+                renderLeaderboard(parseInt(e.target.value));
+            });
+            
+            elements.playerNameDisplay.addEventListener('click', showNameModal);
+            
+            elements.btnSaveName.addEventListener('click', () => {
+                savePlayerName(elements.nameInput.value);
+            });
+            
+            elements.btnCancelName.addEventListener('click', hideNameModal);
+            
+            elements.nameInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    savePlayerName(elements.nameInput.value);
+                }
+            });
+            
+            elements.nameModal.addEventListener('click', (e) => {
+                if (e.target === elements.nameModal) {
+                    hideNameModal();
+                }
+            });
+            
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    elements.victoryModal.classList.add('hidden');
+                }
+            });
+        }
+
+        function init() {
+            loadStats();
+            renderLevelGrid();
+            renderAchievements();
+            setupEventListeners();
+            initAudio();
+            initFirebase();
+            updateStatsDisplay();
+            switchMode('levels');
+        }
+
+        init();
+    </script>
+</body>
+</html>
