@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://lvshu-is-666.github.io/MetroGuess/sitemap.xml
