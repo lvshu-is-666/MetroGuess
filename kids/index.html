@@ -602,6 +602,429 @@
                 display: none;
             }
         }
+        
+        .tutorial-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            z-index: 200;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+        
+        .tutorial-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .tutorial-card {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.98) 0%, rgba(238, 242, 255, 0.95) 100%);
+            border-radius: 1.5rem;
+            max-width: 440px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 40px rgba(79, 70, 229, 0.2);
+            border: 3px solid rgba(79, 70, 229, 0.3);
+            transform: scale(0.9) translateY(20px);
+            transition: transform 0.3s ease;
+        }
+        
+        .tutorial-overlay.active .tutorial-card {
+            transform: scale(1) translateY(0);
+        }
+        
+        .tutorial-header {
+            padding: 1.25rem 1.5rem 1rem;
+            text-align: center;
+            border-bottom: 2px solid rgba(79, 70, 229, 0.2);
+        }
+        
+        .tutorial-header h2 {
+            font-family: 'Baloo 2', 'Comic Neue', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+        
+        .tutorial-step-indicator {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 0.75rem;
+        }
+        
+        .tutorial-step-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: rgba(79, 70, 229, 0.3);
+            transition: all 0.3s ease;
+        }
+        
+        .tutorial-step-dot.active {
+            background: var(--primary-color);
+            transform: scale(1.3);
+            box-shadow: 0 0 10px rgba(79, 70, 229, 0.5);
+        }
+        
+        .tutorial-step-dot.completed {
+            background: var(--success-color);
+        }
+        
+        .tutorial-content {
+            padding: 1.25rem 1.5rem;
+        }
+        
+        .tutorial-step {
+            display: none;
+            animation: tutorialFadeIn 0.4s ease;
+        }
+        
+        .tutorial-step.active {
+            display: block;
+        }
+        
+        @keyframes tutorialFadeIn {
+            from { opacity: 0; transform: translateX(20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        
+        .tutorial-title {
+            font-size: 1.125rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .tutorial-title .step-number {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 28px;
+            height: 28px;
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-light) 100%);
+            color: white;
+            border-radius: 50%;
+            font-size: 0.875rem;
+            font-weight: 700;
+        }
+        
+        .tutorial-description {
+            font-size: 1rem;
+            color: #475569;
+            line-height: 1.6;
+            margin-bottom: 1rem;
+        }
+        
+        .tutorial-demo {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(238, 242, 255, 0.9) 100%);
+            border: 3px solid rgba(79, 70, 229, 0.3);
+            border-radius: 1rem;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .tutorial-demo-label {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            font-size: 0.75rem;
+            color: var(--primary-color);
+            background: rgba(79, 70, 229, 0.1);
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+        }
+        
+        .tutorial-word-card {
+            background: linear-gradient(145deg, rgba(255, 255, 255, 0.95) 0%, rgba(238, 242, 255, 0.9) 100%);
+            border: 3px solid rgba(79, 70, 229, 0.25);
+            border-radius: 1rem;
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+        }
+        
+        .tutorial-word-display {
+            font-family: 'Courier New', monospace;
+            letter-spacing: 0.2em;
+            font-size: 1.5rem;
+            text-align: center;
+            color: #1e293b;
+            margin-bottom: 0.5rem;
+            padding: 0.5rem;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 0.5rem;
+        }
+        
+        .tutorial-word-display .revealed {
+            color: var(--success-color);
+            font-weight: 700;
+        }
+        
+        .tutorial-word-display .hidden-letter {
+            color: #94a3b8;
+        }
+        
+        .tutorial-keyboard-demo {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.375rem;
+            justify-content: center;
+            margin-top: 0.75rem;
+        }
+        
+        .tutorial-key {
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: white;
+            border: 2px solid rgba(79, 70, 229, 0.3);
+            border-radius: 0.5rem;
+            font-weight: 700;
+            font-size: 0.875rem;
+            color: #475569;
+            transition: all 0.2s ease;
+        }
+        
+        .tutorial-key.highlight {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+            transform: scale(1.15);
+            box-shadow: 0 0 15px rgba(79, 70, 229, 0.5);
+            animation: keyPulse 1s ease infinite;
+        }
+        
+        .tutorial-key.found {
+            background: var(--success-color);
+            color: white;
+            border-color: var(--success-color);
+        }
+        
+        .tutorial-key.not-found {
+            background: var(--error-color);
+            color: white;
+            border-color: var(--error-color);
+            opacity: 0.6;
+        }
+        
+        @keyframes keyPulse {
+            0%, 100% { box-shadow: 0 0 15px rgba(79, 70, 229, 0.5); }
+            50% { box-shadow: 0 0 25px rgba(79, 70, 229, 0.8); }
+        }
+        
+        .tutorial-input-demo {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 0.75rem;
+        }
+        
+        .tutorial-input {
+            flex: 1;
+            padding: 0.625rem 0.875rem;
+            border: 2px solid rgba(79, 70, 229, 0.3);
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            background: white;
+            color: #475569;
+            font-family: 'Comic Neue', sans-serif;
+        }
+        
+        .tutorial-input.highlight {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2);
+        }
+        
+        .tutorial-btn-demo {
+            padding: 0.625rem 1rem;
+            background: linear-gradient(135deg, var(--cta-color) 0%, #4ADE80 100%);
+            color: white;
+            border-radius: 0.5rem;
+            font-weight: 700;
+            font-size: 0.875rem;
+            border: none;
+            cursor: default;
+            font-family: 'Comic Neue', sans-serif;
+        }
+        
+        .tutorial-footer {
+            padding: 1rem 1.5rem;
+            border-top: 2px solid rgba(79, 70, 229, 0.2);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        
+        .tutorial-btn {
+            padding: 0.625rem 1.25rem;
+            border-radius: 0.5rem;
+            font-weight: 700;
+            font-size: 0.9375rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: none;
+            font-family: 'Comic Neue', sans-serif;
+        }
+        
+        .tutorial-btn-skip {
+            background: transparent;
+            color: #64748b;
+            border: 2px solid #e2e8f0;
+        }
+        
+        .tutorial-btn-skip:hover {
+            background: #f1f5f9;
+            border-color: #cbd5e1;
+        }
+        
+        .tutorial-btn-prev {
+            background: white;
+            color: var(--primary-color);
+            border: 2px solid rgba(79, 70, 229, 0.3);
+        }
+        
+        .tutorial-btn-prev:hover {
+            background: rgba(79, 70, 229, 0.1);
+        }
+        
+        .tutorial-btn-next {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-light) 100%);
+            color: white;
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+        }
+        
+        .tutorial-btn-next:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(79, 70, 229, 0.4);
+        }
+        
+        .tutorial-btn-start {
+            background: linear-gradient(135deg, var(--cta-color) 0%, #4ADE80 100%);
+            color: white;
+            box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
+        }
+        
+        .tutorial-btn-start:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(34, 197, 94, 0.4);
+        }
+        
+        .tutorial-tip {
+            background: rgba(168, 85, 247, 0.1);
+            border-left: 4px solid var(--hint-color);
+            padding: 0.75rem;
+            border-radius: 0 0.5rem 0.5rem 0;
+            font-size: 0.875rem;
+            color: #6d28d9;
+            margin-top: 0.75rem;
+        }
+        
+        .tutorial-translation {
+            text-align: center;
+            font-size: 0.875rem;
+            color: #7c3aed;
+            margin-top: 0.5rem;
+            font-weight: 600;
+        }
+        
+        .tutorial-status {
+            text-align: center;
+            font-size: 0.875rem;
+            min-height: 1.5rem;
+            margin-top: 0.5rem;
+        }
+        
+        .dark .tutorial-card {
+            background: linear-gradient(135deg, rgba(30, 27, 75, 0.98) 0%, rgba(49, 46, 129, 0.95) 100%);
+            border-color: rgba(99, 102, 241, 0.3);
+        }
+        
+        .dark .tutorial-header {
+            border-bottom-color: rgba(99, 102, 241, 0.3);
+        }
+        
+        .dark .tutorial-header h2 {
+            color: #a5b4fc;
+        }
+        
+        .dark .tutorial-title {
+            color: #e2e8f0;
+        }
+        
+        .dark .tutorial-description {
+            color: #94a3b8;
+        }
+        
+        .dark .tutorial-demo {
+            background: linear-gradient(135deg, rgba(30, 27, 75, 0.95) 0%, rgba(49, 46, 129, 0.9) 100%);
+            border-color: rgba(99, 102, 241, 0.3);
+        }
+        
+        .dark .tutorial-word-card {
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%);
+            border-color: #4338ca;
+        }
+        
+        .dark .tutorial-word-display {
+            background: rgba(49, 46, 129, 0.5);
+            color: #e2e8f0;
+        }
+        
+        .dark .tutorial-key {
+            background: #312e81;
+            border-color: #4338ca;
+            color: #e2e8f0;
+        }
+        
+        .dark .tutorial-input {
+            background: #1e1b4b;
+            border-color: #4338ca;
+            color: #e2e8f0;
+        }
+        
+        .dark .tutorial-footer {
+            border-top-color: rgba(99, 102, 241, 0.3);
+        }
+        
+        .dark .tutorial-btn-prev {
+            background: #1e1b4b;
+            border-color: #4338ca;
+        }
+        
+        .dark .tutorial-btn-skip {
+            border-color: #4338ca;
+            color: #94a3b8;
+        }
+        
+        .dark .tutorial-tip {
+            background: rgba(168, 85, 247, 0.2);
+            color: #c4b5fd;
+        }
+        
+        .dark .tutorial-translation {
+            color: #c4b5fd;
+        }
     </style>
 </head>
 <body class="bg-gradient-to-br from-indigo-50 via-purple-50 to-blue-100 min-h-screen text-slate-800 transition-colors duration-300">
@@ -896,6 +1319,120 @@
         </div>
     </div>
 
+    <div id="tutorial-modal" class="tutorial-overlay" role="dialog" aria-modal="true" aria-labelledby="tutorial-title">
+        <div class="tutorial-card">
+            <div class="tutorial-header">
+                <h2 id="tutorial-title">
+                    <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+                        <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                    </svg>
+                    新手教程
+                </h2>
+                <div class="tutorial-step-indicator">
+                    <div class="tutorial-step-dot active" data-step="0"></div>
+                    <div class="tutorial-step-dot" data-step="1"></div>
+                    <div class="tutorial-step-dot" data-step="2"></div>
+                </div>
+            </div>
+            
+            <div class="tutorial-content">
+                <div class="tutorial-step active" data-step="0">
+                    <div class="tutorial-title">
+                        <span class="step-number">1</span>
+                        开字母
+                    </div>
+                    <div class="tutorial-description">
+                        点击字母键盘，揭示单词中包含的字母！
+                    </div>
+                    <div class="tutorial-demo">
+                        <span class="tutorial-demo-label">演示</span>
+                        <div class="tutorial-word-card">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-xs font-medium text-slate-500">#示例</span>
+                            </div>
+                            <div id="tutorial-word-display-1" class="tutorial-word-display">
+                                *****
+                            </div>
+                            <div class="tutorial-translation">苹果</div>
+                        </div>
+                        <div id="tutorial-keyboard-demo-1" class="tutorial-keyboard-demo">
+                        </div>
+                        <div id="tutorial-step1-status" class="tutorial-status"></div>
+                    </div>
+                </div>
+                
+                <div class="tutorial-step" data-step="1">
+                    <div class="tutorial-title">
+                        <span class="step-number">2</span>
+                        猜单词
+                    </div>
+                    <div class="tutorial-description">
+                        根据揭示的字母，输入完整的单词进行猜测！
+                    </div>
+                    <div class="tutorial-demo">
+                        <span class="tutorial-demo-label">演示</span>
+                        <div class="tutorial-word-card">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-xs font-medium text-slate-500">#示例</span>
+                            </div>
+                            <div id="tutorial-word-display-2" class="tutorial-word-display">
+                                <span class="revealed">a</span><span class="revealed">p</span><span class="revealed">p</span><span class="revealed">l</span><span class="revealed">e</span>
+                            </div>
+                            <div class="tutorial-translation">苹果</div>
+                        </div>
+                        <div class="tutorial-input-demo">
+                            <input type="text" id="tutorial-guess-input" class="tutorial-input" placeholder="输入单词..." autocomplete="off" readonly>
+                            <button id="tutorial-submit-btn" class="tutorial-btn-demo">提交</button>
+                        </div>
+                        <div id="tutorial-step2-status" class="tutorial-status"></div>
+                    </div>
+                </div>
+                
+                <div class="tutorial-step" data-step="2">
+                    <div class="tutorial-title">
+                        <span class="step-number">3</span>
+                        开始挑战
+                    </div>
+                    <div class="tutorial-description" style="text-align: center; margin-bottom: 1rem;">
+                        选择关卡，开始你的单词学习之旅！
+                    </div>
+                    <div class="tutorial-demo">
+                        <div style="display: flex; gap: 0.5rem; justify-content: center; margin-bottom: 1rem; flex-wrap: wrap;">
+                            <span style="padding: 0.5rem 1rem; background: linear-gradient(145deg, #4F46E5, #818CF8); color: white; border-radius: 0.75rem; font-weight: 700;">1</span>
+                            <span style="padding: 0.5rem 1rem; background: linear-gradient(145deg, #4F46E5, #818CF8); color: white; border-radius: 0.75rem; font-weight: 700;">2</span>
+                            <span style="padding: 0.5rem 1rem; background: linear-gradient(145deg, #4F46E5, #818CF8); color: white; border-radius: 0.75rem; font-weight: 700;">3</span>
+                            <span style="padding: 0.5rem 1rem; background: rgba(255,255,255,0.9); border: 2px solid rgba(79,70,229,0.3); border-radius: 0.75rem; font-weight: 700; color: #475569;">...</span>
+                            <span style="padding: 0.5rem 1rem; background: rgba(255,255,255,0.9); border: 2px solid rgba(79,70,229,0.3); border-radius: 0.75rem; font-weight: 700; color: #475569;">40</span>
+                        </div>
+                        <div class="flex flex-col gap-2 text-sm text-slate-600 text-center">
+                            <div class="flex items-center justify-center gap-2">
+                                <svg class="w-4 h-4 text-yellow-500" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                                <span>完成关卡获得星星</span>
+                            </div>
+                            <div class="flex items-center justify-center gap-2">
+                                <svg class="w-4 h-4 text-green-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                                <span>解锁成就获得奖励</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="tutorial-tip">
+                        <strong>小提示：</strong>完成得越快、使用提示越少，获得的星星越多哦！
+                    </div>
+                </div>
+            </div>
+            
+            <div class="tutorial-footer">
+                <button id="tutorial-skip" class="tutorial-btn tutorial-btn-skip">跳过</button>
+                <div style="display: flex; gap: 0.5rem;">
+                    <button id="tutorial-prev" class="tutorial-btn tutorial-btn-prev" style="display: none;">上一步</button>
+                    <button id="tutorial-next" class="tutorial-btn tutorial-btn-next">下一步</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
         const WORD_TRANSLATIONS = {
             'bird': '鸟', 'fish': '鱼', 'frog': '青蛙', 'duck': '鸭子',
@@ -1079,6 +1616,15 @@
         let isDarkMode = false;
         let soundEnabled = true;
         let audioContext = null;
+        
+        let tutorialState = {
+            currentStep: 0,
+            totalSteps: 3,
+            completed: false,
+            demoWord: 'apple',
+            demoRevealed: new Set(),
+            demoAnimationRunning: false
+        };
 
         const MULTIPLAYER_CONFIG = {
             apiKey: "AIzaSyDPs3vZRgXUCEYJ6qWJc69YYKVfRfj8PuM",
@@ -1786,6 +2332,51 @@
             renderWords();
             renderLetterKeyboard();
             updateScoreDisplay();
+            checkAutoSolved();
+        }
+
+        function checkAutoSolved() {
+            gameState.words.forEach((wordObj, index) => {
+                if (gameState.solvedWords.has(index)) return;
+                
+                const wordLower = wordObj.word.toLowerCase();
+                const allLetters = wordLower.split('').filter(char => /[a-z]/.test(char));
+                const revealedSet = gameState.revealedLetters[index];
+                
+                if (allLetters.length > 0 && allLetters.every(char => revealedSet.has(char))) {
+                    gameState.solvedWords.add(index);
+                    
+                    const now = Date.now();
+                    if (now - gameState.lastCorrectTime < 5000) {
+                        gameState.combo++;
+                        playSound('combo');
+                    } else {
+                        gameState.combo = 1;
+                    }
+                    gameState.lastCorrectTime = now;
+                    
+                    const comboBonus = gameState.combo * 5;
+                    const totalPoints = 50 + comboBonus;
+                    gameState.score += totalPoints;
+                    
+                    playSound('correct');
+                    addToHistory(`自动猜出`, 'success', `${wordObj.word} - ${wordObj.translation} (+${totalPoints}分)`);
+                    
+                    const card = document.getElementById(`word-${index}`);
+                    if (card) {
+                        card.classList.add('pulse-success');
+                        const rect = card.getBoundingClientRect();
+                        showFloatingScore(totalPoints, rect.left + rect.width / 2, rect.top);
+                        createParticles(rect.left + rect.width / 2, rect.top + rect.height / 2, 15);
+                    }
+                    
+                    renderWords();
+                    updateScoreDisplay();
+                    updateProgressBar();
+                    updateComboDisplay();
+                    checkWinCondition();
+                }
+            });
         }
 
         function guessWord(guess) {
@@ -2418,6 +3009,313 @@
                     elements.victoryModal.classList.add('hidden');
                 }
             });
+            
+            $('tutorial-skip')?.addEventListener('click', skipTutorial);
+            $('tutorial-prev')?.addEventListener('click', prevTutorialStep);
+            $('tutorial-next')?.addEventListener('click', nextTutorialStep);
+        }
+
+        function initTutorial() {
+            const tutorialCompleted = localStorage.getItem('kidsTutorialCompleted');
+            if (tutorialCompleted === 'true') {
+                tutorialState.completed = true;
+                return;
+            }
+            
+            setTimeout(() => {
+                showTutorial();
+            }, 500);
+        }
+        
+        function showTutorial() {
+            const modal = $('tutorial-modal');
+            if (modal) {
+                modal.classList.add('active');
+                updateTutorialStep();
+                initTutorialDemo();
+            }
+        }
+        
+        function hideTutorial() {
+            const modal = $('tutorial-modal');
+            if (modal) {
+                modal.classList.remove('active');
+                stopTutorialDemo();
+            }
+        }
+        
+        function initTutorialDemo() {
+            tutorialState.demoRevealed = new Set();
+            if (tutorialState.currentStep === 0) {
+                renderTutorialKeyboard();
+                renderTutorialWord();
+                startLetterRevealDemo();
+            } else if (tutorialState.currentStep === 1) {
+                startGuessDemo();
+            }
+        }
+        
+        function stopTutorialDemo() {
+            tutorialState.demoAnimationRunning = false;
+        }
+        
+        function renderTutorialKeyboard() {
+            const container = $('tutorial-keyboard-demo-1');
+            if (!container) return;
+            
+            container.innerHTML = '';
+            const letters = 'abcdefghijklmnopqrstuvwxyz'.split('');
+            
+            letters.forEach(letter => {
+                const btn = document.createElement('button');
+                btn.className = 'tutorial-key';
+                btn.textContent = letter.toUpperCase();
+                btn.id = `tutorial-key-${letter}`;
+                
+                if (tutorialState.demoRevealed.has(letter)) {
+                    if (tutorialState.demoWord.toLowerCase().includes(letter)) {
+                        btn.classList.add('found');
+                    } else {
+                        btn.classList.add('not-found');
+                    }
+                }
+                
+                container.appendChild(btn);
+            });
+        }
+        
+        function renderTutorialWord() {
+            const display = $('tutorial-word-display-1');
+            if (!display) return;
+            
+            const word = tutorialState.demoWord;
+            const parts = [];
+            
+            for (let i = 0; i < word.length; i++) {
+                const char = word[i];
+                const lowerChar = char.toLowerCase();
+                
+                if (tutorialState.demoRevealed.has(lowerChar)) {
+                    parts.push(`<span class="revealed">${char}</span>`);
+                } else {
+                    parts.push('*');
+                }
+            }
+            
+            display.innerHTML = parts.join('');
+        }
+        
+        function startLetterRevealDemo() {
+            if (tutorialState.currentStep !== 0) return;
+            
+            tutorialState.demoAnimationRunning = true;
+            const statusEl = $('tutorial-step1-status');
+            
+            const sequence = [
+                { letter: 'a', found: true },
+                { letter: 'p', found: true },
+                { letter: 'z', found: false },
+                { letter: 'l', found: true },
+                { letter: 'e', found: true }
+            ];
+            let currentIndex = 0;
+            
+            function revealNext() {
+                if (!tutorialState.demoAnimationRunning || tutorialState.currentStep !== 0) return;
+                
+                if (currentIndex < sequence.length) {
+                    const { letter, found } = sequence[currentIndex];
+                    const keyBtn = $(`tutorial-key-${letter}`);
+                    
+                    if (keyBtn) {
+                        keyBtn.classList.add('highlight');
+                        
+                        if (statusEl) {
+                            statusEl.innerHTML = `点击 <strong>${letter.toUpperCase()}</strong>...`;
+                        }
+                        
+                        setTimeout(() => {
+                            tutorialState.demoRevealed.add(letter);
+                            
+                            if (found) {
+                                renderTutorialWord();
+                                keyBtn.classList.remove('highlight');
+                                keyBtn.classList.add('found');
+                                if (statusEl) statusEl.innerHTML = `<span style="color: var(--success-color);">找到 ${letter.toUpperCase()}！</span>`;
+                            } else {
+                                keyBtn.classList.remove('highlight');
+                                keyBtn.classList.add('not-found');
+                                if (statusEl) statusEl.innerHTML = `<span style="color: var(--error-color);">没有 ${letter.toUpperCase()}</span>`;
+                            }
+                            
+                            currentIndex++;
+                            setTimeout(revealNext, 1200);
+                        }, 600);
+                    }
+                } else {
+                    setTimeout(() => {
+                        if (tutorialState.demoAnimationRunning && tutorialState.currentStep === 0) {
+                            tutorialState.demoRevealed = new Set();
+                            renderTutorialKeyboard();
+                            renderTutorialWord();
+                            if (statusEl) statusEl.innerHTML = '';
+                            currentIndex = 0;
+                            setTimeout(revealNext, 500);
+                        }
+                    }, 2000);
+                }
+            }
+            
+            setTimeout(revealNext, 800);
+        }
+        
+        function startGuessDemo() {
+            const input = $('tutorial-guess-input');
+            const submitBtn = $('tutorial-submit-btn');
+            const statusEl = $('tutorial-step2-status');
+            
+            if (!input || !submitBtn || !statusEl) return;
+            
+            input.value = '';
+            statusEl.innerHTML = '';
+            
+            function simulateClick(btn) {
+                btn.style.transform = 'scale(0.9)';
+                btn.style.boxShadow = '0 0 0 4px rgba(34, 197, 94, 0.4)';
+                btn.style.transition = 'all 0.1s ease';
+                
+                setTimeout(() => {
+                    btn.style.transform = 'scale(1)';
+                    btn.style.boxShadow = '';
+                }, 150);
+            }
+            
+            function typeText(text, callback) {
+                input.classList.add('highlight');
+                let charIndex = 0;
+                
+                function typeChar() {
+                    if (charIndex < text.length && tutorialState.currentStep === 1) {
+                        input.value = text.substring(0, charIndex + 1);
+                        charIndex++;
+                        setTimeout(typeChar, 100);
+                    } else {
+                        input.classList.remove('highlight');
+                        callback();
+                    }
+                }
+                typeChar();
+            }
+            
+            function runDemo() {
+                if (tutorialState.currentStep !== 1) return;
+                
+                input.value = '';
+                statusEl.innerHTML = '';
+                
+                const display2 = $('tutorial-word-display-2');
+                if (display2) {
+                    display2.innerHTML = '<span class="revealed">a</span><span class="revealed">p</span><span class="revealed">p</span><span class="revealed">l</span><span class="revealed">e</span>';
+                }
+                
+                setTimeout(() => {
+                    typeText('banana', () => {
+                        setTimeout(() => {
+                            simulateClick(submitBtn);
+                            setTimeout(() => {
+                                statusEl.innerHTML = '<span style="color: var(--error-color);">不对哦，再试试！</span>';
+                                input.style.borderColor = 'var(--error-color)';
+                                setTimeout(() => {
+                                    input.style.borderColor = '';
+                                    input.value = '';
+                                    statusEl.innerHTML = '';
+                                    
+                                    setTimeout(() => {
+                                        typeText('apple', () => {
+                                            setTimeout(() => {
+                                                simulateClick(submitBtn);
+                                                setTimeout(() => {
+                                                    statusEl.innerHTML = '<span style="color: var(--success-color);">正确！苹果 🍎</span>';
+                                                    input.style.borderColor = 'var(--success-color)';
+                                                    
+                                                    setTimeout(() => {
+                                                        runDemo();
+                                                    }, 2000);
+                                                }, 300);
+                                            }, 400);
+                                        });
+                                    }, 500);
+                                }, 800);
+                            }, 300);
+                        }, 400);
+                    });
+                }, 500);
+            }
+            
+            runDemo();
+        }
+        
+        function updateTutorialStep() {
+            const steps = $all('.tutorial-step');
+            const dots = $all('.tutorial-step-dot');
+            const prevBtn = $('tutorial-prev');
+            const nextBtn = $('tutorial-next');
+            
+            steps.forEach((step, index) => {
+                step.classList.toggle('active', index === tutorialState.currentStep);
+            });
+            
+            dots.forEach((dot, index) => {
+                dot.classList.remove('active', 'completed');
+                if (index === tutorialState.currentStep) {
+                    dot.classList.add('active');
+                } else if (index < tutorialState.currentStep) {
+                    dot.classList.add('completed');
+                }
+            });
+            
+            if (prevBtn) {
+                prevBtn.style.display = tutorialState.currentStep > 0 ? 'block' : 'none';
+            }
+            
+            if (nextBtn) {
+                if (tutorialState.currentStep === tutorialState.totalSteps - 1) {
+                    nextBtn.textContent = '开始游戏';
+                    nextBtn.className = 'tutorial-btn tutorial-btn-start';
+                } else {
+                    nextBtn.textContent = '下一步';
+                    nextBtn.className = 'tutorial-btn tutorial-btn-next';
+                }
+            }
+            
+            initTutorialDemo();
+        }
+        
+        function nextTutorialStep() {
+            if (tutorialState.currentStep < tutorialState.totalSteps - 1) {
+                tutorialState.currentStep++;
+                updateTutorialStep();
+            } else {
+                completeTutorial();
+            }
+        }
+        
+        function prevTutorialStep() {
+            if (tutorialState.currentStep > 0) {
+                tutorialState.currentStep--;
+                updateTutorialStep();
+            }
+        }
+        
+        function skipTutorial() {
+            completeTutorial();
+        }
+        
+        function completeTutorial() {
+            tutorialState.completed = true;
+            localStorage.setItem('kidsTutorialCompleted', 'true');
+            hideTutorial();
+            showToast('教程完成，开始挑战吧！', 'success');
         }
 
         function init() {
@@ -2429,6 +3327,7 @@
             initFirebase();
             updateStatsDisplay();
             switchMode('levels');
+            initTutorial();
         }
 
         init();

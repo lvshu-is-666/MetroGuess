@@ -4282,6 +4282,52 @@
             renderStations();
             renderLetterKeyboard();
             updateScoreDisplay();
+            checkAutoSolved();
+        }
+
+        function checkAutoSolved() {
+            gameState.stations.forEach((station, index) => {
+                if (gameState.solvedStations.has(index)) return;
+                
+                const stationLower = station.station_en.toLowerCase();
+                const allLetters = stationLower.split('').filter(char => /[a-z]/.test(char));
+                const revealedSet = gameState.revealedLetters[index];
+                
+                if (allLetters.length > 0 && allLetters.every(char => revealedSet.has(char))) {
+                    gameState.solvedStations.add(index);
+                    
+                    const now = Date.now();
+                    if (now - gameState.lastCorrectTime < 5000) {
+                        gameState.combo++;
+                        playSound('combo');
+                    } else {
+                        gameState.combo = 1;
+                    }
+                    gameState.lastCorrectTime = now;
+                    
+                    const comboBonus = gameState.combo * 5;
+                    const totalPoints = 50 + comboBonus;
+                    gameState.score += totalPoints;
+                    stats.stationsSolved++;
+                    
+                    playSound('correct');
+                    addToHistory(`自动猜出`, 'success', `${station.city_cn} · ${station.station_cn} (+${totalPoints}分)`);
+                    
+                    const card = document.getElementById(`station-${index}`);
+                    if (card) {
+                        card.classList.add('pulse-success');
+                        const rect = card.getBoundingClientRect();
+                        showFloatingScore(totalPoints, rect.left + rect.width / 2, rect.top);
+                        createParticles(rect.left + rect.width / 2, rect.top + rect.height / 2, 15);
+                    }
+                    
+                    renderStations();
+                    updateScoreDisplay();
+                    updateProgressBar();
+                    updateComboDisplay();
+                    checkWinCondition();
+                }
+            });
         }
 
         function guessStation(guess) {
