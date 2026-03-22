@@ -2,7 +2,11 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="format-detection" content="telephone=no">
     <title>地铁站名猜谜游戏 - 挑战全国地铁站点知识</title>
     
     <meta name="description" content="地铁站名猜谜游戏，挑战全国地铁站点知识！根据提示猜测地铁站名，涵盖北京、上海、广州、深圳等全国所有城市的地铁线路，测试你对城市轨道交通的了解程度。">
@@ -78,6 +82,7 @@
         }
     </script>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="station-utils.js"></script>
     <script src="encrypted_data.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -113,6 +118,24 @@
         
         html {
             scroll-behavior: smooth;
+            -webkit-text-size-adjust: 100%;
+            text-size-adjust: 100%;
+        }
+        
+        body {
+            -webkit-overflow-scrolling: touch;
+            overflow-x: hidden;
+        }
+        
+        .letter-key, .mode-btn, .difficulty-btn, .btn-primary, .btn-secondary, .btn-hint, .station-card {
+            will-change: transform;
+            -webkit-transform: translateZ(0);
+            transform: translateZ(0);
+            touch-action: manipulation;
+        }
+        
+        #letter-keyboard {
+            touch-action: manipulation;
         }
         
         * {
@@ -424,6 +447,182 @@
             .letter-display {
                 letter-spacing: 0.08em;
                 font-size: 0.875rem;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            html {
+                -webkit-tap-highlight-color: transparent;
+                -webkit-touch-callout: none;
+            }
+            
+            .letter-key {
+                width: 36px !important;
+                height: 44px !important;
+                font-size: 1rem !important;
+                margin: 3px;
+            }
+            
+            .mode-btn, .difficulty-btn {
+                min-height: 48px;
+                padding: 10px 16px;
+            }
+            
+            .btn-primary, .btn-secondary, .btn-hint {
+                min-height: 48px;
+                padding: 12px 20px;
+            }
+            
+            .sound-toggle {
+                width: 52px;
+                height: 52px;
+                bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+                right: calc(16px + env(safe-area-inset-right, 0px));
+            }
+            
+            .station-card {
+                padding: 12px;
+            }
+            
+            .glass-panel {
+                padding: 12px;
+            }
+            
+            #guess-input {
+                font-size: 16px !important;
+                min-height: 48px;
+            }
+            
+            .guess-history-item {
+                padding: 10px 12px;
+            }
+            
+            .tutorial-card {
+                margin: 8px;
+                max-height: 85vh;
+            }
+            
+            .tutorial-header h2 {
+                font-size: 1.25rem;
+            }
+            
+            #victory-modal > div {
+                margin: 16px;
+                max-height: 90vh;
+                overflow-y: auto;
+            }
+            
+            #victory-modal .flex.justify-center.gap-3 {
+                flex-wrap: wrap;
+            }
+            
+            .leaderboard-item {
+                padding: 10px;
+            }
+            
+            #letter-keyboard {
+                gap: 4px;
+            }
+            
+            .toast {
+                left: 16px !important;
+                right: 16px !important;
+                text-align: center;
+            }
+            
+            #toast-container {
+                left: 16px;
+                right: 16px;
+            }
+            
+            footer {
+                padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+            }
+            
+            #game-controls {
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+            
+            #game-controls span.text-slate-300 {
+                display: none;
+            }
+            
+            #game-controls a {
+                padding: 6px 12px;
+                background: rgba(79, 70, 229, 0.1);
+                border-radius: 8px;
+            }
+            
+            header h1 {
+                font-size: 1.5rem !important;
+            }
+            
+            header h1 svg {
+                width: 28px !important;
+                height: 28px !important;
+            }
+            
+            #game-header .flex.items-center.gap-4 {
+                gap: 0.5rem;
+                flex-wrap: wrap;
+            }
+            
+            #game-header .text-center {
+                min-width: 50px;
+            }
+        }
+        
+        @media (max-width: 400px) {
+            .letter-key {
+                width: 32px !important;
+                height: 40px !important;
+                font-size: 0.875rem !important;
+                margin: 2px;
+            }
+            
+            .mode-btn, .difficulty-btn {
+                min-height: 44px;
+                padding: 8px 12px;
+                font-size: 0.875rem;
+            }
+            
+            #game-header .text-xs {
+                font-size: 0.65rem;
+            }
+            
+            #game-header .text-xl {
+                font-size: 1rem;
+            }
+            
+            header h1 {
+                font-size: 1.25rem !important;
+            }
+        }
+        
+        @media (hover: none) and (pointer: coarse) {
+            .letter-key:active,
+            .mode-btn:active,
+            .difficulty-btn:active,
+            .btn-primary:active,
+            .btn-secondary:active,
+            .btn-hint:active {
+                transform: scale(0.95);
+                opacity: 0.9;
+            }
+            
+            .station-card:hover,
+            .letter-key:hover,
+            .mode-btn:hover,
+            .difficulty-btn:hover {
+                transform: none;
+            }
+        }
+        
+        @supports (padding: env(safe-area-inset-bottom)) {
+            body {
+                padding-left: env(safe-area-inset-left, 0px);
+                padding-right: env(safe-area-inset-right, 0px);
             }
         }
         
@@ -1092,80 +1291,90 @@
             </p>
         </header>
         
-        <section id="game-settings" class="glass-panel rounded-2xl p-4 mb-4 shadow-lg" aria-label="游戏设置">
-            <div class="flex flex-col md:flex-row gap-4 items-center justify-between">
-                <div class="flex flex-col md:flex-row gap-4 items-center">
-                    <div class="flex items-center gap-2">
-                        <span class="text-sm font-medium text-slate-700">难度:</span>
-                        <div class="flex gap-2">
-                            <button data-difficulty="easy" class="difficulty-btn px-3 py-1.5 rounded-lg text-sm font-medium text-slate-700 cursor-pointer">
-                                简单
-                            </button>
-                            <button data-difficulty="normal" class="difficulty-btn active px-3 py-1.5 rounded-lg text-sm font-medium text-slate-700 cursor-pointer">
-                                普通
-                            </button>
-                            <button data-difficulty="hard" class="difficulty-btn px-3 py-1.5 rounded-lg text-sm font-medium text-slate-700 cursor-pointer">
-                                困难
-                            </button>
+        <section id="game-settings" class="glass-panel rounded-2xl p-3 mb-4 shadow-lg" aria-label="游戏设置">
+            <div class="flex items-center justify-between gap-3">
+                <div class="flex items-center gap-3 flex-1">
+                    <div class="flex items-center gap-3">
+                        <div class="text-center">
+                            <div class="text-[10px] text-slate-500">计时</div>
+                            <div id="timer" class="text-lg font-bold text-blue-600 timer-display">00:00</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-[10px] text-slate-500">得分</div>
+                            <div id="score" class="text-lg font-bold text-green-600">0</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-[10px] text-slate-500">连击</div>
+                            <div id="combo" class="text-lg font-bold text-orange-600">0</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-[10px] text-slate-500">提示</div>
+                            <div id="hints-left" class="text-lg font-bold text-purple-600">3</div>
                         </div>
                     </div>
-                    <div class="flex items-center gap-2">
-                        <span class="text-sm font-medium text-slate-700">站名数:</span>
-                        <input type="number" id="station-count" min="1" max="20" value="4" class="w-16 px-2 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-700 text-sm text-center">
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <span class="text-sm font-medium text-slate-700">城市:</span>
-                        <select id="city-select" class="px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-700 text-sm cursor-pointer">
-                            <option value="all">全部城市</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="flex items-center gap-4">
-                    <div class="text-center">
-                        <div class="text-xs text-slate-500">计时</div>
-                        <div id="timer" class="text-xl font-bold text-blue-600 timer-display">00:00</div>
-                    </div>
-                    <div class="text-center">
-                        <div class="text-xs text-slate-500">得分</div>
-                        <div id="score" class="text-xl font-bold text-green-600">0</div>
-                    </div>
-                    <div class="text-center">
-                        <div class="text-xs text-slate-500">连击</div>
-                        <div id="combo" class="text-xl font-bold text-orange-600">0</div>
-                    </div>
-                    <div class="text-center">
-                        <div class="text-xs text-slate-500">提示</div>
-                        <div id="hints-left" class="text-xl font-bold text-purple-600">3</div>
+                    <div class="flex-1 max-w-xs">
+                        <div class="flex justify-between text-[10px] text-slate-500 mb-1">
+                            <span>进度</span>
+                            <span id="progress-text">0/0</span>
+                        </div>
+                        <div class="h-1.5 bg-slate-200 rounded-full overflow-hidden">
+                            <div id="progress-bar" class="progress-bar h-full rounded-full" style="width: 0%"></div>
+                        </div>
                     </div>
                 </div>
-            </div>
-            
-            <div class="mt-3">
-                <div class="flex justify-between text-xs text-slate-500 mb-1">
-                    <span>进度</span>
-                    <span id="progress-text">0/0</span>
-                </div>
-                <div class="h-2 bg-slate-200 rounded-full overflow-hidden">
-                    <div id="progress-bar" class="progress-bar h-full rounded-full" style="width: 0%"></div>
-                </div>
-            </div>
-            
-            <div id="game-controls" class="mt-3 pt-3 border-t border-slate-200/50 text-center">
-                <div class="flex items-center justify-center gap-4 text-sm">
-                    <a id="btn-new-game" href="#" class="text-blue-600 hover:text-blue-700 font-medium cursor-pointer">新游戏</a>
-                    <span class="text-slate-300">|</span>
-                    <a id="btn-save" href="#" class="text-slate-600 hover:text-slate-800 cursor-pointer">保存</a>
-                    <a id="btn-load" href="#" class="text-slate-600 hover:text-slate-800 cursor-pointer">加载</a>
-                    <span class="text-slate-300">|</span>
-                    <a id="btn-hint" href="#" class="text-purple-600 hover:text-purple-700 cursor-pointer">提示</a>
-                    <span class="text-slate-300">|</span>
-                    <span class="text-slate-500">已猜 <span id="guess-count" class="text-slate-700">0</span> 次</span>
-                    <span class="text-slate-300">|</span>
-                    <a id="btn-rules" href="#" class="inline-flex items-center justify-center w-6 h-6 text-slate-400 hover:text-indigo-600 cursor-pointer transition-colors duration-200" title="游戏规则">
-                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" />
+                <div class="flex items-center gap-2">
+                    <a id="btn-new-game" href="#" class="text-blue-600 hover:text-blue-700 font-medium text-sm cursor-pointer">新游戏</a>
+                    <a id="btn-hint" href="#" class="text-purple-600 hover:text-purple-700 text-sm cursor-pointer">提示</a>
+                    <button id="toggle-settings" class="p-2 rounded-lg hover:bg-slate-200/50 transition-colors cursor-pointer" aria-label="展开设置">
+                        <svg id="settings-icon-expand" class="w-5 h-5 text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
                         </svg>
-                    </a>
+                        <svg id="settings-icon-collapse" class="w-5 h-5 text-slate-600 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M5 15l7-7 7 7" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            
+            <div id="settings-panel" class="hidden mt-3 pt-3 border-t border-slate-200/50">
+                <div class="flex flex-col gap-3">
+                    <div class="flex flex-wrap gap-3 items-center">
+                        <div class="flex items-center gap-2">
+                            <span class="text-sm font-medium text-slate-700">难度:</span>
+                            <div class="flex gap-1.5">
+                                <button data-difficulty="easy" class="difficulty-btn px-2.5 py-1 rounded-lg text-xs font-medium text-slate-700 cursor-pointer">
+                                    简单
+                                </button>
+                                <button data-difficulty="normal" class="difficulty-btn active px-2.5 py-1 rounded-lg text-xs font-medium text-slate-700 cursor-pointer">
+                                    普通
+                                </button>
+                                <button data-difficulty="hard" class="difficulty-btn px-2.5 py-1 rounded-lg text-xs font-medium text-slate-700 cursor-pointer">
+                                    困难
+                                </button>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="text-sm font-medium text-slate-700">站名数:</span>
+                            <input type="number" id="station-count" min="1" max="20" value="4" class="w-14 px-2 py-1 rounded-lg border border-slate-200 bg-white text-slate-700 text-xs text-center">
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="text-sm font-medium text-slate-700">城市:</span>
+                            <select id="city-select" class="px-2.5 py-1 rounded-lg border border-slate-200 bg-white text-slate-700 text-xs cursor-pointer">
+                                <option value="all">全部城市</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center justify-center gap-3 text-xs">
+                        <a id="btn-save" href="#" class="text-slate-600 hover:text-slate-800 cursor-pointer">保存</a>
+                        <a id="btn-load" href="#" class="text-slate-600 hover:text-slate-800 cursor-pointer">加载</a>
+                        <span class="text-slate-500">已猜 <span id="guess-count" class="text-slate-700 font-medium">0</span> 次</span>
+                        <a id="btn-rules" href="#" class="inline-flex items-center justify-center text-slate-400 hover:text-indigo-600 cursor-pointer transition-colors duration-200" title="游戏规则">
+                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" />
+                            </svg>
+                        </a>
+                    </div>
                 </div>
             </div>
         </section>
@@ -1705,13 +1914,6 @@
             hard: { stationCount: 6, hints: 2, timeBonus: 480, multiplier: 2, difficultyLevel: 'hard' }
         };
 
-        const LETTER_FREQUENCY = {
-            superCommon: ['a', 'e', 'i', 'n', 'o', 's', 'u'],
-            common: ['g', 'h', 't', 'l', 'r', 'd', 'c'],
-            medium: ['y', 'j', 'x', 'z', 'p', 'm', 'w', 'b'],
-            rare: ['q', 'f', 'k', 'v']
-        };
-
         const ACHIEVEMENTS = [
             { id: 'first_win', name: '初次胜利', desc: '完成第一局游戏', icon: 'trophy' },
             { id: 'speed_demon', name: '速度恶魔', desc: '60秒内完成游戏', icon: 'zap' },
@@ -1743,53 +1945,10 @@
             return el;
         };
 
-        function calculateStationDifficulty(station) {
-            const name = station.station_en.toLowerCase();
-            let score = 0;
-            
-            const length = name.replace(/[^a-z]/g, '').length;
-            if (length <= 5) score += 1;
-            else if (length <= 8) score += 2;
-            else if (length <= 12) score += 3;
-            else score += 4;
-            
-            const specialChars = (name.match(/['().]/g) || []).length;
-            score += specialChars * 1.5;
-            
-            const letters = name.replace(/[^a-z]/g, '');
-            const uniqueLetters = new Set(letters.split(''));
-            
-            LETTER_FREQUENCY.rare.forEach(letter => {
-                if (uniqueLetters.has(letter)) score += 1.5;
-            });
-            
-            LETTER_FREQUENCY.medium.forEach(letter => {
-                if (uniqueLetters.has(letter)) score += 0.5;
-            });
-            
-            const letterCounts = {};
-            letters.split('').forEach(l => letterCounts[l] = (letterCounts[l] || 0) + 1);
-            const repeatCount = Object.values(letterCounts).filter(c => c > 1).length;
-            score -= repeatCount * 0.2;
-            
-            const commonLetterCount = LETTER_FREQUENCY.common.filter(l => uniqueLetters.has(l)).length;
-            score -= commonLetterCount * 0.2;
-            
-            const superCommonLetterCount = LETTER_FREQUENCY.superCommon.filter(l => uniqueLetters.has(l)).length;
-            score -= superCommonLetterCount * 0.3;
-            
-            const superCommonRatio = superCommonLetterCount / uniqueLetters.size;
-            if (superCommonRatio > 0.6) score -= 1;
-            
-            if (score <= 1.5) return 'easy';
-            if (score <= 3) return 'normal';
-            return 'hard';
-        }
-
         function classifyStationsByDifficulty() {
             const classified = { easy: [], normal: [], hard: [] };
             stationDatabase.forEach(station => {
-                const difficulty = calculateStationDifficulty(station);
+                const difficulty = StationUtils.calculateStationDifficulty(station);
                 classified[difficulty].push({ ...station, calculatedDifficulty: difficulty });
             });
             return classified;
@@ -1884,7 +2043,6 @@
             floatingScores: $('floating-scores'),
             soundToggle: $('sound-toggle'),
             modeMultiplayer: $('mode-multiplayer'),
-            gameControls: $('game-controls'),
             multiplayerArea: $('multiplayer-area'),
             mpLobby: $('mp-lobby'),
             mpRoom: $('mp-room'),
@@ -1898,7 +2056,11 @@
             btnRules: $('btn-rules'),
             rulesModal: $('rules-modal'),
             rulesModalContent: $('rules-modal-content'),
-            btnCloseRules: $('btn-close-rules')
+            btnCloseRules: $('btn-close-rules'),
+            toggleSettings: $('toggle-settings'),
+            settingsPanel: $('settings-panel'),
+            settingsIconExpand: $('settings-icon-expand'),
+            settingsIconCollapse: $('settings-icon-collapse')
         };
 
         const csvData = `city_cn,city_en,station_cn,station_en
@@ -2220,19 +2382,9 @@
 
         
 
-        function decryptData(encryptedBase64, key) {
-            const encrypted = Uint8Array.from(atob(encryptedBase64), c => c.charCodeAt(0));
-            const keyBytes = new TextEncoder().encode(key);
-            const decrypted = new Uint8Array(encrypted.length);
-            for (let i = 0; i < encrypted.length; i++) {
-                decrypted[i] = encrypted[i] ^ keyBytes[i % keyBytes.length];
-            }
-            return new TextDecoder().decode(decrypted);
-        }
-
         function loadEncryptedData() {
             try {
-                const decrypted = decryptData(ENCRYPTED_DATA, DECRYPT_KEY);
+                const decrypted = StationUtils.decryptData(ENCRYPTED_DATA, DECRYPT_KEY);
                 const parsed = parseCSV(decrypted);
                 if (parsed.length > 0) {
                     stationDatabase = parsed;
@@ -2969,7 +3121,7 @@
                 const isSolved = mpState.solvedStations && mpState.solvedStations.has(index);
                 const revealed = mpState.revealedLetters && mpState.revealedLetters[index] ? mpState.revealedLetters[index] : new Set();
                 const displayText = getMpDisplayText(station.station_en, revealed, isSolved, mpState.revealedSpecialChars);
-                const difficulty = station.calculatedDifficulty || calculateStationDifficulty(station);
+                const difficulty = station.calculatedDifficulty || StationUtils.calculateStationDifficulty(station);
                 const difficultyLabel = difficulty === 'easy' ? '简单' : difficulty === 'normal' ? '普通' : '困难';
                 const difficultyColor = difficulty === 'easy' ? 'bg-green-100 text-green-700' : 
                                        difficulty === 'normal' ? 'bg-yellow-100 text-yellow-700' : 
@@ -3560,6 +3712,7 @@
             startNewGame();
             setupEventListeners();
             initAudio();
+            initMobileOptimizations();
             
             requestIdleCallback(() => {
                 initFirebase();
@@ -3572,6 +3725,34 @@
             }, 3000);
             
             handleRoute();
+        }
+        
+        function initMobileOptimizations() {
+            let lastTouchEnd = 0;
+            document.addEventListener('touchend', function(event) {
+                const now = Date.now();
+                if (now - lastTouchEnd <= 300) {
+                    event.preventDefault();
+                }
+                lastTouchEnd = now;
+            }, false);
+            
+            document.addEventListener('touchmove', function(e) {
+                if (e.target.closest('#letter-keyboard')) {
+                    if (e.scale !== 1) {
+                        e.preventDefault();
+                    }
+                }
+            }, { passive: false });
+            
+            const guessInput = $('guess-input');
+            if (guessInput) {
+                guessInput.addEventListener('focus', function() {
+                    setTimeout(() => {
+                        this.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }, 300);
+                });
+            }
         }
         
         let tutorialState = {
@@ -4048,7 +4229,7 @@
             const isSolved = gameState.solvedStations.has(index);
             const revealed = gameState.revealedLetters[index];
             const displayText = getDisplayText(station.station_en, revealed, isSolved, gameState.devMode, gameState.revealedSpecialChars);
-            const difficulty = station.calculatedDifficulty || calculateStationDifficulty(station);
+            const difficulty = station.calculatedDifficulty || StationUtils.calculateStationDifficulty(station);
             const difficultyLabel = difficulty === 'easy' ? '简单' : difficulty === 'normal' ? '普通' : '困难';
             const difficultyColor = difficulty === 'easy' ? 'bg-green-100 text-green-700' : 
                                    difficulty === 'normal' ? 'bg-yellow-100 text-yellow-700' : 
@@ -4085,7 +4266,7 @@
             const isSolved = gameState.solvedStations.has(index);
             const revealed = gameState.revealedLetters[index];
             const displayText = getDisplayText(station.station_en, revealed, isSolved, gameState.devMode, gameState.revealedSpecialChars);
-            const difficulty = station.calculatedDifficulty || calculateStationDifficulty(station);
+            const difficulty = station.calculatedDifficulty || StationUtils.calculateStationDifficulty(station);
             const difficultyLabel = difficulty === 'easy' ? '简单' : difficulty === 'normal' ? '普通' : '困难';
             const difficultyColor = difficulty === 'easy' ? 'bg-green-100 text-green-700' : 
                                    difficulty === 'normal' ? 'bg-yellow-100 text-yellow-700' : 
@@ -4750,14 +4931,12 @@
             elements.reverseModeArea.classList.add('hidden');
             elements.leaderboardArea.classList.add('hidden');
             elements.multiplayerArea.classList.add('hidden');
-            elements.gameControls.classList.add('hidden');
             elements.gameSettings.classList.add('hidden');
             
             if (mode === 'normal') {
                 elements.modeNormal.classList.add('active');
                 elements.normalModeArea.classList.remove('hidden');
                 elements.gameSettings.classList.remove('hidden');
-                elements.gameControls.classList.remove('hidden');
                 elements.guessInput.focus();
             } else if (mode === 'reverse') {
                 elements.modeReverse.classList.add('active');
@@ -4964,6 +5143,19 @@
         }
 
         function setupEventListeners() {
+            elements.toggleSettings.addEventListener('click', () => {
+                const isHidden = elements.settingsPanel.classList.contains('hidden');
+                if (isHidden) {
+                    elements.settingsPanel.classList.remove('hidden');
+                    elements.settingsIconExpand.classList.add('hidden');
+                    elements.settingsIconCollapse.classList.remove('hidden');
+                } else {
+                    elements.settingsPanel.classList.add('hidden');
+                    elements.settingsIconExpand.classList.remove('hidden');
+                    elements.settingsIconCollapse.classList.add('hidden');
+                }
+            });
+            
             elements.btnSubmit.addEventListener('click', handleGuess);
             elements.guessInput.addEventListener('keypress', (e) => {
                 if (e.key === 'Enter') handleGuess();
