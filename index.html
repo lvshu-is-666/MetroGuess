@@ -67,6 +67,9 @@
     <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='16' fill='%234F46E5'/%3E%3Cpath d='M50 12c-18 0-32 4-32 20v40c0 9 7 16 16 16h4l-8 8h8l8-8h8l8 8h8l-8-8h4c9 0 16-7 16-16v-40c0-16-14-20-32-20zM34 76c-5 0-8-3-8-8s3-8 8-8 8 3 8 8-3 8-8 8zm32 0c-5 0-8-3-8-8s3-8 8-8 8 3 8 8-3 8-8 8zm8-28H26V32c0-5 3-8 8-8h32c5 0 8 3 8 8v16z' fill='white'/%3E%3C/svg%3E">
     
     <script>
+        if ('scrollRestoration' in history) {
+            history.scrollRestoration = 'manual';
+        }
         if (!window.requestIdleCallback) {
             window.requestIdleCallback = function(callback, options) {
                 const start = Date.now();
@@ -458,19 +461,19 @@
             
             .letter-key {
                 width: 36px !important;
-                height: 44px !important;
+                height: 36px !important;
                 font-size: 1rem !important;
                 margin: 3px;
             }
             
             .mode-btn, .difficulty-btn {
-                min-height: 48px;
-                padding: 10px 16px;
+                min-height: 36px;
+                padding: 6px 12px;
             }
             
             .btn-primary, .btn-secondary, .btn-hint {
-                min-height: 48px;
-                padding: 12px 20px;
+                min-height: 40px;
+                padding: 8px 16px;
             }
             
             .sound-toggle {
@@ -571,19 +574,54 @@
             #game-header .text-center {
                 min-width: 50px;
             }
+            
+            .game-settings-header {
+                flex-wrap: wrap;
+                gap: 0.75rem;
+            }
+            
+            .stats-group {
+                gap: 0.5rem;
+            }
+            
+            .stat-item {
+                min-width: 44px;
+            }
+            
+            .stat-value {
+                font-size: 1rem;
+            }
+            
+            .progress-group.desktop-only {
+                display: none;
+            }
+            
+            .actions-group {
+                gap: 0.5rem;
+            }
+            
+            .action-link {
+                font-size: 0.8125rem;
+            }
+            
+            .progress-group-mobile {
+                display: block;
+                width: 100%;
+                margin-bottom: 0.5rem;
+            }
         }
         
         @media (max-width: 400px) {
             .letter-key {
                 width: 32px !important;
-                height: 40px !important;
+                height: 32px !important;
                 font-size: 0.875rem !important;
                 margin: 2px;
             }
             
             .mode-btn, .difficulty-btn {
-                min-height: 44px;
-                padding: 8px 12px;
+                min-height: 32px;
+                padding: 4px 10px;
                 font-size: 0.875rem;
             }
             
@@ -597,6 +635,152 @@
             
             header h1 {
                 font-size: 1.25rem !important;
+            }
+        }
+        
+        /* Game settings header layout */
+        .game-settings-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+        }
+        
+        .stats-group {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            flex-shrink: 0;
+        }
+        
+        .stat-item {
+            text-align: center;
+            min-width: 48px;
+        }
+        
+        .stat-label {
+            font-size: 10px;
+            color: #64748b;
+            margin-bottom: 2px;
+        }
+        
+        .stat-value {
+            font-size: 1.125rem;
+            font-weight: 700;
+            font-variant-numeric: tabular-nums;
+        }
+        
+        .progress-group {
+            flex: 1;
+            max-width: 200px;
+            margin: 0 auto;
+        }
+        
+        .progress-group-mobile {
+            display: none;
+        }
+        
+        .progress-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 10px;
+            color: #64748b;
+            margin-bottom: 4px;
+        }
+        
+        .progress-bar-container {
+            height: 6px;
+            background: #e2e8f0;
+            border-radius: 9999px;
+            overflow: hidden;
+        }
+        
+        .actions-group {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            flex-shrink: 0;
+        }
+        
+        .action-link {
+            font-size: 0.875rem;
+            font-weight: 500;
+            text-decoration: none;
+            transition: color 0.2s;
+            cursor: pointer;
+        }
+        
+        .action-link:hover {
+            opacity: 0.8;
+        }
+        
+        .settings-btn {
+            padding: 0.5rem;
+            border-radius: 0.5rem;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .settings-btn:hover {
+            background: rgba(148, 163, 184, 0.2);
+        }
+        
+        /* Desktop optimizations */
+        @media (min-width: 1024px) {
+            #game-settings {
+                max-width: 900px;
+                margin-left: auto;
+                margin-right: auto;
+                padding: 1rem 1.5rem;
+            }
+            
+            .game-settings-header {
+                gap: 2rem;
+            }
+            
+            .stats-group {
+                gap: 1.25rem;
+            }
+            
+            .stat-item {
+                min-width: 56px;
+            }
+            
+            .stat-value {
+                font-size: 1.25rem;
+            }
+            
+            .progress-group {
+                max-width: 240px;
+            }
+            
+            .actions-group {
+                gap: 1rem;
+            }
+            
+            nav[aria-label="游戏模式"] {
+                max-width: 700px;
+                margin-left: auto;
+                margin-right: auto;
+            }
+        }
+        
+        @media (min-width: 1280px) {
+            #game-settings {
+                max-width: 1000px;
+            }
+            
+            .progress-group {
+                max-width: 280px;
+            }
+            
+            nav[aria-label="游戏模式"] {
+                max-width: 800px;
             }
         }
         
@@ -674,6 +858,82 @@
         
         .sound-toggle:hover {
             transform: scale(1.1);
+        }
+        
+        @media (max-width: 767px) {
+            .sound-toggle {
+                bottom: 20px;
+                right: 12px;
+                width: 44px;
+                height: 44px;
+                transition: bottom 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s ease;
+            }
+            
+            .sound-toggle.shifted {
+                bottom: calc(84px + env(safe-area-inset-bottom, 0px));
+            }
+        }
+        
+        #sticky-input-container {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            z-index: 90;
+            background: linear-gradient(to top, rgba(238, 242, 255, 0.98) 0%, rgba(238, 242, 255, 0.95) 80%, transparent 100%);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            padding: 12px 16px;
+            padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+            border-top: 1px solid rgba(129, 140, 248, 0.2);
+            transform: translateY(100%);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 -4px 20px rgba(79, 70, 229, 0.1);
+        }
+        
+        #sticky-input-container.visible {
+            transform: translateY(0);
+        }
+        
+        #sticky-input-container .sticky-input-wrapper {
+            display: flex;
+            gap: 12px;
+            max-width: 640px;
+            margin: 0 auto;
+        }
+        
+        #sticky-input-container input {
+            flex: 1;
+            min-height: 48px;
+            font-size: 16px;
+        }
+        
+        #sticky-input-container button {
+            min-height: 48px;
+            min-width: 72px;
+        }
+        
+        .dark #sticky-input-container {
+            background: linear-gradient(to top, rgba(15, 23, 42, 0.98) 0%, rgba(15, 23, 42, 0.95) 80%, transparent 100%);
+            border-top-color: rgba(71, 85, 105, 0.5);
+        }
+        
+        @media (min-width: 768px) {
+            #sticky-input-container {
+                bottom: 20px;
+                left: 50%;
+                transform: translateX(-50%) translateY(calc(100% + 30px));
+                right: auto;
+                width: auto;
+                min-width: 400px;
+                max-width: 500px;
+                border-radius: 16px;
+                box-shadow: 0 8px 32px rgba(79, 70, 229, 0.15);
+            }
+            
+            #sticky-input-container.visible {
+                transform: translateX(-50%) translateY(0);
+            }
         }
         
         .dark .glass-panel {
@@ -1246,6 +1506,11 @@
     </style>
 </head>
 <body class="bg-gradient-to-br from-indigo-50 via-purple-50 to-blue-100 min-h-screen text-slate-800 transition-colors duration-300">
+    <script>
+        window.scrollTo(0, 0);
+        document.documentElement.scrollTop = 0;
+        document.body.scrollTop = 0;
+    </script>
 
     <div id="toast-container" class="fixed top-4 right-4 z-50 space-y-2" role="alert" aria-live="polite"></div>
     
@@ -1262,6 +1527,21 @@
             <line x1="17" y1="9" x2="23" y2="15"></line>
         </svg>
     </button>
+    
+    <div id="sticky-input-container">
+        <div class="sticky-input-wrapper">
+            <input 
+                type="text" 
+                id="sticky-guess-input" 
+                placeholder="输入字母或站名猜测" 
+                class="px-4 py-3 rounded-lg border border-slate-200 bg-white text-slate-800 placeholder-slate-400 focus:outline-none focus:border-blue-500 transition-all"
+                autocomplete="off"
+            >
+            <button id="sticky-btn-submit" class="btn-secondary px-5 py-3 rounded-lg text-white font-medium cursor-pointer">
+                提交
+            </button>
+        </div>
+    </div>
     
     <main class="relative z-10 container mx-auto px-4 py-6 max-w-6xl">
         <header class="text-center mb-6">
@@ -1292,40 +1572,38 @@
         </header>
         
         <section id="game-settings" class="glass-panel rounded-2xl p-3 mb-4 shadow-lg" aria-label="游戏设置">
-            <div class="flex items-center justify-between gap-3">
-                <div class="flex items-center gap-3 flex-1">
-                    <div class="flex items-center gap-3">
-                        <div class="text-center">
-                            <div class="text-[10px] text-slate-500">计时</div>
-                            <div id="timer" class="text-lg font-bold text-blue-600 timer-display">00:00</div>
-                        </div>
-                        <div class="text-center">
-                            <div class="text-[10px] text-slate-500">得分</div>
-                            <div id="score" class="text-lg font-bold text-green-600">0</div>
-                        </div>
-                        <div class="text-center">
-                            <div class="text-[10px] text-slate-500">连击</div>
-                            <div id="combo" class="text-lg font-bold text-orange-600">0</div>
-                        </div>
-                        <div class="text-center">
-                            <div class="text-[10px] text-slate-500">提示</div>
-                            <div id="hints-left" class="text-lg font-bold text-purple-600">3</div>
-                        </div>
+            <div class="game-settings-header">
+                <div class="stats-group">
+                    <div class="stat-item">
+                        <div class="stat-label">计时</div>
+                        <div id="timer" class="stat-value text-blue-600">00:00</div>
                     </div>
-                    <div class="flex-1 max-w-xs">
-                        <div class="flex justify-between text-[10px] text-slate-500 mb-1">
-                            <span>进度</span>
-                            <span id="progress-text">0/0</span>
-                        </div>
-                        <div class="h-1.5 bg-slate-200 rounded-full overflow-hidden">
-                            <div id="progress-bar" class="progress-bar h-full rounded-full" style="width: 0%"></div>
-                        </div>
+                    <div class="stat-item">
+                        <div class="stat-label">得分</div>
+                        <div id="score" class="stat-value text-green-600">0</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">连击</div>
+                        <div id="combo" class="stat-value text-orange-600">0</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">提示</div>
+                        <div id="hints-left" class="stat-value text-purple-600">3</div>
                     </div>
                 </div>
-                <div class="flex items-center gap-2">
-                    <a id="btn-new-game" href="#" class="text-blue-600 hover:text-blue-700 font-medium text-sm cursor-pointer">新游戏</a>
-                    <a id="btn-hint" href="#" class="text-purple-600 hover:text-purple-700 text-sm cursor-pointer">提示</a>
-                    <button id="toggle-settings" class="p-2 rounded-lg hover:bg-slate-200/50 transition-colors cursor-pointer" aria-label="展开设置">
+                <div class="progress-group desktop-only">
+                    <div class="progress-label">
+                        <span>进度</span>
+                        <span id="progress-text">0/0</span>
+                    </div>
+                    <div class="progress-bar-container">
+                        <div id="progress-bar" class="progress-bar" style="width: 0%"></div>
+                    </div>
+                </div>
+                <div class="actions-group">
+                    <a id="btn-new-game" href="#" class="action-link text-blue-600">新游戏</a>
+                    <a id="btn-hint" href="#" class="action-link text-purple-600">提示</a>
+                    <button id="toggle-settings" class="settings-btn" aria-label="展开设置">
                         <svg id="settings-icon-expand" class="w-5 h-5 text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
                         </svg>
@@ -1338,6 +1616,15 @@
             
             <div id="settings-panel" class="hidden mt-3 pt-3 border-t border-slate-200/50">
                 <div class="flex flex-col gap-3">
+                    <div class="progress-group-mobile">
+                        <div class="progress-label">
+                            <span>进度</span>
+                            <span id="progress-text-mobile">0/0</span>
+                        </div>
+                        <div class="progress-bar-container">
+                            <div id="progress-bar-mobile" class="progress-bar" style="width: 0%"></div>
+                        </div>
+                    </div>
                     <div class="flex flex-wrap gap-3 items-center">
                         <div class="flex items-center gap-2">
                             <span class="text-sm font-medium text-slate-700">难度:</span>
@@ -1408,7 +1695,7 @@
                 </div>
             </div>
             
-            <div class="glass-panel rounded-2xl p-4 md:p-6 shadow-lg">
+            <div id="input-area" class="glass-panel rounded-2xl p-4 md:p-6 shadow-lg">
                 <div class="flex flex-col md:flex-row gap-3">
                     <input 
                         type="text" 
@@ -3694,6 +3981,11 @@
         window.addEventListener('popstate', handleRoute);
 
         async function init() {
+            if ('scrollRestoration' in history) {
+                history.scrollRestoration = 'manual';
+            }
+            window.scrollTo(0, 0);
+            
             stationDatabase = parseCSV(csvData);
             await loadCSVFromFile();
             loadStats();
@@ -3725,6 +4017,11 @@
             }, 3000);
             
             handleRoute();
+            
+            setTimeout(() => {
+                isInitializing = false;
+                window.scrollTo(0, 0);
+            }, 100);
         }
         
         function initMobileOptimizations() {
@@ -3749,10 +4046,141 @@
             if (guessInput) {
                 guessInput.addEventListener('focus', function() {
                     setTimeout(() => {
-                        this.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        const rect = this.getBoundingClientRect();
+                        const viewportHeight = window.innerHeight;
+                        if (rect.bottom > viewportHeight * 0.7 || rect.top < viewportHeight * 0.1) {
+                            this.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        }
                     }, 300);
                 });
             }
+            
+            initStickyInput();
+        }
+        
+        let stickyInputState = {
+            initialized: false,
+            isInputAreaVisible: false,
+            isNearTop: true,
+            isNormalMode: true,
+            observer: null,
+            headerObserver: null
+        };
+        
+        function initStickyInput() {
+            const inputArea = $('input-area');
+            const stickyContainer = $('sticky-input-container');
+            const stickyInput = $('sticky-guess-input');
+            const stickySubmitBtn = $('sticky-btn-submit');
+            const mainInput = $('guess-input');
+            const mainSubmitBtn = $('btn-submit');
+            const soundToggle = $('sound-toggle');
+            
+            if (!inputArea || !stickyContainer) {
+                return;
+            }
+            
+            function updateStickyVisibility() {
+                const inputAreaHidden = inputArea.offsetParent === null || 
+                                        inputArea.classList.contains('hidden') ||
+                                        !stickyInputState.isNormalMode;
+                
+                if (inputAreaHidden) {
+                    stickyContainer.classList.remove('visible');
+                    if (soundToggle) soundToggle.classList.remove('shifted');
+                    return;
+                }
+                
+                if (stickyInputState.isInputAreaVisible || stickyInputState.isNearTop) {
+                    stickyContainer.classList.remove('visible');
+                    if (soundToggle) soundToggle.classList.remove('shifted');
+                } else {
+                    stickyContainer.classList.add('visible');
+                    if (soundToggle) soundToggle.classList.add('shifted');
+                }
+            }
+            
+            if (!stickyInputState.initialized) {
+                stickyInputState.initialized = true;
+                
+                if (stickyInputState.observer) {
+                    stickyInputState.observer.disconnect();
+                }
+                stickyInputState.observer = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        stickyInputState.isInputAreaVisible = entry.isIntersecting && entry.intersectionRatio > 0.1;
+                        updateStickyVisibility();
+                    });
+                }, {
+                    root: null,
+                    rootMargin: '0px',
+                    threshold: [0, 0.1, 0.5, 1]
+                });
+                
+                stickyInputState.observer.observe(inputArea);
+                
+                if (stickyInputState.headerObserver) {
+                    stickyInputState.headerObserver.disconnect();
+                }
+                stickyInputState.headerObserver = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        stickyInputState.isNearTop = entry.isIntersecting;
+                        updateStickyVisibility();
+                    });
+                }, {
+                    root: null,
+                    rootMargin: '-100px 0px 0px 0px',
+                    threshold: [0]
+                });
+                
+                const header = document.querySelector('header');
+                if (header) {
+                    stickyInputState.headerObserver.observe(header);
+                }
+                
+                window.addEventListener('resize', () => {
+                    updateStickyVisibility();
+                });
+                
+                if (stickyInput && mainInput) {
+                    stickyInput.addEventListener('input', function() {
+                        mainInput.value = this.value;
+                    });
+                    
+                    mainInput.addEventListener('input', function() {
+                        stickyInput.value = this.value;
+                    });
+                }
+                
+                if (stickySubmitBtn) {
+                    stickySubmitBtn.addEventListener('click', function() {
+                        if (mainSubmitBtn) {
+                            mainSubmitBtn.click();
+                        }
+                    });
+                    
+                    stickyInput.addEventListener('keypress', function(e) {
+                        if (e.key === 'Enter') {
+                            mainSubmitBtn.click();
+                        }
+                    });
+                }
+                
+                if (stickyInput) {
+                    stickyInput.addEventListener('focus', function() {
+                        setTimeout(() => {
+                            stickyInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        }, 300);
+                    });
+                }
+            }
+            
+            updateStickyVisibility();
+        }
+        
+        function updateStickyInputForMode(mode) {
+            stickyInputState.isNormalMode = (mode === 'normal');
+            initStickyInput();
         }
         
         let tutorialState = {
@@ -4199,6 +4627,11 @@
             const percent = total > 0 ? (solved / total) * 100 : 0;
             elements.progressBar.style.width = `${percent}%`;
             elements.progressText.textContent = `${solved}/${total}`;
+            // Update mobile progress bar
+            const mobileProgressBar = document.getElementById('progress-bar-mobile');
+            const mobileProgressText = document.getElementById('progress-text-mobile');
+            if (mobileProgressBar) mobileProgressBar.style.width = `${percent}%`;
+            if (mobileProgressText) mobileProgressText.textContent = `${solved}/${total}`;
         }
 
         function renderStations() {
@@ -4907,6 +5340,8 @@
             elements.hintsLeft.textContent = gameState.hintsLeft;
         }
 
+        let isInitializing = true;
+        
         function switchMode(mode, updateUrl = true) {
             if (isRouteHandling) {
                 updateUrl = false;
@@ -4937,11 +5372,15 @@
                 elements.modeNormal.classList.add('active');
                 elements.normalModeArea.classList.remove('hidden');
                 elements.gameSettings.classList.remove('hidden');
-                elements.guessInput.focus();
+                if (!isInitializing && window.innerWidth >= 768) {
+                    elements.guessInput.focus();
+                }
             } else if (mode === 'reverse') {
                 elements.modeReverse.classList.add('active');
                 elements.reverseModeArea.classList.remove('hidden');
-                elements.reverseInput.focus();
+                if (!isInitializing) {
+                    elements.reverseInput.focus();
+                }
             } else if (mode === 'leaderboard') {
                 elements.modeLeaderboard.classList.add('active');
                 elements.leaderboardArea.classList.remove('hidden');
@@ -4958,6 +5397,8 @@
             if (updateUrl && !mpState.roomId) {
                 updateRoute(mode);
             }
+            
+            updateStickyInputForMode(mode);
         }
 
         function renderLeaderboard(difficulty) {
@@ -5355,6 +5796,12 @@
         }
 
         init();
+        
+        window.addEventListener('pageshow', function(event) {
+            if (event.persisted) {
+                window.scrollTo(0, 0);
+            }
+        });
     </script>
 </body>
 </html>
