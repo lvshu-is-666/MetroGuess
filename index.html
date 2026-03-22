@@ -576,20 +576,26 @@
             }
             
             .game-settings-header {
-                flex-wrap: wrap;
-                gap: 0.75rem;
+                flex-wrap: nowrap;
+                gap: 0.5rem;
+                min-height: 40px;
             }
             
             .stats-group {
                 gap: 0.5rem;
+                flex-shrink: 1;
             }
             
             .stat-item {
-                min-width: 44px;
+                min-width: 40px;
             }
             
             .stat-value {
-                font-size: 1rem;
+                font-size: 0.875rem;
+            }
+            
+            .stat-label {
+                font-size: 9px;
             }
             
             .progress-group.desktop-only {
@@ -598,10 +604,12 @@
             
             .actions-group {
                 gap: 0.5rem;
+                flex-shrink: 0;
+                white-space: nowrap;
             }
             
             .action-link {
-                font-size: 0.8125rem;
+                font-size: 0.75rem;
             }
             
             .progress-group-mobile {
@@ -883,8 +891,8 @@
             background: linear-gradient(to top, rgba(238, 242, 255, 0.98) 0%, rgba(238, 242, 255, 0.95) 80%, transparent 100%);
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
-            padding: 12px 16px;
-            padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+            padding: 8px 12px;
+            padding-bottom: calc(8px + env(safe-area-inset-bottom, 0px));
             border-top: 1px solid rgba(129, 140, 248, 0.2);
             transform: translateY(100%);
             transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -897,20 +905,20 @@
         
         #sticky-input-container .sticky-input-wrapper {
             display: flex;
-            gap: 12px;
+            gap: 8px;
             max-width: 640px;
             margin: 0 auto;
         }
         
         #sticky-input-container input {
             flex: 1;
-            min-height: 48px;
-            font-size: 16px;
+            min-height: 40px;
+            font-size: 15px;
         }
         
         #sticky-input-container button {
-            min-height: 48px;
-            min-width: 72px;
+            min-height: 40px;
+            min-width: 64px;
         }
         
         .dark #sticky-input-container {
@@ -920,19 +928,30 @@
         
         @media (min-width: 768px) {
             #sticky-input-container {
-                bottom: 20px;
+                bottom: 16px;
                 left: 50%;
                 transform: translateX(-50%) translateY(calc(100% + 30px));
                 right: auto;
                 width: auto;
                 min-width: 400px;
                 max-width: 500px;
-                border-radius: 16px;
+                padding: 10px 14px;
+                border-radius: 12px;
                 box-shadow: 0 8px 32px rgba(79, 70, 229, 0.15);
             }
             
             #sticky-input-container.visible {
                 transform: translateX(-50%) translateY(0);
+            }
+            
+            #sticky-input-container input {
+                min-height: 40px;
+                font-size: 15px;
+            }
+            
+            #sticky-input-container button {
+                min-height: 40px;
+                min-width: 64px;
             }
         }
         
@@ -1981,7 +2000,7 @@
             </div>
         </div>
         
-        <div class="glass-panel rounded-2xl p-4 md:p-6 shadow-lg mt-4">
+        <div id="guess-history-container" class="glass-panel rounded-2xl p-4 md:p-6 shadow-lg mt-4">
             <h3 class="text-lg font-semibold text-slate-800 mb-4">猜测记录</h3>
             <div id="guess-history" class="space-y-2 max-h-48 overflow-y-auto">
                 <p class="text-slate-400 text-sm italic">暂无记录</p>
@@ -2308,6 +2327,7 @@
             reverseResults: $('reverse-results'),
             reverseResultsList: $('reverse-results-list'),
             guessHistory: $('guess-history'),
+            guessHistoryContainer: $('guess-history-container'),
             victoryModal: $('victory-modal'),
             guessCount: $('guess-count'),
             timer: $('timer'),
@@ -2456,41 +2476,87 @@
             
             switch (type) {
                 case 'reveal':
-                    playTone(440, 0.1, 0.08, now, 880);
+                    playTone(440, 0.08, 0.06, now);
+                    playTone(660, 0.08, 0.06, now + 0.05);
+                    playTone(880, 0.1, 0.05, now + 0.1);
+                    break;
+                case 'reveal-found':
+                    playTone(523, 0.1, 0.08, now);
+                    playTone(784, 0.1, 0.08, now + 0.08);
+                    playTone(1047, 0.12, 0.06, now + 0.16);
+                    break;
+                case 'reveal-not-found':
+                    playTone(300, 0.15, 0.08, now, 150);
+                    playTone(200, 0.1, 0.06, now + 0.15);
                     break;
                 case 'correct':
-                    playTone(523, 0.3, 0.12, now);
-                    playTone(659, 0.3, 0.12, now + 0.1);
-                    playTone(784, 0.3, 0.12, now + 0.2);
+                    playTone(523, 0.15, 0.1, now);
+                    playTone(659, 0.15, 0.1, now + 0.1);
+                    playTone(784, 0.15, 0.1, now + 0.2);
+                    playTone(1047, 0.25, 0.12, now + 0.3);
                     break;
                 case 'wrong':
-                    playTone(200, 0.2, 0.08, now, 100);
+                    playTone(250, 0.15, 0.1, now, 150);
+                    playTone(150, 0.2, 0.08, now + 0.15);
                     break;
                 case 'victory':
-                    const notes = [523, 587, 659, 698, 784, 880, 988, 1047];
-                    notes.forEach((freq, i) => {
-                        playTone(freq, 0.15, 0.08, now + i * 0.1);
+                    const melody = [523, 587, 659, 698, 784, 880, 988, 1047, 1175, 1319];
+                    melody.forEach((freq, i) => {
+                        playTone(freq, 0.12, 0.08, now + i * 0.08);
                     });
+                    setTimeout(() => {
+                        playTone(1047, 0.3, 0.1, audioContext.currentTime);
+                        playTone(1319, 0.3, 0.1, audioContext.currentTime + 0.15);
+                        playTone(1568, 0.4, 0.12, audioContext.currentTime + 0.3);
+                    }, 800);
                     break;
                 case 'hint':
-                    playTone(600, 0.15, 0.08, now, 400);
+                    playTone(400, 0.1, 0.08, now);
+                    playTone(500, 0.1, 0.08, now + 0.08);
+                    playTone(600, 0.15, 0.1, now + 0.16);
                     break;
                 case 'combo':
-                    playTone(800 + gameState.combo * 50, 0.08, 0.06, now);
+                    const comboFreq = 600 + gameState.combo * 30;
+                    playTone(comboFreq, 0.06, 0.05, now);
+                    playTone(comboFreq * 1.25, 0.06, 0.05, now + 0.05);
+                    playTone(comboFreq * 1.5, 0.08, 0.06, now + 0.1);
+                    break;
+                case 'click':
+                    playTone(800, 0.03, 0.03, now);
+                    break;
+                case 'success':
+                    playTone(659, 0.1, 0.08, now);
+                    playTone(784, 0.1, 0.08, now + 0.08);
+                    playTone(880, 0.15, 0.1, now + 0.16);
+                    break;
+                case 'achievement':
+                    const achNotes = [523, 659, 784, 1047, 1319];
+                    achNotes.forEach((freq, i) => {
+                        playTone(freq, 0.15, 0.08, now + i * 0.12);
+                    });
+                    break;
+                case 'gameover':
+                    playTone(392, 0.2, 0.1, now);
+                    playTone(349, 0.2, 0.1, now + 0.2);
+                    playTone(330, 0.2, 0.1, now + 0.4);
+                    playTone(262, 0.4, 0.12, now + 0.6);
                     break;
             }
         }
         
         function playTone(freq, duration, volume, startTime, endFreq = null) {
+            if (!audioContext) return;
+            
             const oscillator = audioContext.createOscillator();
             const gainNode = audioContext.createGain();
             
             oscillator.connect(gainNode);
             gainNode.connect(audioContext.destination);
             
+            oscillator.type = 'sine';
             oscillator.frequency.setValueAtTime(freq, startTime);
             if (endFreq) {
-                oscillator.frequency.exponentialRampToValueAtTime(endFreq, startTime + duration);
+                oscillator.frequency.exponentialRampToValueAtTime(Math.max(endFreq, 20), startTime + duration);
             }
             
             gainNode.gain.setValueAtTime(volume, startTime);
@@ -3535,11 +3601,11 @@
             if (found) {
                 mpState.foundLetters.add(letter);
                 mpState.score = Math.max(0, mpState.score - 5);
-                playSound('reveal');
+                playSound('reveal-found');
                 showToast(`开 ${letter.toUpperCase()} - 在 ${matchCount} 个站名中找到 (-5分)`, 'success');
             } else {
                 mpState.score = Math.max(0, mpState.score - 15);
-                playSound('wrong');
+                playSound('reveal-not-found');
                 showToast(`开 ${letter.toUpperCase()} - 未找到 (-15分)`, 'error');
             }
             
@@ -4142,6 +4208,10 @@
                     updateStickyVisibility();
                 });
                 
+                window.addEventListener('scroll', () => {
+                    updateStickyVisibility();
+                }, { passive: true });
+                
                 if (stickyInput && mainInput) {
                     stickyInput.addEventListener('input', function() {
                         mainInput.value = this.value;
@@ -4158,28 +4228,34 @@
                             mainSubmitBtn.click();
                         }
                     });
-                    
+                }
+                
+                if (stickyInput) {
                     stickyInput.addEventListener('keypress', function(e) {
                         if (e.key === 'Enter') {
                             mainSubmitBtn.click();
                         }
                     });
                 }
-                
-                if (stickyInput) {
-                    stickyInput.addEventListener('focus', function() {
-                        setTimeout(() => {
-                            stickyInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                        }, 300);
-                    });
-                }
             }
             
-            updateStickyVisibility();
+            if (stickyInput && mainInput) {
+                stickyInput.value = mainInput.value;
+            }
+            
+            requestAnimationFrame(() => {
+                updateStickyVisibility();
+            });
+            
+            setTimeout(() => {
+                updateStickyVisibility();
+            }, 100);
         }
         
         function updateStickyInputForMode(mode) {
             stickyInputState.isNormalMode = (mode === 'normal');
+            stickyInputState.isInputAreaVisible = false;
+            stickyInputState.isNearTop = true;
             initStickyInput();
         }
         
@@ -4528,6 +4604,8 @@
 
         function startNewGame() {
             stopTimer();
+            isTimerPaused = false;
+            pausedTime = 0;
             
             const settings = DIFFICULTY_SETTINGS[gameState.difficulty];
             const customCount = parseInt(document.getElementById('station-count').value) || settings.stationCount;
@@ -4592,6 +4670,10 @@
             
             elements.victoryModal.classList.add('hidden');
             
+            if (elements.guessHistoryContainer) {
+                elements.guessHistoryContainer.classList.remove('hidden');
+            }
+            
             renderStations();
             renderLetterKeyboard();
             updateStats();
@@ -4602,6 +4684,7 @@
 
         function startTimer() {
             stopTimer();
+            isTimerPaused = false;
             timerInterval = setInterval(() => {
                 gameState.elapsedTime = Math.floor((Date.now() - gameState.startTime) / 1000);
                 updateTimerDisplay();
@@ -4879,11 +4962,11 @@
                     gameState.revealedSpecialChars.add(letter);
                     gameState.foundSpecialChars.add(letter);
                     gameState.score = Math.max(0, gameState.score - 5);
-                    playSound('reveal');
+                    playSound('reveal-found');
                     addToHistory(`开 ${letter}`, 'success', `在 ${matchCount} 个站名中找到 (-5分)`);
                 } else {
                     gameState.score = Math.max(0, gameState.score - 15);
-                    playSound('wrong');
+                    playSound('reveal-not-found');
                     addToHistory(`开 ${letter}`, 'error', '未找到该字符 (-15分)');
                     
                     elements.stationsContainer.classList.add('shake');
@@ -4914,7 +4997,7 @@
                 if (found) {
                     gameState.foundLetters.add(letter);
                     gameState.score = Math.max(0, gameState.score - 5);
-                    playSound('reveal');
+                    playSound('reveal-found');
                     addToHistory(`开 ${letter.toUpperCase()}`, 'success', `在 ${matchCount} 个站名中找到 (-5分)`);
                     
                     const btn = document.querySelector(`[data-letter="${letter}"]`);
@@ -4923,7 +5006,7 @@
                     }
                 } else {
                     gameState.score = Math.max(0, gameState.score - 15);
-                    playSound('wrong');
+                    playSound('reveal-not-found');
                     addToHistory(`开 ${letter.toUpperCase()}`, 'error', '未找到该字母 (-15分)');
                     
                     elements.stationsContainer.classList.add('shake');
@@ -5341,6 +5424,8 @@
         }
 
         let isInitializing = true;
+        let isTimerPaused = false;
+        let pausedTime = 0;
         
         function switchMode(mode, updateUrl = true) {
             if (isRouteHandling) {
@@ -5356,7 +5441,20 @@
             
             reverseAccessFromUrl = false;
             
+            const previousMode = gameState.mode;
             gameState.mode = mode;
+            
+            if (mode !== 'normal' && previousMode === 'normal') {
+                pauseTimer();
+                if (elements.guessHistoryContainer) {
+                    elements.guessHistoryContainer.classList.add('hidden');
+                }
+            } else if (mode === 'normal' && previousMode !== 'normal') {
+                resumeTimer();
+                if (elements.guessHistoryContainer) {
+                    elements.guessHistoryContainer.classList.remove('hidden');
+                }
+            }
             
             elements.modeNormal.classList.remove('active');
             elements.modeReverse.classList.remove('active');
@@ -5372,15 +5470,15 @@
                 elements.modeNormal.classList.add('active');
                 elements.normalModeArea.classList.remove('hidden');
                 elements.gameSettings.classList.remove('hidden');
-                if (!isInitializing && window.innerWidth >= 768) {
-                    elements.guessInput.focus();
+                if (!isInitializing) {
+                    const stickyInput = document.getElementById('sticky-guess-input');
+                    if (stickyInput) {
+                        stickyInput.focus();
+                    }
                 }
             } else if (mode === 'reverse') {
                 elements.modeReverse.classList.add('active');
                 elements.reverseModeArea.classList.remove('hidden');
-                if (!isInitializing) {
-                    elements.reverseInput.focus();
-                }
             } else if (mode === 'leaderboard') {
                 elements.modeLeaderboard.classList.add('active');
                 elements.leaderboardArea.classList.remove('hidden');
@@ -5399,6 +5497,22 @@
             }
             
             updateStickyInputForMode(mode);
+        }
+        
+        function pauseTimer() {
+            if (timerInterval && !isTimerPaused) {
+                isTimerPaused = true;
+                pausedTime = gameState.elapsedTime;
+                stopTimer();
+            }
+        }
+        
+        function resumeTimer() {
+            if (isTimerPaused && gameState.startTime) {
+                isTimerPaused = false;
+                gameState.startTime = Date.now() - pausedTime * 1000;
+                startTimer();
+            }
         }
 
         function renderLeaderboard(difficulty) {
