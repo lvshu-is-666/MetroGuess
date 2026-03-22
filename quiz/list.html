@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>自定义题组 - 地铁站名猜谜游戏</title>
+    <meta name="description" content="浏览和挑战用户创建的自定义地铁站名猜谜题组">
+    <meta name="keywords" content="地铁,地铁站,站名猜谜,自定义题组,UGC,用户创建">
+    <meta name="theme-color" content="#4F46E5">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%234F46E5'/%3E%3Cpath d='M50 15c-16 0-28 3-28 17v35c0 8 6 14 14 14h3l-7 7h7l7-7h7l7 7h7l-7-7h3c8 0 14-6 14-14V32c0-14-12-17-28-17zM36 72c-4 0-7-3-7-7s3-7 7-7 7 3 7 7-3 7-7 7zm28 0c-4 0-7-3-7-7s3-7 7-7 7 3 7 7-3 7-7 7zm7-24H29V34c0-4 3-7 7-7h28c4 0 7 3 7 7v14z' fill='white'/%3E%3C/svg%3E">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@300;400;500;600;700&display=swap" media="print" onload="this.media='all'">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="../styles.css">
+    <script src="../common.js"></script>
+    <script src="../firebase-config.js"></script>
+    <style>
+        /* Claymorphism 风格增强 */
+        .clay-card {
+            background: linear-gradient(145deg, rgba(255, 255, 255, 0.95) 0%, rgba(238, 242, 255, 0.9) 100%);
+            border: 3px solid rgba(129, 140, 248, 0.25);
+            border-radius: 20px;
+            box-shadow: 
+                0 4px 0 rgba(129, 140, 248, 0.15),
+                0 8px 24px rgba(79, 70, 229, 0.12),
+                inset 0 1px 0 rgba(255, 255, 255, 0.8);
+            transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        
+        .clay-card:hover {
+            transform: translateY(-4px) scale(1.01);
+            box-shadow: 
+                0 6px 0 rgba(129, 140, 248, 0.2),
+                0 16px 40px rgba(79, 70, 229, 0.18),
+                inset 0 1px 0 rgba(255, 255, 255, 0.9);
+            border-color: rgba(129, 140, 248, 0.4);
+        }
+        
+        .clay-card:active {
+            transform: translateY(-1px) scale(0.99);
+            box-shadow: 
+                0 2px 0 rgba(129, 140, 248, 0.15),
+                0 4px 12px rgba(79, 70, 229, 0.1);
+        }
+        
+        /* 与主页面一致的 mode-btn 样式 */
+        .mode-btn {
+            transition: background-color 0.25s ease-out, border-color 0.25s ease-out, box-shadow 0.25s ease-out;
+            background-color: rgba(255, 255, 255, 0.9);
+            border: 2px solid rgba(129, 140, 248, 0.3);
+            box-shadow: 0 2px 8px rgba(79, 70, 229, 0.08);
+        }
+        
+        .mode-btn:hover {
+            background-color: rgba(238, 242, 255, 0.95);
+            border-color: #818CF8;
+            box-shadow: 0 4px 16px rgba(79, 70, 229, 0.15);
+        }
+        
+        .mode-btn.active {
+            background: linear-gradient(135deg, #4F46E5 0%, #818CF8 100%);
+            color: white;
+            border-color: transparent;
+            box-shadow: 0 4px 16px rgba(79, 70, 229, 0.3), 0 0 20px rgba(129, 140, 248, 0.2);
+        }
+        
+        .clay-select {
+            background: linear-gradient(145deg, #ffffff 0%, #f8fafc 100%);
+            border: 3px solid rgba(129, 140, 248, 0.25);
+            border-radius: 12px;
+            box-shadow: 
+                0 2px 0 rgba(129, 140, 248, 0.15),
+                inset 0 1px 0 rgba(255, 255, 255, 0.8);
+            transition: all 0.2s ease;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%234F46E5' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            padding-right: 40px;
+        }
+        
+        .clay-select:focus {
+            outline: none;
+            border-color: #4F46E5;
+            box-shadow: 
+                0 2px 0 rgba(79, 70, 229, 0.2),
+                0 0 0 4px rgba(79, 70, 229, 0.1);
+        }
+        
+        .clay-input {
+            background: linear-gradient(145deg, #ffffff 0%, #f8fafc 100%);
+            border: 3px solid rgba(129, 140, 248, 0.25);
+            border-radius: 12px;
+            box-shadow: 
+                0 2px 0 rgba(129, 140, 248, 0.15),
+                inset 0 1px 0 rgba(255, 255, 255, 0.8);
+            transition: all 0.2s ease;
+        }
+        
+        .clay-input:focus {
+            outline: none;
+            border-color: #4F46E5;
+            box-shadow: 
+                0 2px 0 rgba(79, 70, 229, 0.2),
+                0 0 0 4px rgba(79, 70, 229, 0.1);
+        }
+        
+        .clay-modal {
+            background: linear-gradient(145deg, rgba(255, 255, 255, 0.98) 0%, rgba(248, 250, 252, 0.95) 100%);
+            border: 3px solid rgba(129, 140, 248, 0.2);
+            border-radius: 24px;
+            box-shadow: 
+                0 8px 0 rgba(129, 140, 248, 0.1),
+                0 24px 60px rgba(0, 0, 0, 0.15);
+        }
+        
+        /* 题组卡片样式 */
+        .quiz-card-new {
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .quiz-card-new::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #4F46E5, #818CF8, #A78BFA);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .quiz-card-new:hover::before {
+            opacity: 1;
+        }
+        
+        .quiz-card-new.locked::after {
+            content: '';
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            width: 8px;
+            height: 8px;
+            background: #A78BFA;
+            border-radius: 50%;
+            box-shadow: 0 0 0 3px rgba(167, 139, 250, 0.3);
+        }
+        
+        /* 标签样式 */
+        .tag-clay {
+            display: inline-flex;
+            align-items: center;
+            padding: 6px 14px;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            border: 2px solid;
+            transition: all 0.2s ease;
+        }
+        
+        .tag-clay.easy {
+            background: linear-gradient(145deg, #dcfce7 0%, #bbf7d0 100%);
+            border-color: #86efac;
+            color: #166534;
+            box-shadow: 0 2px 0 #86efac;
+        }
+        
+        .tag-clay.normal {
+            background: linear-gradient(145deg, #fef3c7 0%, #fde68a 100%);
+            border-color: #fcd34d;
+            color: #92400e;
+            box-shadow: 0 2px 0 #fcd34d;
+        }
+        
+        .tag-clay.hard {
+            background: linear-gradient(145deg, #fee2e2 0%, #fecaca 100%);
+            border-color: #fca5a5;
+            color: #991b1b;
+            box-shadow: 0 2px 0 #fca5a5;
+        }
+        
+        .tag-clay.city {
+            background: linear-gradient(145deg, #e0e7ff 0%, #c7d2fe 100%);
+            border-color: #a5b4fc;
+            color: #3730a3;
+            box-shadow: 0 2px 0 #a5b4fc;
+        }
+        
+        .tag-clay.count {
+            background: linear-gradient(145deg, #f1f5f9 0%, #e2e8f0 100%);
+            border-color: #cbd5e1;
+            color: #475569;
+            box-shadow: 0 2px 0 #cbd5e1;
+        }
+        
+        /* 空状态 */
+        .empty-state-clay {
+            background: linear-gradient(145deg, rgba(255, 255, 255, 0.8) 0%, rgba(238, 242, 255, 0.6) 100%);
+            border: 3px dashed rgba(129, 140, 248, 0.3);
+            border-radius: 24px;
+            padding: 3rem 2rem;
+        }
+        
+        /* 加载动画 */
+        .loading-clay {
+            width: 48px;
+            height: 48px;
+            border: 4px solid rgba(129, 140, 248, 0.2);
+            border-top-color: #4F46E5;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.15);
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* 统计数字 */
+        .stat-number {
+            font-family: 'Fredoka', sans-serif;
+            font-weight: 700;
+            font-size: 1.5rem;
+            background: linear-gradient(135deg, #4F46E5 0%, #6366F1 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        /* 页面标题 */
+        .page-title {
+            font-family: 'Fredoka', sans-serif;
+            background: linear-gradient(135deg, #1E1B4B 0%, #4F46E5 50%, #6366F1 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        /* 主题切换按钮 */
+        .theme-toggle-clay {
+            background: linear-gradient(145deg, #ffffff 0%, #f1f5f9 100%);
+            border: 3px solid rgba(129, 140, 248, 0.25);
+            border-radius: 14px;
+            box-shadow: 
+                0 3px 0 rgba(129, 140, 248, 0.15),
+                0 4px 12px rgba(79, 70, 229, 0.1);
+            transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        
+        .theme-toggle-clay:hover {
+            transform: translateY(-2px) rotate(15deg);
+            box-shadow: 
+                0 4px 0 rgba(129, 140, 248, 0.2),
+                0 8px 20px rgba(79, 70, 229, 0.15);
+        }
+        
+        /* 暗色模式 */
+        .dark .clay-card {
+            background: linear-gradient(145deg, rgba(30, 41, 59, 0.95) 0%, rgba(51, 65, 85, 0.9) 100%);
+            border-color: rgba(71, 85, 105, 0.4);
+            box-shadow: 
+                0 4px 0 rgba(0, 0, 0, 0.3),
+                0 8px 24px rgba(0, 0, 0, 0.3);
+        }
+        
+        .dark .clay-card:hover {
+            border-color: rgba(96, 165, 250, 0.4);
+            box-shadow: 
+                0 6px 0 rgba(0, 0, 0, 0.35),
+                0 16px 40px rgba(0, 0, 0, 0.4);
+        }
+        
+        .dark .mode-btn {
+            background-color: rgba(30, 41, 59, 0.9);
+            border-color: rgba(71, 85, 105, 0.5);
+            color: #e2e8f0;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+        
+        .dark .mode-btn:hover {
+            background-color: rgba(51, 65, 85, 0.95);
+            border-color: rgba(96, 165, 250, 0.5);
+        }
+        
+        .dark .mode-btn.active {
+            background: linear-gradient(135deg, #4F46E5 0%, #6366F1 100%);
+            box-shadow: 0 4px 16px rgba(79, 70, 229, 0.4), 0 0 20px rgba(99, 102, 241, 0.2);
+        }
+        
+        .dark .clay-select,
+        .dark .clay-input {
+            background: linear-gradient(145deg, #334155 0%, #1e293b 100%);
+            border-color: rgba(71, 85, 105, 0.5);
+            color: #e2e8f0;
+        }
+        
+        .dark .clay-modal {
+            background: linear-gradient(145deg, rgba(30, 41, 59, 0.98) 0%, rgba(15, 23, 42, 0.95) 100%);
+            border-color: rgba(71, 85, 105, 0.4);
+        }
+        
+        .dark .empty-state-clay {
+            background: linear-gradient(145deg, rgba(30, 41, 59, 0.6) 0%, rgba(51, 65, 85, 0.4) 100%);
+            border-color: rgba(71, 85, 105, 0.4);
+        }
+        
+        .dark .page-title {
+            background: linear-gradient(135deg, #f1f5f9 0%, #a5b4fc 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+        }
+        
+        /* 动画 */
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .animate-fade-in-up {
+            animation: fadeInUp 0.5s ease-out forwards;
+        }
+        
+        .stagger-1 { animation-delay: 0.05s; }
+        .stagger-2 { animation-delay: 0.1s; }
+        .stagger-3 { animation-delay: 0.15s; }
+        .stagger-4 { animation-delay: 0.2s; }
+        .stagger-5 { animation-delay: 0.25s; }
+        .stagger-6 { animation-delay: 0.3s; }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-indigo-50 via-purple-50 to-blue-100 min-h-screen text-slate-800 transition-colors duration-300">
+    <div id="toast-container" class="fixed top-4 right-4 z-50 space-y-2" role="alert" aria-live="polite"></div>
+    
+    <main class="container mx-auto px-4 py-6 max-w-6xl">
+        <!-- 页面标题 -->
+        <header class="text-center mb-8 animate-fade-in-up">
+            <div class="flex justify-center items-center gap-4 mb-3">
+                <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg">
+                    <svg class="w-7 h-7 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                </div>
+                <h1 class="text-3xl md:text-4xl font-bold page-title">
+                    自定义题组
+                </h1>
+                <button id="btn-theme" class="theme-toggle-clay p-2.5 cursor-pointer" title="切换主题" aria-label="切换主题">
+                    <svg id="theme-moon-icon" class="w-5 h-5 text-slate-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg id="theme-sun-icon" class="w-5 h-5 text-amber-500 hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+            </div>
+            <p class="text-slate-600 text-sm md:text-base max-w-md mx-auto">
+                浏览和挑战用户创建的题组，或创建你自己的题组
+            </p>
+        </header>
+        
+        <!-- 导航按钮 -->
+        <nav class="flex justify-center gap-3 mb-6 flex-wrap animate-fade-in-up stagger-1">
+            <a href="../index.html" class="mode-btn px-5 py-2.5 rounded-lg font-medium text-sm text-slate-700 cursor-pointer inline-flex items-center gap-2 no-underline">
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"></path>
+                    <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                </svg>
+                返回主页
+            </a>
+            <button id="mode-list" class="mode-btn active px-5 py-2.5 rounded-lg font-medium text-sm cursor-pointer inline-flex items-center gap-2">
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="8" y1="6" x2="21" y2="6"></line>
+                    <line x1="8" y1="12" x2="21" y2="12"></line>
+                    <line x1="8" y1="18" x2="21" y2="18"></line>
+                    <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                    <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                    <line x1="3" y1="18" x2="3.01" y2="18"></line>
+                </svg>
+                题组列表
+            </button>
+            <a href="create.html" class="mode-btn px-5 py-2.5 rounded-lg font-medium text-sm text-slate-700 cursor-pointer inline-flex items-center gap-2 no-underline">
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+                创建题组
+            </a>
+        </nav>
+        
+        <!-- 筛选栏 -->
+        <section class="clay-card p-5 mb-6 animate-fade-in-up stagger-2">
+            <div class="flex flex-wrap gap-3 items-center justify-between">
+                <div class="flex flex-wrap gap-3 flex-1">
+                    <select id="filter-city" class="clay-select px-4 py-2.5 text-sm min-w-[140px] cursor-pointer">
+                        <option value="all">全部城市</option>
+                    </select>
+                    <select id="filter-difficulty" class="clay-select px-4 py-2.5 text-sm min-w-[120px] cursor-pointer">
+                        <option value="all">全部难度</option>
+                        <option value="easy">简单</option>
+                        <option value="normal">普通</option>
+                        <option value="hard">困难</option>
+                    </select>
+                    <select id="filter-sort" class="clay-select px-4 py-2.5 text-sm min-w-[140px] cursor-pointer">
+                        <option value="newest">最新发布</option>
+                        <option value="popular">最受欢迎</option>
+                        <option value="difficulty">难度排序</option>
+                    </select>
+                </div>
+                <div class="flex items-center gap-2 text-sm text-slate-500 bg-white/50 px-4 py-2 rounded-xl">
+                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M9 11l3 3L22 4"></path>
+                        <path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"></path>
+                    </svg>
+                    <span>共找到</span>
+                    <span id="quiz-count" class="stat-number text-lg">0</span>
+                    <span>个题组</span>
+                </div>
+            </div>
+        </section>
+        
+        <!-- 题组列表 -->
+        <section id="quiz-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div class="empty-state-clay col-span-full animate-fade-in-up">
+                <div class="loading-clay mx-auto mb-4"></div>
+                <p class="text-lg font-semibold text-slate-700 mb-1">正在加载题组...</p>
+                <p class="text-sm text-slate-500">请稍候片刻</p>
+            </div>
+        </section>
+        
+        <!-- 页脚 -->
+        <footer class="text-center mt-10 text-sm text-slate-500 animate-fade-in-up stagger-3">
+            <p>制作者：<a href="https://space.bilibili.com/1944366810" target="_blank" rel="noopener noreferrer" class="text-indigo-600 hover:text-indigo-700 font-medium transition-colors">bilibili@lvshu</a></p>
+        </footer>
+    </main>
+    
+    <!-- 邀请码弹窗 -->
+    <div id="invite-code-modal" class="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="clay-modal p-6 max-w-sm w-full animate-fade-in-up">
+            <div class="text-center mb-5">
+                <div class="w-14 h-14 mx-auto mb-3 rounded-2xl bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center shadow-lg">
+                    <svg class="w-7 h-7 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                        <path d="M7 11V7a5 5 0 0110 0v4"></path>
+                    </svg>
+                </div>
+                <h3 class="text-lg font-bold text-slate-900 mb-1">输入邀请码</h3>
+                <p class="text-sm text-slate-500">该题组需要邀请码才能访问</p>
+            </div>
+            <input type="text" id="invite-code-input" placeholder="请输入邀请码" 
+                class="clay-input w-full px-4 py-3 mb-4 text-center uppercase tracking-widest text-lg font-mono" maxlength="10">
+            <div class="flex gap-3">
+                <button id="btn-cancel-invite" class="flex-1 mode-btn rounded-lg px-4 py-2.5 text-slate-700 font-medium cursor-pointer">
+                    取消
+                </button>
+                <button id="btn-confirm-invite" class="flex-1 btn-primary px-4 py-2.5 rounded-xl text-white font-medium cursor-pointer">
+                    确认
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const $ = id => document.getElementById(id);
+        const $all = sel => document.querySelectorAll(sel);
+        
+        let allQuizzes = [];
+        let pendingQuizId = null;
+        
+        const CITIES = [
+            '北京', '上海', '广州', '深圳', '成都', '杭州', '南京', '武汉', 
+            '西安', '重庆', '天津', '苏州', '郑州', '长沙', '沈阳', '青岛',
+            '大连', '宁波', '厦门', '无锡', '福州', '合肥', '昆明', '哈尔滨',
+            '济南', '佛山', '长春', '石家庄', '南宁', '贵阳', '兰州', '太原'
+        ];
+        
+        function initCityFilter() {
+            const select = $('filter-city');
+            CITIES.forEach(city => {
+                const option = document.createElement('option');
+                option.value = city;
+                option.textContent = city;
+                select.appendChild(option);
+            });
+        }
+        
+        function initTheme() {
+            MetroCommon.initDarkMode();
+            updateThemeIcon();
+            
+            $('btn-theme').addEventListener('click', () => {
+                MetroCommon.toggleDarkMode();
+                updateThemeIcon();
+            });
+        }
+        
+        function updateThemeIcon() {
+            const isDark = MetroCommon.isDarkMode();
+            $('theme-moon-icon').classList.toggle('hidden', isDark);
+            $('theme-sun-icon').classList.toggle('hidden', !isDark);
+        }
+        
+        async function loadQuizzes() {
+            try {
+                await FirebaseConfig.init();
+                
+                const filters = {
+                    city: $('filter-city').value,
+                    difficulty: $('filter-difficulty').value,
+                    sortBy: $('filter-sort').value
+                };
+                
+                allQuizzes = await FirebaseConfig.getQuizList(filters);
+                renderQuizList(allQuizzes);
+            } catch (e) {
+                console.error('Failed to load quizzes:', e);
+                showEmptyState('加载失败，请稍后重试');
+            }
+        }
+        
+        function renderQuizList(quizzes) {
+            const container = $('quiz-list');
+            $('quiz-count').textContent = quizzes.length;
+            
+            if (quizzes.length === 0) {
+                showEmptyState('暂无题组，快来创建第一个吧！');
+                return;
+            }
+            
+            container.innerHTML = '';
+            const fragment = document.createDocumentFragment();
+            
+            quizzes.forEach((quiz, index) => {
+                const card = createQuizCard(quiz, index);
+                fragment.appendChild(card);
+            });
+            
+            container.appendChild(fragment);
+        }
+        
+        function createQuizCard(quiz, index) {
+            const card = document.createElement('div');
+            card.className = 'clay-card quiz-card-new p-5 cursor-pointer animate-fade-in-up';
+            card.style.animationDelay = `${index * 0.05}s`;
+            if (quiz.inviteCode) {
+                card.classList.add('locked');
+            }
+            card.dataset.quizId = quiz.id;
+            
+            const difficultyClass = MetroCommon.getDifficultyColor(quiz.difficultyLevel);
+            const difficultyLabel = MetroCommon.getDifficultyLabel(quiz.difficultyLevel);
+            
+            const displayName = quiz.hideTheme ? '神秘题组' : quiz.name;
+            const creatorName = quiz.creatorName || '匿名用户';
+            
+            card.innerHTML = `
+                <div class="flex justify-between items-start mb-3">
+                    <h3 class="text-lg font-bold text-slate-800 leading-tight pr-2">${escapeHtml(displayName)}</h3>
+                    ${quiz.inviteCode ? `
+                        <span class="tag-clay city text-xs" title="需要邀请码">
+                            <svg class="w-3 h-3 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                                <path d="M7 11V7a5 5 0 0110 0v4"></path>
+                            </svg>
+                            需邀请码
+                        </span>
+                    ` : ''}
+                </div>
+                <div class="flex flex-wrap gap-2 mb-4">
+                    <span class="tag-clay ${difficultyClass}">${difficultyLabel}</span>
+                    <span class="tag-clay count">${quiz.questions.length} 题</span>
+                    ${quiz.cityScope && quiz.cityScope !== 'all' ? `<span class="tag-clay city">${quiz.cityScope}</span>` : ''}
+                </div>
+                <div class="flex items-center justify-between pt-3 border-t border-slate-200/60">
+                    <div class="flex items-center gap-3 text-xs text-slate-500">
+                        <span class="flex items-center gap-1">
+                            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                                <circle cx="9" cy="7" r="4"></circle>
+                                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                            </svg>
+                            ${quiz.playCount || 0}
+                        </span>
+                        <span class="flex items-center gap-1">
+                            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <polyline points="12 6 12 12 16 14"></polyline>
+                            </svg>
+                            ${formatTimeAgo(quiz.createdAt)}
+                        </span>
+                    </div>
+                    <span class="text-xs font-medium text-slate-600 flex items-center gap-1">
+                        <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="12" cy="7" r="4"></circle>
+                        </svg>
+                        ${escapeHtml(creatorName)}
+                    </span>
+                </div>
+            `;
+            
+            card.addEventListener('click', () => handleQuizClick(quiz));
+            
+            return card;
+        }
+        
+        async function handleQuizClick(quiz) {
+            if (quiz.inviteCode) {
+                pendingQuizId = quiz.id;
+                $('invite-code-modal').classList.remove('hidden');
+                $('invite-code-input').value = '';
+                $('invite-code-input').focus();
+            } else {
+                navigateToQuiz(quiz.id);
+            }
+        }
+        
+        async function navigateToQuiz(quizId, inviteCode = null) {
+            try {
+                const quiz = await FirebaseConfig.getQuiz(quizId);
+                if (!quiz) {
+                    MetroCommon.showToast('题组不存在', 'error');
+                    return;
+                }
+                
+                const access = FirebaseConfig.validateQuizAccess(quiz, inviteCode);
+                if (!access.valid) {
+                    MetroCommon.showToast(access.error, 'error');
+                    return;
+                }
+                
+                window.location.href = `play.html?id=${quizId}`;
+            } catch (e) {
+                console.error('Failed to navigate to quiz:', e);
+                MetroCommon.showToast('加载题组失败', 'error');
+            }
+        }
+        
+        function showEmptyState(message) {
+            const container = $('quiz-list');
+            container.innerHTML = `
+                <div class="empty-state-clay col-span-full">
+                    <svg class="w-16 h-16 mx-auto mb-4 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                    <p class="text-lg font-semibold text-slate-700 mb-2">${message}</p>
+                    <a href="create.html" class="inline-flex items-center gap-2 mt-4 btn-primary px-6 py-2.5 rounded-xl text-white font-medium cursor-pointer">
+                        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="12" y1="5" x2="12" y2="19"></line>
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                        </svg>
+                        创建题组
+                    </a>
+                </div>
+            `;
+        }
+        
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+        
+        function formatTimeAgo(timestamp) {
+            if (!timestamp) return '未知';
+            
+            const now = Date.now();
+            const diff = now - timestamp;
+            
+            const minutes = Math.floor(diff / 60000);
+            const hours = Math.floor(diff / 3600000);
+            const days = Math.floor(diff / 86400000);
+            
+            if (minutes < 1) return '刚刚';
+            if (minutes < 60) return `${minutes}分钟前`;
+            if (hours < 24) return `${hours}小时前`;
+            if (days < 30) return `${days}天前`;
+            
+            const date = new Date(timestamp);
+            return `${date.getMonth() + 1}月${date.getDate()}日`;
+        }
+        
+        function setupEventListeners() {
+            $('filter-city').addEventListener('change', loadQuizzes);
+            $('filter-difficulty').addEventListener('change', loadQuizzes);
+            $('filter-sort').addEventListener('change', loadQuizzes);
+            
+            $('btn-cancel-invite').addEventListener('click', () => {
+                $('invite-code-modal').classList.add('hidden');
+                pendingQuizId = null;
+            });
+            
+            $('btn-confirm-invite').addEventListener('click', async () => {
+                const code = $('invite-code-input').value.trim();
+                if (!code) {
+                    MetroCommon.showToast('请输入邀请码', 'error');
+                    return;
+                }
+                
+                $('invite-code-modal').classList.add('hidden');
+                await navigateToQuiz(pendingQuizId, code);
+                pendingQuizId = null;
+            });
+            
+            $('invite-code-input').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    $('btn-confirm-invite').click();
+                }
+            });
+            
+            // 点击模态框背景关闭
+            $('invite-code-modal').addEventListener('click', (e) => {
+                if (e.target === $('invite-code-modal')) {
+                    $('btn-cancel-invite').click();
+                }
+            });
+        }
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            initTheme();
+            initCityFilter();
+            setupEventListeners();
+            loadQuizzes();
+        });
+    </script>
+</body>
+</html>

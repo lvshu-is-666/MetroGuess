@@ -86,6 +86,7 @@
     </script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="station-utils.js"></script>
+    <script src="game-logic.js"></script>
     <script src="encrypted_data.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -297,29 +298,6 @@
                 0 0 80px rgba(79, 70, 229, 0.2);
         }
         
-        @media (prefers-reduced-motion: no-preference) {
-            .neon-glow {
-                animation: neonPulse 3s ease-in-out infinite alternate;
-            }
-        }
-        
-        @keyframes neonPulse {
-            from {
-                text-shadow: 
-                    0 0 10px rgba(129, 140, 248, 0.8),
-                    0 0 20px rgba(129, 140, 248, 0.6),
-                    0 0 40px rgba(79, 70, 229, 0.4),
-                    0 0 80px rgba(79, 70, 229, 0.2);
-            }
-            to {
-                text-shadow: 
-                    0 0 15px rgba(129, 140, 248, 1),
-                    0 0 30px rgba(129, 140, 248, 0.8),
-                    0 0 60px rgba(79, 70, 229, 0.6),
-                    0 0 100px rgba(79, 70, 229, 0.3);
-            }
-        }
-        
         .input-glow:focus {
             box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
         }
@@ -392,35 +370,6 @@
             to { opacity: 0; transform: translateY(-15px); }
         }
         
-        .particle {
-            position: fixed;
-            pointer-events: none;
-            animation: particleFall 0.7s ease-out forwards;
-        }
-        
-        @keyframes particleFall {
-            0% { opacity: 1; transform: translateY(0) rotate(0deg); }
-            100% { opacity: 0; transform: translateY(80px) rotate(360deg); }
-        }
-        
-        .firework {
-            position: fixed;
-            pointer-events: none;
-        }
-        
-        .firework-particle {
-            position: absolute;
-            width: 5px;
-            height: 5px;
-            border-radius: 50%;
-            animation: fireworkExplode 0.8s ease-out forwards;
-        }
-        
-        @keyframes fireworkExplode {
-            0% { opacity: 1; transform: translate(0, 0) scale(1); }
-            100% { opacity: 0; transform: var(--end-pos) scale(0); }
-        }
-        
         .tooltip {
             position: relative;
         }
@@ -464,6 +413,16 @@
                 height: 36px !important;
                 font-size: 1rem !important;
                 margin: 3px;
+            }
+            
+            .tutorial-key {
+                width: 26px !important;
+                height: 26px !important;
+                font-size: 0.75rem !important;
+            }
+            
+            .tutorial-keyboard-demo {
+                gap: 0.25rem;
             }
             
             .mode-btn, .difficulty-btn {
@@ -577,25 +536,37 @@
             
             .game-settings-header {
                 flex-wrap: nowrap;
-                gap: 0.5rem;
+                gap: clamp(0.15rem, 1vw, 0.5rem);
                 min-height: 40px;
             }
             
             .stats-group {
-                gap: 0.5rem;
+                gap: clamp(0.15rem, 1vw, 0.5rem);
                 flex-shrink: 1;
             }
             
             .stat-item {
-                min-width: 40px;
+                min-width: auto;
+                flex: 0 0 auto;
+                padding: 0 0.25rem;
+            }
+            
+            .stat-item:nth-child(3),
+            .stat-item:nth-child(4) {
+                padding: 0 0.1rem;
+            }
+            
+            .stat-item:nth-child(3) .stat-label,
+            .stat-item:nth-child(4) .stat-label {
+                font-size: 9px;
             }
             
             .stat-value {
-                font-size: 0.875rem;
+                font-size: 1rem;
             }
             
             .stat-label {
-                font-size: 9px;
+                font-size: 10px;
             }
             
             .progress-group.desktop-only {
@@ -603,13 +574,13 @@
             }
             
             .actions-group {
-                gap: 0.5rem;
+                gap: clamp(0.15rem, 1vw, 0.5rem);
                 flex-shrink: 0;
                 white-space: nowrap;
             }
             
             .action-link {
-                font-size: 0.75rem;
+                font-size: 0.875rem;
             }
             
             .progress-group-mobile {
@@ -625,6 +596,12 @@
                 height: 32px !important;
                 font-size: 0.875rem !important;
                 margin: 2px;
+            }
+            
+            .tutorial-key {
+                width: 22px !important;
+                height: 22px !important;
+                font-size: 0.625rem !important;
             }
             
             .mode-btn, .difficulty-btn {
@@ -643,6 +620,67 @@
             
             header h1 {
                 font-size: 1.25rem !important;
+            }
+            
+            .game-settings-header {
+                gap: 0.15rem;
+            }
+            
+            .stats-group {
+                gap: 0.15rem;
+            }
+            
+            .stat-item {
+                min-width: auto;
+                padding: 0 0.1rem;
+            }
+            
+            .stat-item:nth-child(3),
+            .stat-item:nth-child(4) {
+                padding: 0 0.05rem;
+            }
+            
+            .stat-item:nth-child(3) .stat-label,
+            .stat-item:nth-child(4) .stat-label {
+                font-size: 8px;
+            }
+            
+            .actions-group {
+                gap: 0.15rem;
+            }
+        }
+        
+        @media (max-width: 350px) {
+            .game-settings-header {
+                gap: 0.1rem;
+            }
+            
+            .stats-group {
+                gap: 0.1rem;
+            }
+            
+            .stat-item {
+                min-width: auto;
+                padding: 0 0.05rem;
+            }
+            
+            .stat-item:nth-child(3),
+            .stat-item:nth-child(4) {
+                padding: 0;
+            }
+            
+            .stat-item:nth-child(3) .stat-label,
+            .stat-item:nth-child(4) .stat-label {
+                font-size: 7px;
+            }
+            
+            .actions-group {
+                gap: 0.1rem;
+            }
+            
+            .mode-btn, .difficulty-btn {
+                padding: 3px 6px;
+                font-size: 0.75rem;
             }
         }
         
@@ -663,7 +701,7 @@
         
         .stat-item {
             text-align: center;
-            min-width: 48px;
+            min-width: auto;
         }
         
         .stat-label {
@@ -827,20 +865,11 @@
                 transition-duration: 0.01ms !important;
             }
             
-            .neon-glow {
-                animation: none;
-            }
-            
             .station-card:hover,
             .btn-primary:hover,
             .btn-secondary:hover,
             .btn-hint:hover {
                 transform: none;
-            }
-            
-            .particle,
-            .firework-particle {
-                display: none;
             }
         }
         
@@ -1702,6 +1731,10 @@
                 <span>儿童模式</span>
                 <span class="text-xs bg-gradient-to-r from-pink-500 to-purple-500 text-white px-1.5 py-0.5 rounded-full">NEW</span>
             </a>
+            <a href="./quiz/list.html" class="mode-btn px-4 py-2 rounded-lg font-medium text-sm text-slate-700 cursor-pointer inline-flex items-center gap-1.5 no-underline">
+                <span>自定义题组</span>
+                <span class="text-xs bg-gradient-to-r from-indigo-500 to-blue-500 text-white px-1.5 py-0.5 rounded-full">UGC</span>
+            </a>
         </nav>
         
         <div id="normal-mode-area" class="space-y-4">
@@ -2214,11 +2247,7 @@
     </div>
 
     <script>
-        const DIFFICULTY_SETTINGS = {
-            easy: { stationCount: 3, hints: 5, timeBonus: 180, multiplier: 1, difficultyLevel: 'easy' },
-            normal: { stationCount: 4, hints: 3, timeBonus: 300, multiplier: 1.5, difficultyLevel: 'normal' },
-            hard: { stationCount: 6, hints: 2, timeBonus: 480, multiplier: 2, difficultyLevel: 'hard' }
-        };
+        const DIFFICULTY_SETTINGS = MetroGameLogic.DIFFICULTY_SETTINGS;
 
         const ACHIEVEMENTS = [
             { id: 'first_win', name: '初次胜利', desc: '完成第一局游戏', icon: 'trophy' },
@@ -2616,87 +2645,6 @@
             });
         }
 
-        const particlePool = [];
-        const MAX_PARTICLES = 10;
-        
-        function getParticle() {
-            return particlePool.pop() || document.createElement('div');
-        }
-        
-        function returnParticle(particle) {
-            if (particlePool.length < MAX_PARTICLES) {
-                particle.className = '';
-                particle.style.cssText = '';
-                particlePool.push(particle);
-            } else {
-                particle.remove();
-            }
-        }
-
-        function createParticles(x, y, count = 5) {
-            const colors = ['#22c55e', '#3b82f6', '#f97316'];
-            const reducedCount = Math.min(count, 3);
-            
-            for (let i = 0; i < reducedCount; i++) {
-                requestAnimationFrame(() => {
-                    const particle = getParticle();
-                    particle.className = 'particle';
-                    particle.style.left = `${x + (Math.random() - 0.5) * 50}px`;
-                    particle.style.top = `${y}px`;
-                    particle.style.width = `${Math.random() * 5 + 3}px`;
-                    particle.style.height = particle.style.width;
-                    particle.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
-                    particle.style.borderRadius = '50%';
-                    document.body.appendChild(particle);
-                    
-                    setTimeout(() => {
-                        particle.remove();
-                        returnParticle(particle);
-                    }, 600);
-                });
-            }
-        }
-
-        function createFireworks() {
-            const colors = ['#ff0000', '#00ff00', '#0000ff', '#ffff00'];
-            
-            for (let f = 0; f < 1; f++) {
-                setTimeout(() => {
-                    const x = Math.random() * window.innerWidth;
-                    const y = Math.random() * window.innerHeight * 0.5;
-                    
-                    for (let i = 0; i < 6; i++) {
-                        requestAnimationFrame(() => {
-                            const particle = getParticle();
-                            particle.className = 'firework-particle';
-                            particle.style.left = `${x}px`;
-                            particle.style.top = `${y}px`;
-                            particle.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
-                            
-                            const angle = (i / 6) * Math.PI * 2;
-                            const distance = 30 + Math.random() * 40;
-                            const endX = Math.cos(angle) * distance;
-                            const endY = Math.sin(angle) * distance;
-                            
-                            particle.style.setProperty('--end-pos', `translate(${endX}px, ${endY}px)`);
-                            
-                            const firework = document.createElement('div');
-                            firework.className = 'firework';
-                            firework.style.left = '0';
-                            firework.style.top = '0';
-                            firework.appendChild(particle);
-                            document.body.appendChild(firework);
-                            
-                            setTimeout(() => {
-                                firework.remove();
-                                returnParticle(particle);
-                            }, 700);
-                        });
-                    }
-                }, f * 200);
-            }
-        }
-
         function parseCSV(data) {
             const lines = data.trim().split('\n');
             const result = [];
@@ -2974,7 +2922,7 @@
                         renderLeaderboard(gameState.difficulty);
                     }
                 }
-            }, 500));
+            }, 1000));
         }
 
         function generatePlayerId() {
@@ -3100,7 +3048,7 @@
             chatRef.limitToLast(30).on('child_added', throttle((snapshot) => {
                 const msg = snapshot.val();
                 addChatMessage(msg.name, msg.text, msg.time);
-            }, 100));
+            }, 500));
         }
         
         function debounce(func, wait) {
@@ -3427,12 +3375,12 @@
                 }
                 
                 renderMultiplayerGame(gameData);
-            }, 150));
+            }, 500));
             
             roomRef.child('players').on('value', throttle((snapshot) => {
                 const players = snapshot.val() || {};
                 renderPlayersStatus(players);
-            }, 200));
+            }, 500));
         }
 
         function renderMultiplayerGame(gameData) {
@@ -4999,11 +4947,6 @@
                     gameState.score = Math.max(0, gameState.score - 5);
                     playSound('reveal-found');
                     addToHistory(`开 ${letter.toUpperCase()}`, 'success', `在 ${matchCount} 个站名中找到 (-5分)`);
-                    
-                    const btn = document.querySelector(`[data-letter="${letter}"]`);
-                    if (btn) {
-                        createParticles(btn.getBoundingClientRect().left + 16, btn.getBoundingClientRect().top + 16, 5);
-                    }
                 } else {
                     gameState.score = Math.max(0, gameState.score - 15);
                     playSound('reveal-not-found');
@@ -5053,7 +4996,6 @@
                         card.classList.add('pulse-success');
                         const rect = card.getBoundingClientRect();
                         showFloatingScore(totalPoints, rect.left + rect.width / 2, rect.top);
-                        createParticles(rect.left + rect.width / 2, rect.top + rect.height / 2, 15);
                     }
                     
                     renderStations();
@@ -5109,7 +5051,6 @@
                     card.classList.add('pulse-success');
                     const rect = card.getBoundingClientRect();
                     showFloatingScore(totalPoints, rect.left + rect.width / 2, rect.top);
-                    createParticles(rect.left + rect.width / 2, rect.top + rect.height / 2, 15);
                 }
                 
                 renderStations();
@@ -5185,10 +5126,7 @@
                 gameState.gameWon = true;
                 stopTimer();
                 
-                const settings = DIFFICULTY_SETTINGS[gameState.difficulty];
-                const timeBonus = Math.max(0, settings.timeBonus - gameState.elapsedTime) * 2;
-                gameState.score += timeBonus;
-                gameState.score = Math.floor(gameState.score * settings.multiplier);
+                const result = MetroGameLogic.checkWinCondition(gameState, gameState.difficulty);
                 
                 stats.gamesPlayed++;
                 stats.gamesWon++;
@@ -5201,10 +5139,9 @@
                 updateStatsDisplay();
                 
                 playSound('victory');
-                createFireworks();
                 
                 setTimeout(() => {
-                    elements.finalTime.textContent = formatTime(gameState.elapsedTime);
+                    elements.finalTime.textContent = MetroGameLogic.formatTime(gameState.elapsedTime);
                     elements.finalScore.textContent = gameState.score;
                     elements.finalGuesses.textContent = gameState.guessCount;
                     elements.finalHints.textContent = gameState.hintsUsed;
@@ -5276,9 +5213,7 @@
         }
 
         function formatTime(seconds) {
-            const minutes = Math.floor(seconds / 60);
-            const secs = seconds % 60;
-            return `${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+            return MetroGameLogic.formatTime(seconds);
         }
 
         function updateScoreDisplay() {

@@ -1,0 +1,1509 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>游玩题组 - 地铁站名猜谜游戏</title>
+    <meta name="description" content="挑战自定义地铁站名猜谜题组">
+    <meta name="theme-color" content="#4F46E5">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%234F46E5'/%3E%3Cpath d='M50 15c-16 0-28 3-28 17v35c0 8 6 14 14 14h3l-7 7h7l7-7h7l7 7h7l-7-7h3c8 0 14-6 14-14V32c0-14-12-17-28-17zM36 72c-4 0-7-3-7-7s3-7 7-7 7 3 7 7-3 7-7 7zm28 0c-4 0-7-3-7-7s3-7 7-7 7 3 7 7-3 7-7 7zm7-24H29V34c0-4 3-7 7-7h28c4 0 7 3 7 7v14z' fill='white'/%3E%3C/svg%3E">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@300;400;500;600;700&display=swap" media="print" onload="this.media='all'">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="../styles.css">
+    <script src="../common.js"></script>
+    <script src="../game-logic.js"></script>
+    <script src="../firebase-config.js"></script>
+    <script src="../station-utils.js"></script>
+    <style>
+        /* Claymorphism 游戏风格 */
+        .station-card {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(238, 242, 255, 0.9) 100%);
+            border: 2px solid rgba(129, 140, 248, 0.4);
+            transition: border-color var(--transition-normal), box-shadow var(--transition-normal), transform var(--transition-normal);
+            box-shadow: 0 4px 16px rgba(79, 70, 229, 0.08);
+        }
+        
+        .station-card:hover {
+            border-color: var(--primary-light);
+            box-shadow: 0 8px 32px rgba(79, 70, 229, 0.2), 0 0 20px rgba(129, 140, 248, 0.3);
+            transform: translateY(-2px);
+        }
+        
+        .station-card.solved {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(16, 185, 129, 0.1) 100%);
+            border-color: var(--success-color);
+            box-shadow: 0 0 20px rgba(16, 185, 129, 0.3);
+        }
+        
+        /* 与主页面一致的按钮样式 */
+        .mode-btn {
+            transition: background-color 0.25s ease-out, border-color 0.25s ease-out, box-shadow 0.25s ease-out;
+            background-color: rgba(255, 255, 255, 0.9);
+            border: 2px solid rgba(129, 140, 248, 0.3);
+            box-shadow: 0 2px 8px rgba(79, 70, 229, 0.08);
+        }
+        
+        .mode-btn:hover {
+            background-color: rgba(238, 242, 255, 0.95);
+            border-color: #818CF8;
+            box-shadow: 0 4px 16px rgba(79, 70, 229, 0.15);
+        }
+        
+        .mode-btn.active {
+            background: linear-gradient(135deg, #4F46E5 0%, #818CF8 100%);
+            color: white;
+            border-color: transparent;
+            box-shadow: 0 4px 16px rgba(79, 70, 229, 0.3), 0 0 20px rgba(129, 140, 248, 0.2);
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #4F46E5 0%, #818CF8 100%);
+            transition: transform 0.15s ease-out, box-shadow 0.15s ease-out;
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(79, 70, 229, 0.4), 0 0 30px rgba(129, 140, 248, 0.3);
+        }
+        
+        .btn-secondary {
+            background: linear-gradient(135deg, #F97316 0%, #FB923C 100%);
+            transition: transform 0.15s ease-out, box-shadow 0.15s ease-out;
+            box-shadow: 0 4px 12px rgba(249, 115, 22, 0.3);
+        }
+        
+        .btn-secondary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(249, 115, 22, 0.4), 0 0 30px rgba(251, 146, 60, 0.3);
+        }
+        
+        .btn-hint {
+            background: linear-gradient(135deg, #8B5CF6 0%, #A78BFA 100%);
+            transition: transform 0.15s ease-out, box-shadow 0.15s ease-out;
+            box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+        }
+        
+        .btn-hint:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(139, 92, 246, 0.4), 0 0 30px rgba(167, 139, 250, 0.3);
+        }
+        
+        .clay-input {
+            background: linear-gradient(145deg, #ffffff 0%, #f8fafc 100%);
+            border: 3px solid rgba(129, 140, 248, 0.25);
+            border-radius: 14px;
+            box-shadow: 
+                0 3px 0 rgba(129, 140, 248, 0.15),
+                inset 0 1px 0 rgba(255, 255, 255, 0.8);
+            transition: all 0.2s ease;
+        }
+        
+        .clay-input:focus {
+            outline: none;
+            border-color: #4F46E5;
+            box-shadow: 
+                0 3px 0 rgba(79, 70, 229, 0.2),
+                0 0 0 4px rgba(79, 70, 229, 0.1);
+        }
+        
+        .clay-modal {
+            background: linear-gradient(145deg, rgba(255, 255, 255, 0.98) 0%, rgba(248, 250, 252, 0.95) 100%);
+            border: 3px solid rgba(129, 140, 248, 0.2);
+            border-radius: 24px;
+            box-shadow: 
+                0 8px 0 rgba(129, 140, 248, 0.1),
+                0 24px 60px rgba(0, 0, 0, 0.15);
+        }
+        
+        /* 统计面板 */
+        .stat-box {
+            background: linear-gradient(145deg, rgba(255, 255, 255, 0.9) 0%, rgba(248, 250, 252, 0.8) 100%);
+            border: 2px solid rgba(129, 140, 248, 0.2);
+            border-radius: 16px;
+            padding: 12px 16px;
+            text-align: center;
+            box-shadow: 
+                0 2px 0 rgba(129, 140, 248, 0.1),
+                0 4px 12px rgba(79, 70, 229, 0.08);
+        }
+        
+        .stat-value {
+            font-family: 'Fredoka', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 700;
+            line-height: 1;
+        }
+        
+        .stat-label {
+            font-size: 0.75rem;
+            color: #64748b;
+            margin-top: 4px;
+            font-weight: 500;
+        }
+        
+        /* 字母键盘 */
+        .letter-key-clay {
+            background: linear-gradient(145deg, #ffffff 0%, #f1f5f9 100%);
+            border: 2px solid rgba(129, 140, 248, 0.3);
+            border-radius: 12px;
+            box-shadow: 
+                0 2px 0 rgba(129, 140, 248, 0.2),
+                0 3px 8px rgba(79, 70, 229, 0.1);
+            transition: all 0.15s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        
+        .letter-key-clay:hover:not(:disabled) {
+            transform: translateY(-2px) scale(1.05);
+            box-shadow: 
+                0 3px 0 rgba(129, 140, 248, 0.25),
+                0 6px 12px rgba(79, 70, 229, 0.15);
+        }
+        
+        .letter-key-clay:active:not(:disabled) {
+            transform: translateY(1px);
+            box-shadow: 
+                0 1px 0 rgba(129, 140, 248, 0.15),
+                0 2px 4px rgba(79, 70, 229, 0.08);
+        }
+        
+        .letter-key-clay.used {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .letter-key-clay.found {
+            background: linear-gradient(145deg, #22c55e 0%, #4ade80 100%);
+            border-color: #16a34a;
+            color: white;
+            box-shadow: 
+                0 2px 0 #16a34a,
+                0 4px 12px rgba(34, 197, 94, 0.3);
+        }
+        
+        .letter-key-clay.not-found {
+            background: linear-gradient(145deg, #ef4444 0%, #f87171 100%);
+            border-color: #dc2626;
+            color: white;
+            box-shadow: 
+                0 2px 0 #dc2626,
+                0 4px 12px rgba(239, 68, 68, 0.3);
+        }
+        
+        /* 进度条 */
+        .progress-container {
+            background: rgba(129, 140, 248, 0.15);
+            border-radius: 9999px;
+            height: 10px;
+            overflow: hidden;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+        
+        .progress-fill {
+            background: linear-gradient(90deg, #4F46E5, #818CF8, #A78BFA);
+            border-radius: 9999px;
+            height: 100%;
+            transition: width 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            box-shadow: 0 0 10px rgba(79, 70, 229, 0.4);
+        }
+        
+        /* 猜测记录 */
+        .guess-item {
+            background: linear-gradient(145deg, rgba(255, 255, 255, 0.9) 0%, rgba(248, 250, 252, 0.8) 100%);
+            border: 2px solid rgba(129, 140, 248, 0.15);
+            border-radius: 12px;
+            padding: 10px 14px;
+            transition: all 0.2s ease;
+        }
+        
+        .guess-item.success {
+            background: linear-gradient(145deg, rgba(220, 252, 231, 0.9) 0%, rgba(187, 247, 208, 0.8) 100%);
+            border-color: rgba(74, 222, 128, 0.3);
+        }
+        
+        .guess-item.error {
+            background: linear-gradient(145deg, rgba(254, 226, 226, 0.9) 0%, rgba(254, 202, 202, 0.8) 100%);
+            border-color: rgba(252, 165, 165, 0.3);
+        }
+        
+        .guess-item.correct {
+            background: linear-gradient(145deg, rgba(254, 243, 199, 0.9) 0%, rgba(253, 230, 138, 0.8) 100%);
+            border-color: rgba(252, 211, 77, 0.4);
+        }
+        
+        /* 主题切换 */
+        .theme-toggle-clay {
+            background: linear-gradient(145deg, #ffffff 0%, #f1f5f9 100%);
+            border: 3px solid rgba(129, 140, 248, 0.25);
+            border-radius: 14px;
+            box-shadow: 
+                0 3px 0 rgba(129, 140, 248, 0.15),
+                0 4px 12px rgba(79, 70, 229, 0.1);
+            transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        
+        .theme-toggle-clay:hover {
+            transform: translateY(-2px) rotate(15deg);
+        }
+        
+        /* 页面标题 */
+        .page-title {
+            font-family: 'Fredoka', sans-serif;
+            background: linear-gradient(135deg, #1E1B4B 0%, #4F46E5 50%, #6366F1 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        /* 排行榜项 */
+        .leaderboard-item-clay {
+            background: linear-gradient(145deg, rgba(255, 255, 255, 0.9) 0%, rgba(248, 250, 252, 0.8) 100%);
+            border: 2px solid rgba(129, 140, 248, 0.15);
+            border-radius: 14px;
+            padding: 12px 16px;
+            transition: all 0.2s ease;
+        }
+        
+        .leaderboard-item-clay:hover {
+            transform: translateX(4px);
+            border-color: rgba(129, 140, 248, 0.3);
+        }
+        
+        .rank-badge {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.875rem;
+        }
+        
+        .rank-badge.gold {
+            background: linear-gradient(145deg, #fbbf24 0%, #f59e0b 100%);
+            color: white;
+            box-shadow: 0 2px 0 #d97706;
+        }
+        
+        .rank-badge.silver {
+            background: linear-gradient(145deg, #e5e7eb 0%, #9ca3af 100%);
+            color: white;
+            box-shadow: 0 2px 0 #6b7280;
+        }
+        
+        .rank-badge.bronze {
+            background: linear-gradient(145deg, #fdba74 0%, #f97316 100%);
+            color: white;
+            box-shadow: 0 2px 0 #c2410c;
+        }
+        
+        .rank-badge.normal {
+            background: linear-gradient(145deg, #f1f5f9 0%, #e2e8f0 100%);
+            color: #64748b;
+            box-shadow: 0 2px 0 #cbd5e1;
+        }
+        
+        /* 音效按钮 */
+        .sound-toggle-clay {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: linear-gradient(145deg, #ffffff 0%, #f1f5f9 100%);
+            border: 3px solid rgba(129, 140, 248, 0.25);
+            border-radius: 50%;
+            width: 56px;
+            height: 56px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 
+                0 4px 0 rgba(129, 140, 248, 0.15),
+                0 8px 24px rgba(79, 70, 229, 0.15);
+            transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+            z-index: 100;
+        }
+        
+        .sound-toggle-clay:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 
+                0 6px 0 rgba(129, 140, 248, 0.2),
+                0 12px 32px rgba(79, 70, 229, 0.2);
+        }
+        
+        .sound-toggle-clay:active {
+            transform: translateY(1px);
+            box-shadow: 
+                0 2px 0 rgba(129, 140, 248, 0.1),
+                0 4px 12px rgba(79, 70, 229, 0.1);
+        }
+        
+        /* 暗色模式 */
+        .dark .game-card {
+            background: linear-gradient(145deg, rgba(30, 41, 59, 0.95) 0%, rgba(51, 65, 85, 0.9) 100%);
+            border-color: rgba(71, 85, 105, 0.4);
+            box-shadow: 
+                0 4px 0 rgba(0, 0, 0, 0.3),
+                0 8px 24px rgba(0, 0, 0, 0.3);
+        }
+        
+        .dark .game-card.solved {
+            background: linear-gradient(145deg, rgba(20, 83, 45, 0.9) 0%, rgba(22, 101, 52, 0.8) 100%);
+            border-color: rgba(74, 222, 128, 0.3);
+        }
+        
+        .dark .mode-btn {
+            background-color: rgba(30, 41, 59, 0.9);
+            border-color: rgba(71, 85, 105, 0.5);
+            color: #e2e8f0;
+        }
+        
+        .dark .mode-btn:hover {
+            background-color: rgba(51, 65, 85, 0.95);
+            border-color: rgba(96, 165, 250, 0.5);
+        }
+        
+        .dark .mode-btn.active {
+            background: linear-gradient(135deg, #4F46E5 0%, #6366F1 100%);
+            box-shadow: 0 4px 16px rgba(79, 70, 229, 0.4), 0 0 20px rgba(99, 102, 241, 0.2);
+        }
+        
+        .dark .clay-input {
+            background: linear-gradient(145deg, #334155 0%, #1e293b 100%);
+            border-color: rgba(71, 85, 105, 0.5);
+            color: #e2e8f0;
+        }
+        
+        .dark .clay-modal {
+            background: linear-gradient(145deg, rgba(30, 41, 59, 0.98) 0%, rgba(15, 23, 42, 0.95) 100%);
+            border-color: rgba(71, 85, 105, 0.4);
+        }
+        
+        .dark .stat-box {
+            background: linear-gradient(145deg, rgba(51, 65, 85, 0.9) 0%, rgba(30, 41, 59, 0.8) 100%);
+            border-color: rgba(71, 85, 105, 0.4);
+        }
+        
+        .dark .letter-key-clay {
+            background: linear-gradient(145deg, #334155 0%, #1e293b 100%);
+            border-color: rgba(71, 85, 105, 0.5);
+            color: #e2e8f0;
+        }
+        
+        .dark .guess-item {
+            background: linear-gradient(145deg, rgba(51, 65, 85, 0.9) 0%, rgba(30, 41, 59, 0.8) 100%);
+        }
+        
+        .dark .leaderboard-item-clay {
+            background: linear-gradient(145deg, rgba(51, 65, 85, 0.9) 0%, rgba(30, 41, 59, 0.8) 100%);
+        }
+        
+        .dark .page-title {
+            background: linear-gradient(135deg, #f1f5f9 0%, #a5b4fc 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+        }
+        
+        .dark .sound-toggle-clay {
+            background: linear-gradient(145deg, #334155 0%, #1e293b 100%);
+            border-color: rgba(71, 85, 105, 0.5);
+        }
+        
+        /* 动画 */
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes popIn {
+            0% { transform: scale(0.8); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-10px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        
+        .animate-fade-in-up {
+            animation: fadeInUp 0.5s ease-out forwards;
+        }
+        
+        .animate-pop-in {
+            animation: popIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        }
+        
+        .animate-slide-in {
+            animation: slideIn 0.3s ease-out forwards;
+        }
+        
+        /* 连击动画 */
+        @keyframes comboPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+        
+        .combo-active {
+            animation: comboPulse 0.3s ease;
+        }
+        
+        /* 浮动分数 */
+        @keyframes floatUp {
+            0% { opacity: 1; transform: translateY(0) scale(1); }
+            100% { opacity: 0; transform: translateY(-40px) scale(1.2); }
+        }
+        
+        .float-score {
+            position: fixed;
+            pointer-events: none;
+            animation: floatUp 1s ease forwards;
+            font-weight: 700;
+            font-size: 1.25rem;
+            z-index: 1000;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-indigo-50 via-purple-50 to-blue-100 min-h-screen text-slate-800 transition-colors duration-300">
+    <script>
+        if ('scrollRestoration' in history) {
+            history.scrollRestoration = 'manual';
+        }
+        window.scrollTo(0, 0);
+    </script>
+
+    <div id="toast-container" class="fixed top-4 right-4 z-50 space-y-2" role="alert" aria-live="polite"></div>
+    <div id="floating-scores" class="fixed inset-0 pointer-events-none z-40" aria-hidden="true"></div>
+    
+    <!-- 音效切换按钮 -->
+    <button id="sound-toggle" class="sound-toggle-clay cursor-pointer" title="切换音效" aria-label="切换音效">
+        <svg id="sound-on-icon" class="w-6 h-6 text-indigo-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+            <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+        </svg>
+        <svg id="sound-off-icon" class="w-6 h-6 text-slate-400 hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+            <line x1="23" y1="9" x2="17" y2="15"></line>
+            <line x1="17" y1="9" x2="23" y2="15"></line>
+        </svg>
+    </button>
+    
+    <main class="relative z-10 container mx-auto px-4 py-6 max-w-6xl">
+        <!-- 页面标题 -->
+        <header class="text-center mb-6 animate-fade-in-up">
+            <div class="flex justify-center items-center gap-4 mb-2">
+                <h1 id="quiz-title" class="text-2xl md:text-3xl font-bold page-title">
+                    加载中...
+                </h1>
+                <button id="btn-theme" class="theme-toggle-clay p-2.5 cursor-pointer" title="切换主题" aria-label="切换主题">
+                    <svg id="theme-moon-icon" class="w-5 h-5 text-slate-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg id="theme-sun-icon" class="w-5 h-5 text-amber-500 hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+            </div>
+            <p id="quiz-subtitle" class="text-slate-600 text-sm">
+                自定义题组
+            </p>
+        </header>
+        
+        <!-- 游戏统计面板 -->
+        <section id="game-settings" class="game-card p-4 mb-5 animate-fade-in-up">
+            <div class="grid grid-cols-4 gap-3 mb-4">
+                <div class="stat-box">
+                    <div id="timer" class="stat-value text-indigo-600">00:00</div>
+                    <div class="stat-label">计时</div>
+                </div>
+                <div class="stat-box">
+                    <div id="score" class="stat-value text-green-600">0</div>
+                    <div class="stat-label">得分</div>
+                </div>
+                <div class="stat-box">
+                    <div id="combo" class="stat-value text-orange-500">0</div>
+                    <div class="stat-label">连击</div>
+                </div>
+                <div class="stat-box">
+                    <div id="hints-left" class="stat-value text-purple-600">3</div>
+                    <div class="stat-label">提示</div>
+                </div>
+            </div>
+            
+            <div class="mb-3">
+                <div class="flex justify-between text-xs text-slate-500 mb-1.5">
+                    <span>进度</span>
+                    <span id="progress-text">0/0</span>
+                </div>
+                <div class="progress-container">
+                    <div id="progress-bar" class="progress-fill" style="width: 0%"></div>
+                </div>
+            </div>
+            
+            <div class="flex flex-wrap justify-center gap-2">
+                <a id="btn-new-game" href="#" class="mode-btn rounded-lg px-4 py-2 text-sm font-medium text-slate-700 cursor-pointer inline-flex items-center gap-1.5 no-underline">
+                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="23 4 23 10 17 10"></polyline>
+                        <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+                    </svg>
+                    新游戏
+                </a>
+                <a id="btn-hint" href="#" class="btn-hint rounded-lg px-4 py-2 text-sm font-medium text-white cursor-pointer inline-flex items-center gap-1.5 no-underline">
+                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+                        <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                    </svg>
+                    提示
+                </a>
+                <a id="btn-leaderboard" href="#" class="mode-btn rounded-lg px-4 py-2 text-sm font-medium text-slate-700 cursor-pointer inline-flex items-center gap-1.5 no-underline">
+                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path>
+                        <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path>
+                        <path d="M4 22h16"></path>
+                        <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"></path>
+                        <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"></path>
+                        <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"></path>
+                    </svg>
+                    排行榜
+                </a>
+            </div>
+            
+            <div class="text-center mt-3 text-xs text-slate-500">
+                已猜 <span id="guess-count" class="font-semibold text-slate-700">0</span> 次
+            </div>
+        </section>
+        
+        <!-- 导航 -->
+        <nav class="flex justify-center gap-2 mb-5 flex-wrap animate-fade-in-up">
+            <a href="../index.html" class="mode-btn rounded-lg px-4 py-2 text-sm font-medium text-slate-700 cursor-pointer inline-flex items-center gap-1.5 no-underline">
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"></path>
+                </svg>
+                主页
+            </a>
+            <a href="list.html" class="mode-btn rounded-lg px-4 py-2 text-sm font-medium text-slate-700 cursor-pointer inline-flex items-center gap-1.5 no-underline">
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="8" y1="6" x2="21" y2="6"></line>
+                    <line x1="8" y1="12" x2="21" y2="12"></line>
+                    <line x1="8" y1="18" x2="21" y2="18"></line>
+                </svg>
+                题组列表
+            </a>
+        </nav>
+        
+        <!-- 邀请码输入 -->
+        <div id="invite-code-section" class="game-card p-6 md:p-8 shadow-lg hidden animate-fade-in-up">
+            <div class="text-center max-w-sm mx-auto">
+                <div class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center shadow-lg">
+                    <svg class="w-8 h-8 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                        <path d="M7 11V7a5 5 0 0110 0v4"></path>
+                    </svg>
+                </div>
+                <h3 class="text-xl font-bold text-slate-800 mb-2">需要邀请码</h3>
+                <p class="text-sm text-slate-500 mb-5">该题组需要邀请码才能访问</p>
+                <input type="text" id="invite-code-input" placeholder="请输入邀请码" 
+                    class="clay-input w-full px-4 py-3 mb-4 text-center uppercase tracking-widest text-lg font-mono" maxlength="10">
+                <div class="flex justify-center gap-3">
+                    <a href="list.html" class="mode-btn rounded-lg px-5 py-2.5 text-slate-700 font-medium cursor-pointer no-underline">
+                        返回列表
+                    </a>
+                    <button id="btn-confirm-invite" class="btn-primary rounded-lg px-6 py-2.5 font-medium cursor-pointer text-white">
+                        确认
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 加载中 -->
+        <div id="loading-section" class="game-card p-8 shadow-lg animate-fade-in-up">
+            <div class="text-center">
+                <div class="w-12 h-12 mx-auto mb-4 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin"></div>
+                <p class="text-slate-600 font-medium">正在加载题组...</p>
+            </div>
+        </div>
+        
+        <!-- 游戏区域 -->
+        <div id="game-area" class="space-y-4 hidden">
+            <!-- 站点卡片网格 -->
+            <div id="stations-container" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            </div>
+            
+            <!-- 字母键盘 -->
+            <div class="game-card p-4">
+                <h3 class="text-sm font-semibold text-slate-600 mb-3 text-center">字母键盘 (点击或输入字母)</h3>
+                <div id="letter-keyboard" class="flex flex-wrap gap-2 justify-center">
+                </div>
+            </div>
+            
+            <!-- 输入区域 -->
+            <div class="game-card p-4 md:p-5">
+                <div class="flex flex-col sm:flex-row gap-3">
+                    <input type="text" id="guess-input" placeholder="输入字母开字母，或输入站名猜测" 
+                        class="clay-input flex-1 px-4 py-3 text-base"
+                        autocomplete="off">
+                    <button id="btn-submit" class="btn-secondary rounded-lg px-6 py-3 font-medium cursor-pointer whitespace-nowrap text-white">
+                        提交
+                    </button>
+                </div>
+                <p class="text-xs text-slate-500 mt-3 text-center">
+                    输入<span class="text-indigo-600 font-medium">字母</span>开字母，或输入<span class="text-orange-600 font-medium">站名</span>猜测
+                </p>
+            </div>
+            
+            <!-- 猜测记录 -->
+            <div id="guess-history-container" class="game-card p-4 md:p-5">
+                <h3 class="text-sm font-semibold text-slate-600 mb-3 flex items-center gap-2">
+                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <polyline points="12 6 12 12 16 14"></polyline>
+                    </svg>
+                    猜测记录
+                </h3>
+                <div id="guess-history" class="space-y-2 max-h-48 overflow-y-auto">
+                    <p class="text-slate-400 text-sm text-center py-4">暂无记录</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 排行榜 -->
+        <div id="leaderboard-section" class="game-card p-4 md:p-5 shadow-lg hidden">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+                    <svg class="w-5 h-5 text-amber-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path>
+                        <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path>
+                        <path d="M4 22h16"></path>
+                        <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"></path>
+                        <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"></path>
+                        <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"></path>
+                    </svg>
+                    题组排行榜
+                </h3>
+                <button id="btn-close-leaderboard" class="mode-btn rounded-lg px-3 py-1.5 text-sm cursor-pointer">
+                    返回游戏
+                </button>
+            </div>
+            <div id="leaderboard-list" class="space-y-2">
+                <p class="text-slate-500 text-sm text-center py-4">暂无记录</p>
+            </div>
+        </div>
+        
+        <!-- 页脚 -->
+        <footer class="text-center mt-8 text-sm text-slate-500">
+            <p>制作者：<a href="https://space.bilibili.com/1944366810" target="_blank" rel="noopener noreferrer" class="text-indigo-600 hover:text-indigo-700 font-medium transition-colors">bilibili@lvshu</a></p>
+        </footer>
+    </main>
+    
+    <!-- 胜利弹窗 -->
+    <div id="victory-modal" class="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="clay-modal p-6 md:p-8 max-w-md w-full animate-pop-in">
+            <div class="text-center">
+                <div class="w-20 h-20 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-green-400 to-emerald-500 flex items-center justify-center shadow-lg">
+                    <svg class="w-10 h-10 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                        <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                    </svg>
+                </div>
+                <h2 class="text-2xl font-bold text-slate-900 mb-2">恭喜获胜！</h2>
+                <p class="text-slate-600 mb-5">你成功猜对了所有地铁站名！</p>
+                
+                <div class="game-card p-4 mb-5">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="text-center">
+                            <div class="text-xs text-slate-500 mb-1">用时</div>
+                            <div id="final-time" class="text-2xl font-bold text-indigo-600 font-display">00:00</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-xs text-slate-500 mb-1">得分</div>
+                            <div id="final-score" class="text-2xl font-bold text-green-600 font-display">0</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-xs text-slate-500 mb-1">猜测次数</div>
+                            <div id="final-guesses" class="text-2xl font-bold text-orange-500 font-display">0</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-xs text-slate-500 mb-1">使用提示</div>
+                            <div id="final-hints" class="text-2xl font-bold text-purple-600 font-display">0</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mb-5">
+                    <input type="text" id="player-name" placeholder="输入你的名字" maxlength="20" 
+                        class="clay-input w-full px-4 py-3 text-center">
+                </div>
+                
+                <div class="flex justify-center gap-3">
+                    <button id="btn-save-score" class="btn-primary rounded-lg px-6 py-2.5 font-medium cursor-pointer text-white">
+                        保存成绩
+                    </button>
+                    <button id="btn-play-again" class="btn-secondary rounded-lg px-6 py-2.5 font-medium cursor-pointer text-white">
+                        再玩一次
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const $ = id => document.getElementById(id);
+        const $all = sel => document.querySelectorAll(sel);
+        const createEl = (tag, className, innerHTML) => {
+            const el = document.createElement(tag);
+            if (className) el.className = className;
+            if (innerHTML) el.innerHTML = innerHTML;
+            return el;
+        };
+        
+        let quizData = null;
+        let quizId = null;
+        let gameState = {
+            stations: [],
+            revealedLetters: {},
+            revealedSpecialChars: new Set(),
+            solvedStations: new Set(),
+            guessCount: 0,
+            guessHistory: [],
+            gameWon: false,
+            score: 0,
+            hintsUsed: 0,
+            hintsLeft: 3,
+            startTime: null,
+            elapsedTime: 0,
+            usedLetters: new Set(),
+            foundLetters: new Set(),
+            combo: 0,
+            lastCorrectTime: 0
+        };
+        
+        let timerInterval = null;
+        let isDarkMode = false;
+        let soundEnabled = true;
+        let audioContext = null;
+        let leaderboardData = [];
+        
+        function initTheme() {
+            MetroCommon.initDarkMode();
+            updateThemeIcon();
+            
+            $('btn-theme').addEventListener('click', () => {
+                MetroCommon.toggleDarkMode();
+                updateThemeIcon();
+            });
+        }
+        
+        function updateThemeIcon() {
+            const isDark = MetroCommon.isDarkMode();
+            $('theme-moon-icon').classList.toggle('hidden', isDark);
+            $('theme-sun-icon').classList.toggle('hidden', !isDark);
+        }
+        
+        function initAudio() {
+            try {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            } catch (e) {
+                console.log('Web Audio API not supported');
+            }
+        }
+        
+        function playSound(type) {
+            if (!soundEnabled || !audioContext) return;
+            
+            const now = audioContext.currentTime;
+            
+            const playTone = (freq, duration, volume, startTime, endFreq = null) => {
+                if (!audioContext) return;
+                
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                
+                oscillator.type = 'sine';
+                oscillator.frequency.setValueAtTime(freq, startTime);
+                if (endFreq) {
+                    oscillator.frequency.exponentialRampToValueAtTime(Math.max(endFreq, 20), startTime + duration);
+                }
+                
+                gainNode.gain.setValueAtTime(volume, startTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, startTime + duration);
+                
+                oscillator.start(startTime);
+                oscillator.stop(startTime + duration);
+            };
+            
+            switch (type) {
+                case 'reveal':
+                    playTone(440, 0.08, 0.06, now);
+                    playTone(660, 0.08, 0.06, now + 0.05);
+                    playTone(880, 0.1, 0.05, now + 0.1);
+                    break;
+                case 'reveal-found':
+                    playTone(523, 0.1, 0.08, now);
+                    playTone(784, 0.1, 0.08, now + 0.08);
+                    playTone(1047, 0.12, 0.06, now + 0.16);
+                    break;
+                case 'reveal-not-found':
+                    playTone(300, 0.15, 0.08, now, 150);
+                    playTone(200, 0.1, 0.06, now + 0.15);
+                    break;
+                case 'correct':
+                    playTone(523, 0.15, 0.1, now);
+                    playTone(659, 0.15, 0.1, now + 0.1);
+                    playTone(784, 0.15, 0.1, now + 0.2);
+                    playTone(1047, 0.25, 0.12, now + 0.3);
+                    break;
+                case 'wrong':
+                    playTone(250, 0.15, 0.1, now, 150);
+                    playTone(150, 0.2, 0.08, now + 0.15);
+                    break;
+                case 'victory':
+                    const melody = [523, 587, 659, 698, 784, 880, 988, 1047, 1175, 1319];
+                    melody.forEach((freq, i) => {
+                        playTone(freq, 0.12, 0.08, now + i * 0.08);
+                    });
+                    break;
+                case 'hint':
+                    playTone(400, 0.1, 0.08, now);
+                    playTone(500, 0.1, 0.08, now + 0.08);
+                    playTone(600, 0.15, 0.1, now + 0.16);
+                    break;
+            }
+        }
+        
+        function toggleSound() {
+            soundEnabled = !soundEnabled;
+            $('sound-on-icon').classList.toggle('hidden', !soundEnabled);
+            $('sound-off-icon').classList.toggle('hidden', soundEnabled);
+            
+            if (soundEnabled && !audioContext) {
+                initAudio();
+            }
+            
+            MetroCommon.showToast(soundEnabled ? '音效已开启' : '音效已关闭', 'info');
+        }
+        
+        async function loadQuiz() {
+            quizId = MetroCommon.getUrlParam('id');
+            
+            if (!quizId) {
+                showError('缺少题组ID');
+                return;
+            }
+            
+            try {
+                await FirebaseConfig.init();
+                
+                const quiz = await FirebaseConfig.getQuiz(quizId);
+                
+                if (!quiz) {
+                    showError('题组不存在');
+                    return;
+                }
+                
+                quizData = quiz;
+                
+                const access = FirebaseConfig.validateQuizAccess(quiz);
+                if (!access.valid) {
+                    if (access.needInviteCode) {
+                        showInviteCodeSection();
+                        return;
+                    } else {
+                        showError(access.error);
+                        return;
+                    }
+                }
+                
+                initGame();
+            } catch (e) {
+                console.error('Failed to load quiz:', e);
+                showError('加载题组失败');
+            }
+        }
+        
+        async function loadWithInviteCode() {
+            const inviteCode = $('invite-code-input').value.trim().toUpperCase();
+            
+            if (!inviteCode) {
+                MetroCommon.showToast('请输入邀请码', 'error');
+                return;
+            }
+            
+            try {
+                const quiz = await FirebaseConfig.getQuiz(quizId);
+                
+                if (!quiz) {
+                    showError('题组不存在');
+                    return;
+                }
+                
+                const access = FirebaseConfig.validateQuizAccess(quiz, inviteCode);
+                if (!access.valid) {
+                    MetroCommon.showToast(access.error, 'error');
+                    return;
+                }
+                
+                quizData = quiz;
+                initGame();
+            } catch (e) {
+                console.error('Failed to load quiz:', e);
+                showError('加载题组失败');
+            }
+        }
+        
+        function showInviteCodeSection() {
+            $('loading-section').classList.add('hidden');
+            $('invite-code-section').classList.remove('hidden');
+        }
+        
+        function showError(message) {
+            $('loading-section').innerHTML = `
+                <div class="text-center">
+                    <div class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-red-100 flex items-center justify-center">
+                        <svg class="w-8 h-8 text-red-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <line x1="15" y1="9" x2="9" y2="15"></line>
+                            <line x1="9" y1="9" x2="15" y2="15"></line>
+                        </svg>
+                    </div>
+                    <p class="text-slate-800 font-medium mb-4">${message}</p>
+                    <a href="list.html" class="btn-primary rounded-lg px-6 py-2.5 inline-block cursor-pointer text-white no-underline">
+                        返回列表
+                    </a>
+                </div>
+            `;
+        }
+        
+        function initGame() {
+            $('loading-section').classList.add('hidden');
+            $('invite-code-section').classList.add('hidden');
+            $('game-area').classList.remove('hidden');
+            
+            const displayName = quizData.hideTheme ? '神秘题组' : quizData.name;
+            $('quiz-title').textContent = displayName;
+            $('quiz-subtitle').textContent = `${quizData.questions.length}题 · ${MetroGameLogic.getDifficultyLabel(quizData.difficultyLevel)} · 创建者: ${quizData.creatorName || '匿名'}`;
+            
+            const stations = quizData.questions.map((q, i) => ({
+                ...q,
+                index: i
+            }));
+            
+            gameState = MetroGameLogic.initGameState(stations, quizData.difficultyLevel);
+            
+            renderStations();
+            renderKeyboard();
+            startTimer();
+            
+            FirebaseConfig.incrementPlayCount(quizId);
+            FirebaseConfig.listenToQuizLeaderboard(quizId, updateLeaderboard);
+        }
+        
+        function renderStations() {
+            const container = $('stations-container');
+            container.innerHTML = '';
+            
+            const fragment = document.createDocumentFragment();
+            
+            gameState.stations.forEach((station, index) => {
+                const isSolved = gameState.solvedStations.has(index);
+                const revealed = gameState.revealedLetters[index] || new Set();
+                const displayText = MetroGameLogic.getDisplayText(station.station_en, revealed, isSolved, gameState.devMode, gameState.revealedSpecialChars);
+                
+                const difficulty = station.calculatedDifficulty || MetroGameLogic.calculateStationDifficulty(station);
+                const difficultyLabel = MetroGameLogic.getDifficultyLabel(difficulty);
+                const difficultyClass = difficulty === 'easy' ? 'bg-green-100 text-green-700 border-green-200' : 
+                                       difficulty === 'normal' ? 'bg-amber-100 text-amber-700 border-amber-200' : 
+                                       'bg-red-100 text-red-700 border-red-200';
+                
+                const card = createEl('div', `game-card p-4 ${isSolved ? 'solved' : ''} animate-fade-in-up`);
+                card.style.animationDelay = `${index * 0.05}s`;
+                card.id = `station-${index}`;
+                card.innerHTML = `
+                    <div class="flex items-center justify-between mb-3">
+                        <span class="text-xs font-bold text-slate-400 bg-slate-100 px-2 py-1 rounded-lg">#${index + 1}</span>
+                        <div class="flex items-center gap-2">
+                            <span class="text-xs px-2.5 py-1 rounded-lg border-2 font-medium ${difficultyClass}">${difficultyLabel}</span>
+                            ${isSolved ? `
+                                <span class="flex items-center gap-1 text-xs font-bold text-green-600 bg-green-100 px-2 py-1 rounded-lg">
+                                    <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                                        <polyline points="20 6 9 17 4 12"></polyline>
+                                    </svg>
+                                    已解开
+                                </span>
+                            ` : ''}
+                        </div>
+                    </div>
+                    <div class="letter-display text-xl md:text-2xl font-bold text-slate-800 mb-3 text-center py-3 bg-white/60 rounded-xl border-2 border-slate-100">
+                        ${displayText}
+                    </div>
+                    ${isSolved ? `
+                        <div class="text-center pt-2 border-t border-slate-200/60">
+                            <p class="text-slate-800 font-bold text-lg">${escapeHtml(station.station_cn)}</p>
+                            <p class="text-slate-500 text-xs mt-1">${escapeHtml(station.city_cn || '')}</p>
+                        </div>
+                    ` : ''}
+                `;
+                
+                fragment.appendChild(card);
+            });
+            
+            container.appendChild(fragment);
+            updateProgress();
+        }
+        
+        function renderKeyboard() {
+            const container = $('letter-keyboard');
+            container.innerHTML = '';
+            
+            const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+            const fragment = document.createDocumentFragment();
+            
+            letters.forEach(letter => {
+                const lowerLetter = letter.toLowerCase();
+                const isUsed = gameState.usedLetters.has(lowerLetter);
+                const isFound = gameState.foundLetters.has(lowerLetter);
+                
+                let className = 'letter-key-clay w-9 h-10 sm:w-10 sm:h-11 font-bold text-sm sm:text-base cursor-pointer ';
+                
+                if (isUsed) {
+                    className += 'used ';
+                    if (isFound) {
+                        className += 'found ';
+                    } else {
+                        className += 'not-found ';
+                    }
+                }
+                
+                const key = createEl('button', className);
+                key.textContent = letter;
+                key.dataset.letter = letter;
+                key.disabled = isUsed || gameState.gameWon;
+                
+                key.addEventListener('click', () => handleLetterClick(letter));
+                
+                fragment.appendChild(key);
+            });
+            
+            container.appendChild(fragment);
+        }
+        
+        function handleLetterClick(letter) {
+            if (gameState.gameWon) return;
+            
+            const lowerLetter = letter.toLowerCase();
+            if (gameState.usedLetters.has(lowerLetter)) return;
+            
+            const result = MetroGameLogic.revealLetter(gameState, lowerLetter);
+            
+            if (result.alreadyUsed) {
+                MetroCommon.showToast('该字母已使用', 'error');
+                return;
+            }
+            
+            if (result.found) {
+                playSound('reveal-found');
+                showFloatingScore(`${result.scoreChange}`, 'green');
+                addGuessHistory(`开字母 ${letter}`, true);
+            } else {
+                playSound('reveal-not-found');
+                showFloatingScore(`${result.scoreChange}`, 'red');
+                addGuessHistory(`开字母 ${letter}`, false);
+            }
+            
+            renderStations();
+            renderKeyboard();
+            updateScore();
+            
+            checkAutoSolved();
+        }
+        
+        function showFloatingScore(text, color) {
+            const floatEl = createEl('div', `float-score text-${color}-600`);
+            floatEl.textContent = text;
+            floatEl.style.left = '50%';
+            floatEl.style.top = '50%';
+            floatEl.style.transform = 'translate(-50%, -50%)';
+            document.body.appendChild(floatEl);
+            setTimeout(() => floatEl.remove(), 1000);
+        }
+        
+        function checkAutoSolved() {
+            const autoSolved = MetroGameLogic.checkAutoSolved(gameState);
+            
+            autoSolved.forEach(({ index, station, scoreChange, combo }) => {
+                playSound('correct');
+                showFloatingScore(`+${scoreChange}`, 'green');
+                addGuessHistory(`自动猜出`, true, true);
+                
+                const card = document.getElementById(`station-${index}`);
+                if (card) {
+                    card.classList.add('pulse-success');
+                }
+            });
+            
+            if (autoSolved.length > 0) {
+                renderStations();
+                updateScore();
+                updateProgress();
+                
+                if (gameState.solvedStations.size >= gameState.stations.length) {
+                    gameWon();
+                }
+            }
+        }
+        
+        function handleGuess(input) {
+            if (gameState.gameWon) return;
+            
+            const trimmed = input.trim();
+            if (!trimmed) return;
+            
+            if (trimmed.length === 1 && /^[a-zA-Z]$/.test(trimmed)) {
+                handleLetterClick(trimmed.toUpperCase());
+                return;
+            }
+            
+            const result = MetroGameLogic.guessStation(gameState, trimmed);
+            
+            if (result.correct) {
+                const points = MetroGameLogic.SCORE_CONFIG.GUESS_CORRECT_BASE + result.combo * MetroGameLogic.SCORE_CONFIG.COMBO_BONUS_PER_COMBO;
+                playSound('correct');
+                showFloatingScore(`+${points}`, 'green');
+                
+                addGuessHistory(`猜站名 "${trimmed}"`, true, true);
+                
+                if (gameState.solvedStations.size >= gameState.stations.length) {
+                    gameWon();
+                }
+            } else {
+                playSound('wrong');
+                showFloatingScore('0', 'red');
+                
+                addGuessHistory(`猜站名 "${trimmed}"`, false);
+            }
+            
+            renderStations();
+            updateScore();
+        }
+        
+        function useHint() {
+            if (gameState.gameWon) {
+                MetroCommon.showToast('游戏已结束', 'error');
+                return;
+            }
+            
+            const result = MetroGameLogic.useHint(gameState);
+            
+            if (result.noHintsLeft) {
+                MetroCommon.showToast('没有提示次数了', 'error');
+                return;
+            }
+            
+            if (result.allSolved) {
+                MetroCommon.showToast('所有站名已解开', 'info');
+                return;
+            }
+            
+            if (result.noLettersToReveal) {
+                MetroCommon.showToast('该站点没有可揭示的字母', 'info');
+                return;
+            }
+            
+            if (result.success) {
+                playSound('hint');
+                showFloatingScore(`${result.scoreChange}`, 'purple');
+                addGuessHistory(`使用提示揭示字母 ${result.letter.toUpperCase()}`, true);
+                
+                renderStations();
+                renderKeyboard();
+                updateScore();
+                
+                MetroCommon.showToast(`揭示字母: ${result.letter.toUpperCase()}`, 'success');
+                
+                checkAutoSolved();
+            }
+        }
+        
+        function addGuessHistory(action, success, isCorrect = false) {
+            const history = $('guess-history');
+            
+            if (gameState.guessHistory.length === 0) {
+                history.innerHTML = '';
+            }
+            
+            gameState.guessHistory.push({ action, success, time: Date.now() });
+            
+            let itemClass = 'guess-item animate-slide-in';
+            let iconSvg = '';
+            let statusText = '';
+            
+            if (isCorrect) {
+                itemClass += ' correct';
+                iconSvg = '<svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>';
+                statusText = '正确';
+            } else if (success) {
+                itemClass += ' success';
+                iconSvg = '<svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>';
+                statusText = '成功';
+            } else {
+                itemClass += ' error';
+                iconSvg = '<svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>';
+                statusText = '失败';
+            }
+            
+            const item = createEl('div', itemClass);
+            item.innerHTML = `
+                <div class="flex items-center justify-between">
+                    <span class="text-sm font-medium text-slate-700">${escapeHtml(action)}</span>
+                    <span class="flex items-center gap-1 text-xs font-bold ${isCorrect ? 'text-amber-600' : success ? 'text-green-600' : 'text-red-600'}">
+                        ${iconSvg}
+                        ${statusText}
+                    </span>
+                </div>
+            `;
+            
+            history.insertBefore(item, history.firstChild);
+            $('guess-count').textContent = gameState.guessCount;
+        }
+        
+        function updateScore() {
+            $('score').textContent = gameState.score;
+            $('combo').textContent = gameState.combo;
+            $('hints-left').textContent = gameState.hintsLeft;
+            
+            const comboEl = $('combo');
+            comboEl.classList.add('combo-active');
+            setTimeout(() => comboEl.classList.remove('combo-active'), 300);
+        }
+        
+        function updateProgress() {
+            const total = gameState.stations.length;
+            const solved = gameState.solvedStations.size;
+            const percent = total > 0 ? (solved / total * 100) : 0;
+            
+            $('progress-text').textContent = `${solved}/${total}`;
+            $('progress-bar').style.width = `${percent}%`;
+        }
+        
+        function startTimer() {
+            gameState.startTime = Date.now();
+            
+            timerInterval = setInterval(() => {
+                if (gameState.gameWon) return;
+                
+                gameState.elapsedTime = Math.floor((Date.now() - gameState.startTime) / 1000);
+                $('timer').textContent = MetroGameLogic.formatTime(gameState.elapsedTime);
+            }, 1000);
+        }
+        
+        function stopTimer() {
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+            }
+        }
+        
+        function gameWon() {
+            gameState.gameWon = true;
+            stopTimer();
+            playSound('victory');
+            
+            const result = MetroGameLogic.checkWinCondition(gameState, quizData.difficultyLevel);
+            
+            $('final-time').textContent = MetroGameLogic.formatTime(gameState.elapsedTime);
+            $('final-score').textContent = gameState.score;
+            $('final-guesses').textContent = gameState.guessCount;
+            $('final-hints').textContent = gameState.hintsUsed;
+            
+            if (quizData.hideTheme) {
+                $('quiz-title').textContent = quizData.name;
+            }
+            
+            $('victory-modal').classList.remove('hidden');
+        }
+        
+        async function saveScore() {
+            const playerName = $('player-name').value.trim() || '匿名玩家';
+            
+            try {
+                await FirebaseConfig.saveQuizScore(quizId, {
+                    playerName: playerName,
+                    score: gameState.score,
+                    time: gameState.elapsedTime,
+                    guesses: gameState.guessCount,
+                    hintsUsed: gameState.hintsUsed
+                });
+                
+                MetroCommon.showToast('成绩已保存！', 'success');
+                $('btn-save-score').disabled = true;
+                $('btn-save-score').textContent = '已保存';
+            } catch (e) {
+                console.error('Failed to save score:', e);
+                MetroCommon.showToast('保存失败，请重试', 'error');
+            }
+        }
+        
+        function updateLeaderboard(scores) {
+            leaderboardData = scores;
+            const list = $('leaderboard-list');
+            
+            if (scores.length === 0) {
+                list.innerHTML = '<p class="text-slate-500 text-sm text-center py-4">暂无记录，成为第一个上榜的人吧！</p>';
+                return;
+            }
+            
+            list.innerHTML = '';
+            const fragment = document.createDocumentFragment();
+            
+            scores.slice(0, 10).forEach((entry, index) => {
+                const item = createEl('div', 'leaderboard-item-clay flex items-center justify-between animate-fade-in-up');
+                item.style.animationDelay = `${index * 0.05}s`;
+                
+                let rankClass = 'normal';
+                let rankText = index + 1;
+                if (index === 0) { rankClass = 'gold'; rankText = '1'; }
+                else if (index === 1) { rankClass = 'silver'; rankText = '2'; }
+                else if (index === 2) { rankClass = 'bronze'; rankText = '3'; }
+                
+                item.innerHTML = `
+                    <div class="flex items-center gap-3">
+                        <span class="rank-badge ${rankClass}">${rankText}</span>
+                        <div>
+                            <p class="font-bold text-slate-800">${escapeHtml(entry.playerName)}</p>
+                            <p class="text-xs text-slate-500">${MetroCommon.formatTime(entry.time)} · ${entry.guesses}次猜测</p>
+                        </div>
+                    </div>
+                    <span class="font-bold text-green-600 text-lg font-display">${entry.score}</span>
+                `;
+                
+                fragment.appendChild(item);
+            });
+            
+            list.appendChild(fragment);
+        }
+        
+        function toggleLeaderboard() {
+            const section = $('leaderboard-section');
+            const gameArea = $('game-area');
+            
+            if (section.classList.contains('hidden')) {
+                gameArea.classList.add('hidden');
+                section.classList.remove('hidden');
+            } else {
+                section.classList.add('hidden');
+                gameArea.classList.remove('hidden');
+            }
+        }
+        
+        function resetGame() {
+            stopTimer();
+            
+            // 使用统一的 MetroGameLogic.initGameState 初始化游戏状态
+            const stations = quizData.questions.map((q, i) => ({
+                ...q,
+                index: i,
+                calculatedDifficulty: MetroGameLogic.calculateStationDifficulty({ station_en: q.station_en })
+            }));
+            gameState = MetroGameLogic.initGameState(stations, quizData.difficultyLevel);
+            
+            $('victory-modal').classList.add('hidden');
+            $('guess-history').innerHTML = '<p class="text-slate-400 text-sm text-center py-4">暂无记录</p>';
+            $('guess-count').textContent = '0';
+            $('player-name').value = '';
+            $('btn-save-score').disabled = false;
+            $('btn-save-score').textContent = '保存成绩';
+            
+            if (quizData.hideTheme) {
+                $('quiz-title').textContent = '神秘题组';
+            }
+            
+            renderStations();
+            renderKeyboard();
+            updateScore();
+            startTimer();
+        }
+        
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+        
+        function setupEventListeners() {
+            $('sound-toggle').addEventListener('click', toggleSound);
+            
+            $('btn-new-game').addEventListener('click', (e) => {
+                e.preventDefault();
+                if (confirm('确定要开始新游戏吗？当前进度将丢失。')) {
+                    resetGame();
+                }
+            });
+            
+            $('btn-hint').addEventListener('click', (e) => {
+                e.preventDefault();
+                useHint();
+            });
+            
+            $('btn-leaderboard').addEventListener('click', (e) => {
+                e.preventDefault();
+                toggleLeaderboard();
+            });
+            
+            $('btn-close-leaderboard').addEventListener('click', toggleLeaderboard);
+            
+            $('btn-submit').addEventListener('click', () => {
+                const input = $('guess-input');
+                handleGuess(input.value);
+                input.value = '';
+                input.focus();
+            });
+            
+            $('guess-input').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    $('btn-submit').click();
+                }
+            });
+            
+            $('btn-confirm-invite').addEventListener('click', loadWithInviteCode);
+            
+            $('invite-code-input').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    loadWithInviteCode();
+                }
+            });
+            
+            $('btn-save-score').addEventListener('click', saveScore);
+            $('btn-play-again').addEventListener('click', resetGame);
+            
+            // 点击模态框背景关闭
+            $('victory-modal').addEventListener('click', (e) => {
+                if (e.target === $('victory-modal')) {
+                    // 不自动关闭，让用户选择操作
+                }
+            });
+        }
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            initTheme();
+            initAudio();
+            setupEventListeners();
+            loadQuiz();
+        });
+    </script>
+</body>
+</html>

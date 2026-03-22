@@ -1,0 +1,1114 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>创建题组 - 地铁站名猜谜游戏</title>
+    <meta name="description" content="创建你的自定义地铁站名猜谜题组，分享给朋友一起挑战">
+    <meta name="theme-color" content="#4F46E5">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%234F46E5'/%3E%3Cpath d='M50 15c-16 0-28 3-28 17v35c0 8 6 14 14 14h3l-7 7h7l7-7h7l7 7h7l-7-7h3c8 0 14-6 14-14V32c0-14-12-17-28-17zM36 72c-4 0-7-3-7-7s3-7 7-7 7 3 7 7-3 7-7 7zm28 0c-4 0-7-3-7-7s3-7 7-7 7 3 7 7-3 7-7 7zm7-24H29V34c0-4 3-7 7-7h28c4 0 7 3 7 7v14z' fill='white'/%3E%3C/svg%3E">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@300;400;500;600;700&display=swap" media="print" onload="this.media='all'">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="../styles.css">
+    <script src="../common.js"></script>
+    <script src="../firebase-config.js"></script>
+    <script src="../station-utils.js"></script>
+    <script src="../encrypted_data.js"></script>
+    <style>
+        /* Claymorphism 表单风格 */
+        .form-card {
+            background: linear-gradient(145deg, rgba(255, 255, 255, 0.95) 0%, rgba(238, 242, 255, 0.9) 100%);
+            border: 3px solid rgba(129, 140, 248, 0.25);
+            border-radius: 20px;
+            box-shadow: 
+                0 4px 0 rgba(129, 140, 248, 0.15),
+                0 8px 24px rgba(79, 70, 229, 0.12),
+                inset 0 1px 0 rgba(255, 255, 255, 0.8);
+        }
+        
+        /* 与主页面一致的按钮样式 */
+        .mode-btn {
+            transition: background-color 0.25s ease-out, border-color 0.25s ease-out, box-shadow 0.25s ease-out;
+            background-color: rgba(255, 255, 255, 0.9);
+            border: 2px solid rgba(129, 140, 248, 0.3);
+            box-shadow: 0 2px 8px rgba(79, 70, 229, 0.08);
+        }
+        
+        .mode-btn:hover {
+            background-color: rgba(238, 242, 255, 0.95);
+            border-color: #818CF8;
+            box-shadow: 0 4px 16px rgba(79, 70, 229, 0.15);
+        }
+        
+        .mode-btn.active {
+            background: linear-gradient(135deg, #4F46E5 0%, #818CF8 100%);
+            color: white;
+            border-color: transparent;
+            box-shadow: 0 4px 16px rgba(79, 70, 229, 0.3), 0 0 20px rgba(129, 140, 248, 0.2);
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #4F46E5 0%, #818CF8 100%);
+            transition: transform 0.15s ease-out, box-shadow 0.15s ease-out;
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(79, 70, 229, 0.4), 0 0 30px rgba(129, 140, 248, 0.3);
+        }
+        
+        .btn-secondary {
+            background: linear-gradient(135deg, #F97316 0%, #FB923C 100%);
+            transition: transform 0.15s ease-out, box-shadow 0.15s ease-out;
+            box-shadow: 0 4px 12px rgba(249, 115, 22, 0.3);
+        }
+        
+        .btn-secondary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(249, 115, 22, 0.4), 0 0 30px rgba(251, 146, 60, 0.3);
+        }
+        
+        .clay-input {
+            background: linear-gradient(145deg, #ffffff 0%, #f8fafc 100%);
+            border: 3px solid rgba(129, 140, 248, 0.25);
+            border-radius: 12px;
+            box-shadow: 
+                0 2px 0 rgba(129, 140, 248, 0.15),
+                inset 0 1px 0 rgba(255, 255, 255, 0.8);
+            transition: all 0.2s ease;
+        }
+        
+        .clay-input:focus {
+            outline: none;
+            border-color: #4F46E5;
+            box-shadow: 
+                0 2px 0 rgba(79, 70, 229, 0.2),
+                0 0 0 4px rgba(79, 70, 229, 0.1);
+        }
+        
+        .clay-select {
+            background: linear-gradient(145deg, #ffffff 0%, #f8fafc 100%);
+            border: 3px solid rgba(129, 140, 248, 0.25);
+            border-radius: 12px;
+            box-shadow: 
+                0 2px 0 rgba(129, 140, 248, 0.15),
+                inset 0 1px 0 rgba(255, 255, 255, 0.8);
+            transition: all 0.2s ease;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%234F46E5' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            padding-right: 40px;
+        }
+        
+        .clay-select:focus {
+            outline: none;
+            border-color: #4F46E5;
+            box-shadow: 
+                0 2px 0 rgba(79, 70, 229, 0.2),
+                0 0 0 4px rgba(79, 70, 229, 0.1);
+        }
+        
+        .clay-checkbox {
+            width: 22px;
+            height: 22px;
+            border: 3px solid rgba(129, 140, 248, 0.3);
+            border-radius: 6px;
+            box-shadow: 0 2px 0 rgba(129, 140, 248, 0.15);
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+        
+        .clay-checkbox:checked {
+            background: linear-gradient(145deg, #4F46E5 0%, #6366F1 100%);
+            border-color: transparent;
+        }
+        
+        /* 题目卡片 - 紧凑行式布局 */
+        .question-card {
+            background: linear-gradient(145deg, rgba(255, 255, 255, 0.9) 0%, rgba(248, 250, 252, 0.8) 100%);
+            border: 2px solid rgba(129, 140, 248, 0.2);
+            border-radius: 12px;
+            padding: 10px 14px;
+            transition: all 0.2s ease;
+        }
+
+        .question-card:hover {
+            border-color: rgba(129, 140, 248, 0.4);
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.1);
+        }
+
+        .question-card.filled {
+            background: linear-gradient(145deg, rgba(220, 252, 231, 0.5) 0%, rgba(187, 247, 208, 0.3) 100%);
+            border-color: rgba(74, 222, 128, 0.3);
+        }
+
+        /* 紧凑题目行 */
+        .question-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .question-row .question-num {
+            width: 28px;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #4F46E5 0%, #6366F1 100%);
+            color: white;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        .question-row .input-compact {
+            flex: 1;
+            min-width: 120px;
+            padding: 8px 10px;
+            font-size: 0.875rem;
+        }
+
+        .question-row .city-select-compact {
+            width: 90px;
+            padding: 8px 10px;
+            font-size: 0.875rem;
+        }
+
+        .question-row .btn-random-compact {
+            padding: 6px 10px;
+            font-size: 0.75rem;
+            border-radius: 8px;
+            white-space: nowrap;
+        }
+
+        .question-row .difficulty-badge-compact {
+            font-size: 0.65rem;
+            padding: 2px 8px;
+            border-radius: 9999px;
+        }
+        
+        /* 难度标签 */
+        .difficulty-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 12px;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            border: 2px solid;
+        }
+        
+        .difficulty-badge.easy {
+            background: linear-gradient(145deg, #dcfce7 0%, #bbf7d0 100%);
+            border-color: #86efac;
+            color: #166534;
+            box-shadow: 0 2px 0 #86efac;
+        }
+        
+        .difficulty-badge.normal {
+            background: linear-gradient(145deg, #fef3c7 0%, #fde68a 100%);
+            border-color: #fcd34d;
+            color: #92400e;
+            box-shadow: 0 2px 0 #fcd34d;
+        }
+        
+        .difficulty-badge.hard {
+            background: linear-gradient(145deg, #fee2e2 0%, #fecaca 100%);
+            border-color: #fca5a5;
+            color: #991b1b;
+            box-shadow: 0 2px 0 #fca5a5;
+        }
+        
+        /* 主题切换 */
+        .theme-toggle-clay {
+            background: linear-gradient(145deg, #ffffff 0%, #f1f5f9 100%);
+            border: 3px solid rgba(129, 140, 248, 0.25);
+            border-radius: 14px;
+            box-shadow: 
+                0 3px 0 rgba(129, 140, 248, 0.15),
+                0 4px 12px rgba(79, 70, 229, 0.1);
+            transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        
+        .theme-toggle-clay:hover {
+            transform: translateY(-2px) rotate(15deg);
+        }
+        
+        /* 页面标题 */
+        .page-title {
+            font-family: 'Fredoka', sans-serif;
+            background: linear-gradient(135deg, #1E1B4B 0%, #4F46E5 50%, #6366F1 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        /* 分享框 */
+        .share-box {
+            background: linear-gradient(145deg, rgba(129, 140, 248, 0.1) 0%, rgba(199, 210, 254, 0.1) 100%);
+            border: 2px solid rgba(129, 140, 248, 0.2);
+            border-radius: 16px;
+            padding: 16px;
+        }
+        
+        /* 成功面板 */
+        .success-icon {
+            width: 80px;
+            height: 80px;
+            border-radius: 24px;
+            background: linear-gradient(145deg, #4ade80 0%, #22c55e 100%);
+            box-shadow: 
+                0 4px 0 #16a34a,
+                0 8px 24px rgba(34, 197, 94, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        /* 暗色模式 */
+        .dark .form-card {
+            background: linear-gradient(145deg, rgba(30, 41, 59, 0.95) 0%, rgba(51, 65, 85, 0.9) 100%);
+            border-color: rgba(71, 85, 105, 0.4);
+            box-shadow: 
+                0 4px 0 rgba(0, 0, 0, 0.3),
+                0 8px 24px rgba(0, 0, 0, 0.3);
+        }
+        
+        .dark .mode-btn {
+            background-color: rgba(30, 41, 59, 0.9);
+            border-color: rgba(71, 85, 105, 0.5);
+            color: #e2e8f0;
+        }
+        
+        .dark .mode-btn:hover {
+            background-color: rgba(51, 65, 85, 0.95);
+            border-color: rgba(96, 165, 250, 0.5);
+        }
+        
+        .dark .mode-btn.active {
+            background: linear-gradient(135deg, #4F46E5 0%, #6366F1 100%);
+            box-shadow: 0 4px 16px rgba(79, 70, 229, 0.4), 0 0 20px rgba(99, 102, 241, 0.2);
+        }
+        
+        .dark .clay-input,
+        .dark .clay-select {
+            background: linear-gradient(145deg, #334155 0%, #1e293b 100%);
+            border-color: rgba(71, 85, 105, 0.5);
+            color: #e2e8f0;
+        }
+        
+        .dark .question-card {
+            background: linear-gradient(145deg, rgba(51, 65, 85, 0.9) 0%, rgba(30, 41, 59, 0.8) 100%);
+            border-color: rgba(71, 85, 105, 0.4);
+        }
+
+        .dark .question-card.filled {
+            background: linear-gradient(145deg, rgba(20, 83, 45, 0.5) 0%, rgba(22, 101, 52, 0.3) 100%);
+            border-color: rgba(74, 222, 128, 0.3);
+        }
+
+        .dark .question-row .question-num {
+            background: linear-gradient(135deg, #6366F1 0%, #818CF8 100%);
+        }
+        
+        .dark .share-box {
+            background: linear-gradient(145deg, rgba(51, 65, 85, 0.5) 0%, rgba(30, 41, 59, 0.3) 100%);
+            border-color: rgba(71, 85, 105, 0.4);
+        }
+        
+        .dark .page-title {
+            background: linear-gradient(135deg, #f1f5f9 0%, #a5b4fc 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+        }
+        
+        /* 动画 */
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .animate-fade-in-up {
+            animation: fadeInUp 0.5s ease-out forwards;
+        }
+        
+        .stagger-1 { animation-delay: 0.05s; }
+        .stagger-2 { animation-delay: 0.1s; }
+        .stagger-3 { animation-delay: 0.15s; }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-indigo-50 via-purple-50 to-blue-100 min-h-screen text-slate-800 transition-colors duration-300">
+    <div id="toast-container" class="fixed top-4 right-4 z-50 space-y-2" role="alert" aria-live="polite"></div>
+    
+    <main class="container mx-auto px-4 py-6 max-w-4xl">
+        <!-- 页面标题 -->
+        <header class="text-center mb-6 animate-fade-in-up">
+            <div class="flex justify-center items-center gap-4 mb-3">
+                <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg">
+                    <svg class="w-7 h-7 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                    </svg>
+                </div>
+                <h1 class="text-3xl md:text-4xl font-bold page-title">
+                    创建题组
+                </h1>
+                <button id="btn-theme" class="theme-toggle-clay p-2.5 cursor-pointer" title="切换主题" aria-label="切换主题">
+                    <svg id="theme-moon-icon" class="w-5 h-5 text-slate-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg id="theme-sun-icon" class="w-5 h-5 text-amber-500 hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+            </div>
+            <p class="text-slate-600 text-sm md:text-base">
+                创建你的自定义题组，分享给朋友一起挑战
+            </p>
+        </header>
+        
+        <!-- 导航按钮 -->
+        <nav class="flex justify-center gap-3 mb-6 flex-wrap animate-fade-in-up stagger-1">
+            <a href="../index.html" class="mode-btn px-5 py-2.5 rounded-lg font-medium text-sm text-slate-700 cursor-pointer inline-flex items-center gap-2 no-underline">
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"></path>
+                </svg>
+                返回主页
+            </a>
+            <a href="list.html" class="mode-btn px-5 py-2.5 rounded-lg font-medium text-sm text-slate-700 cursor-pointer inline-flex items-center gap-2 no-underline">
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="8" y1="6" x2="21" y2="6"></line>
+                    <line x1="8" y1="12" x2="21" y2="12"></line>
+                    <line x1="8" y1="18" x2="21" y2="18"></line>
+                </svg>
+                题组列表
+            </a>
+            <button class="mode-btn active px-5 py-2.5 rounded-lg font-medium text-sm cursor-pointer inline-flex items-center gap-2">
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+                创建题组
+            </button>
+        </nav>
+        
+        <!-- 创建表单 -->
+        <form id="quiz-form" class="form-card p-5 md:p-6 animate-fade-in-up stagger-2">
+            <!-- 基本信息 -->
+            <section class="mb-6">
+                <h2 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
+                    <div class="w-8 h-8 rounded-xl bg-indigo-100 flex items-center justify-center">
+                        <svg class="w-4 h-4 text-indigo-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                        </svg>
+                    </div>
+                    基本信息
+                </h2>
+                
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-2">题组名称/主题</label>
+                        <input type="text" id="quiz-name" class="clay-input w-full px-4 py-3" placeholder="例如：北京地铁换乘站挑战" maxlength="50" required>
+                        <div class="flex items-center gap-2 mt-2">
+                            <input type="checkbox" id="hide-theme" class="clay-checkbox">
+                            <label for="hide-theme" class="text-sm text-slate-600 cursor-pointer">隐藏主题（游玩结束前不显示主题名称）</label>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-2">创建者名称</label>
+                        <input type="text" id="creator-name" class="clay-input w-full px-4 py-3" placeholder="你的昵称" maxlength="20">
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-700 mb-2">访问权限</label>
+                            <select id="access-type" class="clay-select w-full px-4 py-3 cursor-pointer">
+                                <option value="public">公开（显示在题组列表）</option>
+                                <option value="private">私有（仅通过链接访问）</option>
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-700 mb-2">题目范围</label>
+                            <select id="city-scope" class="clay-select w-full px-4 py-3 cursor-pointer">
+                                <option value="all">全国</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <div class="flex items-center gap-2 mb-2">
+                            <input type="checkbox" id="enable-invite-code" class="clay-checkbox">
+                            <label for="enable-invite-code" class="text-sm font-semibold text-slate-700 cursor-pointer">设置邀请码保护</label>
+                        </div>
+                        <input type="text" id="invite-code" class="clay-input w-full px-4 py-3 hidden" placeholder="输入邀请码（最多10位）" maxlength="10" style="text-transform: uppercase;">
+                    </div>
+                </div>
+            </section>
+            
+            <!-- 题目设置 -->
+            <section class="mb-6">
+                <h2 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
+                    <div class="w-8 h-8 rounded-xl bg-indigo-100 flex items-center justify-center">
+                        <svg class="w-4 h-4 text-indigo-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                        </svg>
+                    </div>
+                    题目设置
+                </h2>
+                
+                <div class="mb-4">
+                    <label class="block text-sm font-semibold text-slate-700 mb-2">题目数量</label>
+                    <div class="flex items-center gap-3">
+                        <input type="number" id="question-count" class="clay-input w-28 px-4 py-3 text-center" min="1" max="20" value="10">
+                        <span class="text-sm text-slate-500">题（1-20题）</span>
+                    </div>
+                </div>
+                
+                <div id="questions-container" class="space-y-3">
+                </div>
+                
+                <div class="mt-4 p-4 bg-indigo-50/50 rounded-xl border-2 border-indigo-100">
+                    <div class="flex items-center justify-between flex-wrap gap-3">
+                        <div class="flex items-center gap-3">
+                            <span class="text-sm font-medium text-slate-700">综合难度：</span>
+                            <span id="total-difficulty-value" class="text-xl font-bold text-indigo-600 font-display">-</span>
+                            <span id="total-difficulty-label" class="difficulty-badge normal">-</span>
+                        </div>
+                        <button type="button" id="btn-auto-fill" class="btn-secondary rounded-lg px-4 py-2 text-sm font-medium cursor-pointer inline-flex items-center gap-2 text-white">
+                            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"></path>
+                            </svg>
+                            自动填充题目
+                        </button>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- 管理凭证 -->
+            <section class="mb-6">
+                <h2 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
+                    <div class="w-8 h-8 rounded-xl bg-indigo-100 flex items-center justify-center">
+                        <svg class="w-4 h-4 text-indigo-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                            <path d="M7 11V7a5 5 0 0110 0v4"></path>
+                        </svg>
+                    </div>
+                    管理凭证
+                </h2>
+                <p class="text-sm text-slate-500 mb-3">设置管理凭证后，可以编辑和管理你创建的题组</p>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-2">管理用户名</label>
+                        <input type="text" id="manager-username" class="clay-input w-full px-4 py-3" placeholder="设置管理用户名" maxlength="20" required>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-2">管理密码</label>
+                        <input type="password" id="manager-password" class="clay-input w-full px-4 py-3" placeholder="设置管理密码" maxlength="30" required>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- 提交按钮 -->
+            <div class="flex flex-col sm:flex-row gap-3 justify-center">
+                <button type="button" id="btn-save-draft" class="mode-btn rounded-lg px-6 py-3 text-slate-700 font-medium cursor-pointer inline-flex items-center justify-center gap-2">
+                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"></path>
+                        <polyline points="17 21 17 13 7 13 7 21"></polyline>
+                        <polyline points="7 3 7 8 15 8"></polyline>
+                    </svg>
+                    保存草稿
+                </button>
+                <button type="submit" id="btn-submit" class="btn-primary rounded-lg px-8 py-3 font-medium cursor-pointer inline-flex items-center justify-center gap-2 text-white">
+                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                    创建题组
+                </button>
+            </div>
+        </form>
+        
+        <!-- 成功面板 -->
+        <div id="success-panel" class="form-card p-6 md:p-8 hidden">
+            <div class="text-center mb-6">
+                <div class="success-icon mx-auto mb-4">
+                    <svg class="w-10 h-10 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                </div>
+                <h2 class="text-2xl font-bold text-slate-900 mb-2">题组创建成功！</h2>
+                <p class="text-slate-600">分享给你的朋友一起来挑战吧</p>
+            </div>
+            
+            <div class="share-box mb-5">
+                <label class="text-sm font-semibold text-slate-700 mb-2 block">分享链接</label>
+                <div class="flex gap-2">
+                    <input type="text" id="share-link" class="clay-input flex-1 px-4 py-2.5 text-sm" readonly>
+                    <button type="button" id="btn-copy-link" class="btn-primary rounded-lg px-4 py-2.5 text-sm font-medium cursor-pointer whitespace-nowrap text-white">
+                        复制
+                    </button>
+                </div>
+
+                <label class="text-sm font-semibold text-slate-700 mb-2 mt-4 block">分享文本</label>
+                <textarea id="share-text" class="clay-input w-full px-4 py-3 text-sm min-h-[100px] resize-y" readonly></textarea>
+                <button type="button" id="btn-copy-text" class="btn-secondary rounded-lg w-full mt-2 px-4 py-2.5 text-sm font-medium cursor-pointer text-white">
+                    复制分享文本
+                </button>
+            </div>
+
+            <div class="flex justify-center gap-3">
+                <a href="list.html" class="mode-btn rounded-lg px-6 py-2.5 text-slate-700 font-medium cursor-pointer inline-flex items-center justify-center gap-2 no-underline">
+                    返回列表
+                </a>
+                <button type="button" id="btn-play-now" class="btn-primary rounded-lg px-6 py-2.5 font-medium cursor-pointer inline-flex items-center justify-center gap-2 text-white">
+                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                    </svg>
+                    立即游玩
+                </button>
+            </div>
+        </div>
+        
+        <!-- 页脚 -->
+        <footer class="text-center mt-8 text-sm text-slate-500">
+            <p>制作者：<a href="https://space.bilibili.com/1944366810" target="_blank" rel="noopener noreferrer" class="text-indigo-600 hover:text-indigo-700 font-medium transition-colors">bilibili@lvshu</a></p>
+        </footer>
+    </main>
+
+    <script>
+        const $ = id => document.getElementById(id);
+        const $all = sel => document.querySelectorAll(sel);
+        
+        let stationDatabase = [];
+        let currentQuestions = [];
+        let createdQuizId = null;
+        
+        const CITIES = [
+            '北京', '上海', '广州', '深圳', '成都', '杭州', '南京', '武汉', 
+            '西安', '重庆', '天津', '苏州', '郑州', '长沙', '沈阳', '青岛',
+            '大连', '宁波', '厦门', '无锡', '福州', '合肥', '昆明', '哈尔滨',
+            '济南', '佛山', '长春', '石家庄', '南宁', '贵阳', '兰州', '太原'
+        ];
+        
+        function initCityScope() {
+            const select = $('city-scope');
+            CITIES.forEach(city => {
+                const option = document.createElement('option');
+                option.value = city;
+                option.textContent = city;
+                select.appendChild(option);
+            });
+        }
+        
+        function initTheme() {
+            MetroCommon.initDarkMode();
+            updateThemeIcon();
+            
+            $('btn-theme').addEventListener('click', () => {
+                MetroCommon.toggleDarkMode();
+                updateThemeIcon();
+            });
+        }
+        
+        function updateThemeIcon() {
+            const isDark = MetroCommon.isDarkMode();
+            $('theme-moon-icon').classList.toggle('hidden', isDark);
+            $('theme-sun-icon').classList.toggle('hidden', !isDark);
+        }
+        
+        function loadStationData() {
+            try {
+                const decrypted = StationUtils.decryptData(ENCRYPTED_DATA, DECRYPT_KEY);
+                const parsed = parseCSV(decrypted);
+                if (parsed.length > 0) {
+                    stationDatabase = parsed;
+                    console.log(`Loaded ${parsed.length} stations`);
+                }
+            } catch (e) {
+                console.log('Failed to decrypt data:', e);
+            }
+        }
+        
+        function parseCSV(data) {
+            const lines = data.trim().split('\n');
+            const result = [];
+            
+            for (let i = 1; i < lines.length; i++) {
+                const line = lines[i].trim();
+                if (!line) continue;
+                
+                const values = [];
+                let current = '';
+                let inQuotes = false;
+                
+                for (const char of line) {
+                    if (char === '"') {
+                        inQuotes = !inQuotes;
+                    } else if (char === ',' && !inQuotes) {
+                        values.push(current.trim());
+                        current = '';
+                    } else {
+                        current += char;
+                    }
+                }
+                values.push(current.trim());
+                
+                if (values.length >= 4) {
+                    result.push({
+                        city_cn: values[0],
+                        city_en: values[1],
+                        station_cn: values[2],
+                        station_en: values[3]
+                    });
+                }
+            }
+            return result;
+        }
+        
+        function renderQuestionItems(count) {
+            const container = $('questions-container');
+            container.innerHTML = '';
+
+            const cityScope = $('city-scope').value;
+            const isCityLocked = cityScope !== 'all';
+
+            for (let i = 0; i < count; i++) {
+                const question = currentQuestions[i] || { station_cn: '', station_en: '', city_cn: '' };
+                const isFilled = question.station_cn && question.station_en;
+                const displayCity = isCityLocked ? cityScope : (question.city_cn || '');
+
+                let difficultyHtml = '';
+                if (question.station_en) {
+                    const difficulty = MetroCommon.calculateStationDifficulty({ station_en: question.station_en });
+                    const label = MetroCommon.getDifficultyLabel(difficulty);
+                    difficultyHtml = `<span class="question-difficulty difficulty-badge difficulty-badge-compact ${difficulty}">${label}</span>`;
+                } else {
+                    difficultyHtml = '<span class="question-difficulty"></span>';
+                }
+
+                const item = document.createElement('div');
+                item.className = `question-card ${isFilled ? 'filled' : ''} animate-fade-in-up`;
+                item.style.animationDelay = `${i * 0.02}s`;
+                item.innerHTML = `
+                    <div class="question-row">
+                        <span class="question-num">${i + 1}</span>
+                        <input type="text" class="clay-input input-compact station-cn" placeholder="中文站名"
+                            value="${escapeHtml(question.station_cn)}" data-index="${i}" required>
+                        <input type="text" class="clay-input input-compact station-en" placeholder="英文站名"
+                            value="${escapeHtml(question.station_en)}" data-index="${i}" required>
+                        <select class="clay-select city-select-compact city-select cursor-pointer ${isCityLocked ? 'hidden' : ''}" data-index="${i}">
+                            ${CITIES.map(c => `<option value="${c}" ${question.city_cn === c ? 'selected' : ''}>${c}</option>`).join('')}
+                        </select>
+                        ${isCityLocked ? `<span class="text-xs text-slate-500 bg-slate-100 px-2 py-1 rounded city-label">${displayCity}</span>` : ''}
+                        <button type="button" class="btn-random-compact mode-btn text-indigo-600 cursor-pointer btn-random" data-index="${i}">
+                            <svg class="w-3 h-3 inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"></path>
+                            </svg>
+                        </button>
+                        ${difficultyHtml}
+                    </div>
+                `;
+
+                container.appendChild(item);
+            }
+
+            setupQuestionListeners();
+            updateTotalDifficulty();
+        }
+        
+        function setupQuestionListeners() {
+            $all('.station-cn').forEach(input => {
+                input.addEventListener('input', (e) => {
+                    const index = parseInt(e.target.dataset.index);
+                    currentQuestions[index] = currentQuestions[index] || {};
+                    currentQuestions[index].station_cn = e.target.value;
+                    updateQuestionCardState(index);
+                    updateQuestionDifficulty(index);
+                    saveDraft();
+                });
+            });
+            
+            $all('.station-en').forEach(input => {
+                input.addEventListener('input', (e) => {
+                    const index = parseInt(e.target.dataset.index);
+                    currentQuestions[index] = currentQuestions[index] || {};
+                    currentQuestions[index].station_en = e.target.value;
+                    updateQuestionCardState(index);
+                    updateQuestionDifficulty(index);
+                    saveDraft();
+                });
+            });
+            
+            $all('.city-select').forEach(select => {
+                select.addEventListener('change', (e) => {
+                    const index = parseInt(e.target.dataset.index);
+                    currentQuestions[index] = currentQuestions[index] || {};
+                    currentQuestions[index].city_cn = e.target.value;
+                    saveDraft();
+                });
+            });
+            
+            $all('.btn-random').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const index = parseInt(e.currentTarget.dataset.index);
+                    fillRandomStation(index);
+                });
+            });
+        }
+        
+        function updateQuestionCardState(index) {
+            const question = currentQuestions[index];
+            const isFilled = question && question.station_cn && question.station_en;
+            const cards = document.querySelectorAll('.question-card');
+            if (cards[index]) {
+                cards[index].classList.toggle('filled', isFilled);
+            }
+        }
+        
+        function fillRandomStation(index) {
+            const cityScope = $('city-scope').value;
+            let pool = stationDatabase;
+            
+            if (cityScope !== 'all') {
+                pool = stationDatabase.filter(s => s.city_cn === cityScope);
+            }
+            
+            if (pool.length === 0) {
+                MetroCommon.showToast('没有可用的站点数据', 'error');
+                return;
+            }
+            
+            const usedStations = currentQuestions.filter((q, i) => i !== index && q.station_en).map(q => q.station_en);
+            const available = pool.filter(s => !usedStations.includes(s.station_en));
+            
+            if (available.length === 0) {
+                MetroCommon.showToast('已用完所有可用站点', 'error');
+                return;
+            }
+            
+            const station = available[Math.floor(Math.random() * available.length)];
+            
+            currentQuestions[index] = {
+                station_cn: station.station_cn,
+                station_en: station.station_en,
+                city_cn: station.city_cn
+            };
+            
+            const cnInput = document.querySelector(`.station-cn[data-index="${index}"]`);
+            const enInput = document.querySelector(`.station-en[data-index="${index}"]`);
+            const citySelect = document.querySelector(`.city-select[data-index="${index}"]`);
+            
+            if (cnInput) cnInput.value = station.station_cn;
+            if (enInput) enInput.value = station.station_en;
+            if (citySelect) citySelect.value = station.city_cn;
+            
+            updateQuestionCardState(index);
+            updateQuestionDifficulty(index);
+            saveDraft();
+            
+            MetroCommon.showToast(`已随机选择: ${station.station_cn}`, 'success');
+        }
+        
+        function autoFillQuestions() {
+            const count = parseInt($('question-count').value) || 10;
+            const cityScope = $('city-scope').value;
+            
+            let pool = stationDatabase;
+            if (cityScope !== 'all') {
+                pool = stationDatabase.filter(s => s.city_cn === cityScope);
+            }
+            
+            if (pool.length < count) {
+                MetroCommon.showToast(`可用站点不足，需要${count}个，仅剩${pool.length}个`, 'error');
+                return;
+            }
+            
+            const shuffled = [...pool].sort(() => Math.random() - 0.5);
+            
+            currentQuestions = shuffled.slice(0, count).map(s => ({
+                station_cn: s.station_cn,
+                station_en: s.station_en,
+                city_cn: s.city_cn
+            }));
+            
+            renderQuestionItems(count);
+            saveDraft();
+            
+            MetroCommon.showToast(`已自动填充${count}道题目`, 'success');
+        }
+        
+        function updateQuestionDifficulty(index) {
+            const question = currentQuestions[index];
+            if (!question || !question.station_en) return;
+
+            const difficulty = MetroCommon.calculateStationDifficulty({ station_en: question.station_en });
+            const label = MetroCommon.getDifficultyLabel(difficulty);
+
+            const cards = document.querySelectorAll('.question-card');
+            if (cards[index]) {
+                const diffSpan = cards[index].querySelector('.question-difficulty');
+                if (diffSpan) {
+                    diffSpan.className = `question-difficulty difficulty-badge difficulty-badge-compact ${difficulty}`;
+                    diffSpan.textContent = label;
+                }
+            }
+
+            updateTotalDifficulty();
+        }
+        
+        function updateTotalDifficulty() {
+            const validQuestions = currentQuestions.filter(q => q && q.station_en);
+            if (validQuestions.length === 0) {
+                $('total-difficulty-value').textContent = '-';
+                $('total-difficulty-label').textContent = '-';
+                $('total-difficulty-label').className = 'difficulty-badge normal';
+                return;
+            }
+            
+            const result = MetroCommon.calculateQuizDifficulty(validQuestions);
+            $('total-difficulty-value').textContent = result.score;
+            $('total-difficulty-label').textContent = MetroCommon.getDifficultyLabel(result.level);
+            $('total-difficulty-label').className = `difficulty-badge ${result.level}`;
+        }
+        
+        function saveDraft() {
+            const formData = getFormData();
+            MetroCommon.saveToLocalStorage('quiz_draft', formData);
+        }
+        
+        function loadDraft() {
+            const draft = MetroCommon.loadFromLocalStorage('quiz_draft');
+            if (!draft) return;
+            
+            $('quiz-name').value = draft.name || '';
+            $('hide-theme').checked = draft.hideTheme || false;
+            $('creator-name').value = draft.creatorName || '';
+            $('access-type').value = draft.isPublic ? 'public' : 'private';
+            $('city-scope').value = draft.cityScope || 'all';
+            $('enable-invite-code').checked = !!draft.inviteCode;
+            $('invite-code').value = draft.inviteCode || '';
+            $('question-count').value = draft.questionCount || 10;
+            $('manager-username').value = draft.managerUsername || '';
+            $('manager-password').value = draft.managerPassword || '';
+            
+            if (draft.inviteCode) {
+                $('invite-code').classList.remove('hidden');
+            }
+            
+            currentQuestions = draft.questions || [];
+            renderQuestionItems(draft.questionCount || 10);
+        }
+        
+        function getFormData() {
+            const questions = [];
+            const count = parseInt($('question-count').value) || 10;
+            
+            for (let i = 0; i < count; i++) {
+                const cnInput = document.querySelector(`.station-cn[data-index="${i}"]`);
+                const enInput = document.querySelector(`.station-en[data-index="${i}"]`);
+                const citySelect = document.querySelector(`.city-select[data-index="${i}"]`);
+                
+                if (cnInput && enInput && cnInput.value && enInput.value) {
+                    questions.push({
+                        station_cn: cnInput.value.trim(),
+                        station_en: enInput.value.trim(),
+                        city_cn: citySelect ? citySelect.value : $('city-scope').value
+                    });
+                }
+            }
+            
+            return {
+                name: $('quiz-name').value.trim(),
+                hideTheme: $('hide-theme').checked,
+                creatorName: $('creator-name').value.trim(),
+                isPublic: $('access-type').value === 'public',
+                cityScope: $('city-scope').value,
+                inviteCode: $('enable-invite-code').checked ? $('invite-code').value.trim().toUpperCase() : '',
+                questionCount: count,
+                questions: questions,
+                managerUsername: $('manager-username').value.trim(),
+                managerPassword: $('manager-password').value
+            };
+        }
+        
+        function validateForm() {
+            const data = getFormData();
+            
+            if (!data.name) {
+                MetroCommon.showToast('请输入题组名称', 'error');
+                $('quiz-name').focus();
+                return false;
+            }
+            
+            if (data.questions.length < 1) {
+                MetroCommon.showToast('请至少添加一道题目', 'error');
+                return false;
+            }
+            
+            if (!data.managerUsername) {
+                MetroCommon.showToast('请设置管理用户名', 'error');
+                $('manager-username').focus();
+                return false;
+            }
+            
+            if (!data.managerPassword) {
+                MetroCommon.showToast('请设置管理密码', 'error');
+                $('manager-password').focus();
+                return false;
+            }
+            
+            return true;
+        }
+        
+        async function submitQuiz() {
+            if (!validateForm()) return;
+            
+            const data = getFormData();
+            const difficultyResult = MetroCommon.calculateQuizDifficulty(data.questions);
+            
+            const quizData = {
+                name: data.name,
+                hideTheme: data.hideTheme,
+                creatorName: data.creatorName || '匿名用户',
+                isPublic: data.isPublic,
+                cityScope: data.cityScope,
+                inviteCode: data.inviteCode,
+                questions: data.questions,
+                questionCount: data.questions.length,
+                difficultyLevel: difficultyResult.level,
+                difficultyScore: difficultyResult.score,
+                managerUsername: data.managerUsername,
+                managerPassword: data.managerPassword
+            };
+            
+            try {
+                $('btn-submit').disabled = true;
+                $('btn-submit').innerHTML = `
+                    <svg class="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    创建中...
+                `;
+                
+                await FirebaseConfig.init();
+                const quiz = await FirebaseConfig.createQuiz(quizData);
+                createdQuizId = quiz.id;
+                
+                MetroCommon.removeFromLocalStorage('quiz_draft');
+                
+                showSuccessPanel(quiz);
+                MetroCommon.showToast('题组创建成功！', 'success');
+            } catch (e) {
+                console.error('Failed to create quiz:', e);
+                MetroCommon.showToast('创建失败: ' + e.message, 'error');
+                $('btn-submit').disabled = false;
+                $('btn-submit').innerHTML = `
+                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                    创建题组
+                `;
+            }
+        }
+        
+        function showSuccessPanel(quiz) {
+            $('quiz-form').classList.add('hidden');
+            $('success-panel').classList.remove('hidden');
+            
+            const baseUrl = window.location.origin + window.location.pathname.replace('/quiz/create.html', '');
+            const shareLink = `${baseUrl}/quiz/play.html?id=${quiz.id}`;
+            
+            $('share-link').value = shareLink;
+            $('share-text').value = MetroCommon.generateShareText(quiz);
+            
+            $('btn-play-now').onclick = () => {
+                window.location.href = `play.html?id=${quiz.id}`;
+            };
+        }
+        
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+        
+        function setupEventListeners() {
+            $('question-count').addEventListener('change', (e) => {
+                const count = Math.min(20, Math.max(1, parseInt(e.target.value) || 10));
+                e.target.value = count;
+                currentQuestions = currentQuestions.slice(0, count);
+                renderQuestionItems(count);
+                saveDraft();
+            });
+            
+            $('city-scope').addEventListener('change', (e) => {
+                const count = parseInt($('question-count').value) || 10;
+                renderQuestionItems(count);
+                saveDraft();
+            });
+            
+            $('enable-invite-code').addEventListener('change', (e) => {
+                $('invite-code').classList.toggle('hidden', !e.target.checked);
+                if (!e.target.checked) {
+                    $('invite-code').value = '';
+                }
+                saveDraft();
+            });
+            
+            $('btn-save-draft').addEventListener('click', () => {
+                saveDraft();
+                MetroCommon.showToast('草稿已保存', 'success');
+            });
+            
+            $('quiz-form').addEventListener('submit', (e) => {
+                e.preventDefault();
+                submitQuiz();
+            });
+            
+            $('btn-copy-link').addEventListener('click', () => {
+                MetroCommon.copyToClipboard($('share-link').value);
+                MetroCommon.showToast('链接已复制', 'success');
+            });
+            
+            $('btn-copy-text').addEventListener('click', () => {
+                MetroCommon.copyToClipboard($('share-text').value);
+                MetroCommon.showToast('分享文本已复制', 'success');
+            });
+            
+            $('btn-auto-fill').addEventListener('click', autoFillQuestions);
+        }
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            initTheme();
+            initCityScope();
+            loadStationData();
+            setupEventListeners();
+            loadDraft();
+            
+            if (currentQuestions.length === 0) {
+                renderQuestionItems(parseInt($('question-count').value) || 10);
+            }
+        });
+    </script>
+</body>
+</html>

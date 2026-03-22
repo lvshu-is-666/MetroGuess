@@ -1,0 +1,849 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>管理题组 - 地铁站名猜谜游戏</title>
+    <meta name="description" content="管理你创建的地铁站名猜谜题组">
+    <meta name="theme-color" content="#4F46E5">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%234F46E5'/%3E%3Cpath d='M50 15c-16 0-28 3-28 17v35c0 8 6 14 14 14h3l-7 7h7l7-7h7l7 7h7l-7-7h3c8 0 14-6 14-14V32c0-14-12-17-28-17zM36 72c-4 0-7-3-7-7s3-7 7-7 7 3 7 7-3 7-7 7zm28 0c-4 0-7-3-7-7s3-7 7-7 7 3 7 7-3 7-7 7zm7-24H29V34c0-4 3-7 7-7h28c4 0 7 3 7 7v14z' fill='white'/%3E%3C/svg%3E">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@300;400;500;600;700&display=swap" media="print" onload="this.media='all'">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="../styles.css">
+    <script src="../common.js"></script>
+    <script src="../firebase-config.js"></script>
+    <script src="../station-utils.js"></script>
+    <script src="../encrypted_data.js"></script>
+    <style>
+        /* Claymorphism 管理面板风格 */
+        .manage-card {
+            background: linear-gradient(145deg, rgba(255, 255, 255, 0.95) 0%, rgba(238, 242, 255, 0.9) 100%);
+            border: 3px solid rgba(129, 140, 248, 0.25);
+            border-radius: 20px;
+            box-shadow: 
+                0 4px 0 rgba(129, 140, 248, 0.15),
+                0 8px 24px rgba(79, 70, 229, 0.12),
+                inset 0 1px 0 rgba(255, 255, 255, 0.8);
+        }
+        
+        /* 与主页面一致的按钮样式 */
+        .mode-btn {
+            transition: background-color 0.25s ease-out, border-color 0.25s ease-out, box-shadow 0.25s ease-out;
+            background-color: rgba(255, 255, 255, 0.9);
+            border: 2px solid rgba(129, 140, 248, 0.3);
+            box-shadow: 0 2px 8px rgba(79, 70, 229, 0.08);
+        }
+        
+        .mode-btn:hover {
+            background-color: rgba(238, 242, 255, 0.95);
+            border-color: #818CF8;
+            box-shadow: 0 4px 16px rgba(79, 70, 229, 0.15);
+        }
+        
+        .mode-btn.active {
+            background: linear-gradient(135deg, #4F46E5 0%, #818CF8 100%);
+            color: white;
+            border-color: transparent;
+            box-shadow: 0 4px 16px rgba(79, 70, 229, 0.3), 0 0 20px rgba(129, 140, 248, 0.2);
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #4F46E5 0%, #818CF8 100%);
+            transition: transform 0.15s ease-out, box-shadow 0.15s ease-out;
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(79, 70, 229, 0.4), 0 0 30px rgba(129, 140, 248, 0.3);
+        }
+        
+        .btn-danger {
+            background: linear-gradient(135deg, #ef4444 0%, #f87171 100%);
+            transition: transform 0.15s ease-out, box-shadow 0.15s ease-out;
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+        }
+        
+        .btn-danger:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(239, 68, 68, 0.4), 0 0 30px rgba(248, 113, 113, 0.3);
+        }
+        
+        .clay-input {
+            background: linear-gradient(145deg, #ffffff 0%, #f8fafc 100%);
+            border: 3px solid rgba(129, 140, 248, 0.25);
+            border-radius: 12px;
+            box-shadow: 
+                0 2px 0 rgba(129, 140, 248, 0.15),
+                inset 0 1px 0 rgba(255, 255, 255, 0.8);
+            transition: all 0.2s ease;
+        }
+        
+        .clay-input:focus {
+            outline: none;
+            border-color: #4F46E5;
+            box-shadow: 
+                0 2px 0 rgba(79, 70, 229, 0.2),
+                0 0 0 4px rgba(79, 70, 229, 0.1);
+        }
+        
+        /* 统计卡片 */
+        .stat-card {
+            background: linear-gradient(145deg, rgba(255, 255, 255, 0.9) 0%, rgba(248, 250, 252, 0.8) 100%);
+            border: 2px solid rgba(129, 140, 248, 0.2);
+            border-radius: 16px;
+            padding: 16px;
+            text-align: center;
+            transition: all 0.2s ease;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-2px);
+            border-color: rgba(129, 140, 248, 0.4);
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.1);
+        }
+        
+        .stat-value {
+            font-family: 'Fredoka', sans-serif;
+            font-size: 1.75rem;
+            font-weight: 700;
+            line-height: 1;
+        }
+        
+        .stat-label {
+            font-size: 0.75rem;
+            color: #64748b;
+            margin-top: 6px;
+            font-weight: 500;
+        }
+        
+        /* 题目列表项 */
+        .question-item {
+            background: linear-gradient(145deg, rgba(255, 255, 255, 0.9) 0%, rgba(248, 250, 252, 0.8) 100%);
+            border: 2px solid rgba(129, 140, 248, 0.15);
+            border-radius: 12px;
+            padding: 12px 16px;
+            transition: all 0.2s ease;
+        }
+        
+        .question-item:hover {
+            border-color: rgba(129, 140, 248, 0.3);
+            box-shadow: 0 2px 8px rgba(79, 70, 229, 0.08);
+        }
+        
+        /* 排行榜项 */
+        .leaderboard-item {
+            background: linear-gradient(145deg, rgba(255, 255, 255, 0.9) 0%, rgba(248, 250, 252, 0.8) 100%);
+            border: 2px solid rgba(129, 140, 248, 0.15);
+            border-radius: 12px;
+            padding: 12px 16px;
+            transition: all 0.2s ease;
+        }
+        
+        .leaderboard-item:hover {
+            transform: translateX(4px);
+            border-color: rgba(129, 140, 248, 0.3);
+        }
+        
+        .rank-badge {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.875rem;
+        }
+        
+        .rank-badge.gold {
+            background: linear-gradient(145deg, #fbbf24 0%, #f59e0b 100%);
+            color: white;
+            box-shadow: 0 2px 0 #d97706;
+        }
+        
+        .rank-badge.silver {
+            background: linear-gradient(145deg, #e5e7eb 0%, #9ca3af 100%);
+            color: white;
+            box-shadow: 0 2px 0 #6b7280;
+        }
+        
+        .rank-badge.bronze {
+            background: linear-gradient(145deg, #fdba74 0%, #f97316 100%);
+            color: white;
+            box-shadow: 0 2px 0 #c2410c;
+        }
+        
+        .rank-badge.normal {
+            background: linear-gradient(145deg, #f1f5f9 0%, #e2e8f0 100%);
+            color: #64748b;
+            box-shadow: 0 2px 0 #cbd5e1;
+        }
+        
+        /* 难度标签 */
+        .difficulty-tag {
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 12px;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            border: 2px solid;
+        }
+        
+        .difficulty-tag.easy {
+            background: linear-gradient(145deg, #dcfce7 0%, #bbf7d0 100%);
+            border-color: #86efac;
+            color: #166534;
+            box-shadow: 0 2px 0 #86efac;
+        }
+        
+        .difficulty-tag.normal {
+            background: linear-gradient(145deg, #fef3c7 0%, #fde68a 100%);
+            border-color: #fcd34d;
+            color: #92400e;
+            box-shadow: 0 2px 0 #fcd34d;
+        }
+        
+        .difficulty-tag.hard {
+            background: linear-gradient(145deg, #fee2e2 0%, #fecaca 100%);
+            border-color: #fca5a5;
+            color: #991b1b;
+            box-shadow: 0 2px 0 #fca5a5;
+        }
+        
+        /* 主题切换 */
+        .theme-toggle-clay {
+            background: linear-gradient(145deg, #ffffff 0%, #f1f5f9 100%);
+            border: 3px solid rgba(129, 140, 248, 0.25);
+            border-radius: 14px;
+            box-shadow: 
+                0 3px 0 rgba(129, 140, 248, 0.15),
+                0 4px 12px rgba(79, 70, 229, 0.1);
+            transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        
+        .theme-toggle-clay:hover {
+            transform: translateY(-2px) rotate(15deg);
+        }
+        
+        /* 页面标题 */
+        .page-title {
+            font-family: 'Fredoka', sans-serif;
+            background: linear-gradient(135deg, #1E1B4B 0%, #4F46E5 50%, #6366F1 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        /* 分享框 */
+        .share-box {
+            background: linear-gradient(145deg, rgba(129, 140, 248, 0.1) 0%, rgba(199, 210, 254, 0.1) 100%);
+            border: 2px solid rgba(129, 140, 248, 0.2);
+            border-radius: 16px;
+            padding: 16px;
+        }
+        
+        /* 暗色模式 */
+        .dark .manage-card {
+            background: linear-gradient(145deg, rgba(30, 41, 59, 0.95) 0%, rgba(51, 65, 85, 0.9) 100%);
+            border-color: rgba(71, 85, 105, 0.4);
+            box-shadow: 
+                0 4px 0 rgba(0, 0, 0, 0.3),
+                0 8px 24px rgba(0, 0, 0, 0.3);
+        }
+        
+        .dark .mode-btn {
+            background-color: rgba(30, 41, 59, 0.9);
+            border-color: rgba(71, 85, 105, 0.5);
+            color: #e2e8f0;
+        }
+        
+        .dark .mode-btn:hover {
+            background-color: rgba(51, 65, 85, 0.95);
+            border-color: rgba(96, 165, 250, 0.5);
+        }
+        
+        .dark .mode-btn.active {
+            background: linear-gradient(135deg, #4F46E5 0%, #6366F1 100%);
+            box-shadow: 0 4px 16px rgba(79, 70, 229, 0.4), 0 0 20px rgba(99, 102, 241, 0.2);
+        }
+        
+        .dark .clay-input {
+            background: linear-gradient(145deg, #334155 0%, #1e293b 100%);
+            border-color: rgba(71, 85, 105, 0.5);
+            color: #e2e8f0;
+        }
+        
+        .dark .stat-card,
+        .dark .question-item,
+        .dark .leaderboard-item {
+            background: linear-gradient(145deg, rgba(51, 65, 85, 0.9) 0%, rgba(30, 41, 59, 0.8) 100%);
+            border-color: rgba(71, 85, 105, 0.4);
+        }
+        
+        .dark .share-box {
+            background: linear-gradient(145deg, rgba(51, 65, 85, 0.5) 0%, rgba(30, 41, 59, 0.3) 100%);
+            border-color: rgba(71, 85, 105, 0.4);
+        }
+        
+        .dark .page-title {
+            background: linear-gradient(135deg, #f1f5f9 0%, #a5b4fc 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+        }
+        
+        /* 动画 */
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .animate-fade-in-up {
+            animation: fadeInUp 0.5s ease-out forwards;
+        }
+        
+        .stagger-1 { animation-delay: 0.05s; }
+        .stagger-2 { animation-delay: 0.1s; }
+        .stagger-3 { animation-delay: 0.15s; }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-indigo-50 via-purple-50 to-blue-100 min-h-screen text-slate-800 transition-colors duration-300">
+    <div id="toast-container" class="fixed top-4 right-4 z-50 space-y-2" role="alert" aria-live="polite"></div>
+    
+    <main class="container mx-auto px-4 py-6 max-w-4xl">
+        <!-- 页面标题 -->
+        <header class="text-center mb-6 animate-fade-in-up">
+            <div class="flex justify-center items-center gap-4 mb-3">
+                <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg">
+                    <svg class="w-7 h-7 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"></path>
+                        <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                    </svg>
+                </div>
+                <h1 class="text-3xl md:text-4xl font-bold page-title">
+                    管理题组
+                </h1>
+                <button id="btn-theme" class="theme-toggle-clay p-2.5 cursor-pointer" title="切换主题" aria-label="切换主题">
+                    <svg id="theme-moon-icon" class="w-5 h-5 text-slate-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg id="theme-sun-icon" class="w-5 h-5 text-amber-500 hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+            </div>
+            <p class="text-slate-600 text-sm md:text-base">
+                管理你创建的题组，查看排行榜数据
+            </p>
+        </header>
+        
+        <!-- 导航按钮 -->
+        <nav class="flex justify-center gap-3 mb-6 flex-wrap animate-fade-in-up stagger-1">
+            <a href="../index.html" class="mode-btn px-5 py-2.5 rounded-lg font-medium text-sm text-slate-700 cursor-pointer inline-flex items-center gap-2 no-underline">
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"></path>
+                </svg>
+                返回主页
+            </a>
+            <a href="list.html" class="mode-btn px-5 py-2.5 rounded-lg font-medium text-sm text-slate-700 cursor-pointer inline-flex items-center gap-2 no-underline">
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="8" y1="6" x2="21" y2="6"></line>
+                    <line x1="8" y1="12" x2="21" y2="12"></line>
+                    <line x1="8" y1="18" x2="21" y2="18"></line>
+                </svg>
+                题组列表
+            </a>
+            <a href="create.html" class="mode-btn px-5 py-2.5 rounded-lg font-medium text-sm text-slate-700 cursor-pointer inline-flex items-center gap-2 no-underline">
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+                创建题组
+            </a>
+        </nav>
+
+        <!-- 登录区域 -->
+        <div id="login-section" class="manage-card p-6 md:p-8 animate-fade-in-up stagger-2">
+            <div class="text-center max-w-sm mx-auto">
+                <div class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg">
+                    <svg class="w-8 h-8 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                        <path d="M7 11V7a5 5 0 0110 0v4"></path>
+                    </svg>
+                </div>
+                <h2 class="text-xl font-bold text-slate-800 mb-2">管理登录</h2>
+                <p class="text-sm text-slate-500 mb-5">输入题组ID和管理凭证</p>
+
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-2 text-left">题组ID</label>
+                        <input type="text" id="quiz-id-input" class="clay-input w-full px-4 py-3" placeholder="输入题组ID" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-2 text-left">管理用户名</label>
+                        <input type="text" id="manager-username-input" class="clay-input w-full px-4 py-3" placeholder="输入管理用户名" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-2 text-left">管理密码</label>
+                        <input type="password" id="manager-password-input" class="clay-input w-full px-4 py-3" placeholder="输入管理密码" required>
+                    </div>
+                    <button id="btn-login" class="btn-primary rounded-lg w-full py-3 font-medium cursor-pointer text-white">
+                        登录
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 管理区域 -->
+        <div id="manage-section" class="hidden space-y-5">
+            <!-- 题组信息卡片 -->
+            <div class="manage-card p-5 animate-fade-in-up">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
+                    <div>
+                        <h2 id="quiz-name-display" class="text-xl font-bold text-slate-800 mb-1">-</h2>
+                        <p id="quiz-meta-display" class="text-sm text-slate-500">-</p>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="text-xs text-slate-400">ID:</span>
+                        <code id="quiz-id-display" class="bg-slate-100 px-2 py-1 rounded text-xs font-mono">-</code>
+                    </div>
+                </div>
+                
+                <!-- 统计面板 -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">
+                    <div class="stat-card">
+                        <div id="stat-play-count" class="stat-value text-indigo-600">0</div>
+                        <div class="stat-label">游玩次数</div>
+                    </div>
+                    <div class="stat-card">
+                        <div id="stat-question-count" class="stat-value text-green-600">0</div>
+                        <div class="stat-label">题目数量</div>
+                    </div>
+                    <div class="stat-card">
+                        <div id="stat-difficulty" class="stat-value text-orange-500">-</div>
+                        <div class="stat-label">难度</div>
+                    </div>
+                    <div class="stat-card">
+                        <div id="stat-created" class="stat-value text-purple-600">-</div>
+                        <div class="stat-label">创建日期</div>
+                    </div>
+                </div>
+                
+                <!-- 分享链接 -->
+                <div class="share-box">
+                    <label class="text-sm font-semibold text-slate-700 mb-2 block">分享链接</label>
+                    <div class="flex gap-2">
+                        <input type="text" id="share-link-display" class="clay-input flex-1 px-4 py-2.5 text-sm" readonly>
+                        <button id="btn-copy-link" class="btn-primary rounded-lg px-4 py-2.5 text-sm font-medium cursor-pointer whitespace-nowrap text-white">
+                            复制
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 管理操作 -->
+            <div class="manage-card p-5 animate-fade-in-up stagger-1">
+                <h3 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
+                    <svg class="w-5 h-5 text-indigo-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="3"></circle>
+                        <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"></path>
+                    </svg>
+                    管理操作
+                </h3>
+                <div class="flex flex-wrap gap-3">
+                    <a id="btn-play-quiz" href="#" class="btn-primary rounded-lg px-5 py-2.5 text-sm font-medium cursor-pointer inline-flex items-center gap-2 text-white no-underline">
+                        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                        </svg>
+                        立即游玩
+                    </a>
+                    <button id="btn-toggle-visibility" class="mode-btn rounded-lg px-5 py-2.5 text-sm font-medium text-slate-700 cursor-pointer inline-flex items-center gap-2">
+                        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                            <circle cx="12" cy="12" r="3"></circle>
+                        </svg>
+                        切换可见性
+                    </button>
+                    <button id="btn-reset-invite-code" class="mode-btn rounded-lg px-5 py-2.5 text-sm font-medium text-slate-700 cursor-pointer inline-flex items-center gap-2">
+                        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                            <path d="M7 11V7a5 5 0 0110 0v4"></path>
+                        </svg>
+                        重置邀请码
+                    </button>
+                    <button id="btn-delete-quiz" class="btn-danger rounded-lg px-5 py-2.5 text-sm font-medium cursor-pointer inline-flex items-center gap-2 text-white">
+                        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="3 6 5 6 21 6"></polyline>
+                            <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"></path>
+                        </svg>
+                        删除题组
+                    </button>
+                    <button id="btn-logout" class="mode-btn rounded-lg px-5 py-2.5 text-sm font-medium text-slate-700 cursor-pointer inline-flex items-center gap-2 ml-auto">
+                        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"></path>
+                            <polyline points="16 17 21 12 16 7"></polyline>
+                            <line x1="21" y1="12" x2="9" y2="12"></line>
+                        </svg>
+                        退出登录
+                    </button>
+                </div>
+            </div>
+            
+            <!-- 题目列表 -->
+            <div class="manage-card p-5 animate-fade-in-up stagger-2">
+                <h3 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
+                    <svg class="w-5 h-5 text-indigo-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                    </svg>
+                    题目列表
+                </h3>
+                <div id="questions-list" class="space-y-2 max-h-64 overflow-y-auto">
+                    <p class="text-slate-500 text-sm text-center py-4">暂无题目</p>
+                </div>
+            </div>
+            
+            <!-- 排行榜 -->
+            <div class="manage-card p-5 animate-fade-in-up stagger-3">
+                <h3 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
+                    <svg class="w-5 h-5 text-amber-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path>
+                        <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path>
+                        <path d="M4 22h16"></path>
+                        <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"></path>
+                        <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"></path>
+                        <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"></path>
+                    </svg>
+                    排行榜
+                </h3>
+                <div id="leaderboard-list" class="space-y-2 max-h-80 overflow-y-auto">
+                    <p class="text-slate-500 text-sm text-center py-4">暂无记录</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 页脚 -->
+        <footer class="text-center mt-8 text-sm text-slate-500">
+            <p>制作者：<a href="https://space.bilibili.com/1944366810" target="_blank" rel="noopener noreferrer" class="text-indigo-600 hover:text-indigo-700 font-medium transition-colors">bilibili@lvshu</a></p>
+        </footer>
+    </main>
+
+    <script>
+        const $ = id => document.getElementById(id);
+        
+        let currentQuiz = null;
+        let stationDatabase = [];
+        
+        function initTheme() {
+            MetroCommon.initDarkMode();
+            updateThemeIcon();
+            
+            $('btn-theme').addEventListener('click', () => {
+                MetroCommon.toggleDarkMode();
+                updateThemeIcon();
+            });
+        }
+        
+        function updateThemeIcon() {
+            const isDark = MetroCommon.isDarkMode();
+            $('theme-moon-icon').classList.toggle('hidden', isDark);
+            $('theme-sun-icon').classList.toggle('hidden', !isDark);
+        }
+        
+        function loadStationData() {
+            try {
+                const decrypted = StationUtils.decryptData(ENCRYPTED_DATA, DECRYPT_KEY);
+                const parsed = parseCSV(decrypted);
+                stationDatabase = parsed;
+            } catch (e) {
+                console.log('Failed to load station data:', e);
+            }
+        }
+        
+        function parseCSV(data) {
+            const lines = data.trim().split('\n');
+            const result = [];
+            
+            for (let i = 1; i < lines.length; i++) {
+                const line = lines[i].trim();
+                if (!line) continue;
+                
+                const values = [];
+                let current = '';
+                let inQuotes = false;
+                
+                for (const char of line) {
+                    if (char === '"') {
+                        inQuotes = !inQuotes;
+                    } else if (char === ',' && !inQuotes) {
+                        values.push(current.trim());
+                        current = '';
+                    } else {
+                        current += char;
+                    }
+                }
+                values.push(current.trim());
+                
+                if (values.length >= 4) {
+                    result.push({
+                        city_cn: values[0],
+                        city_en: values[1],
+                        station_cn: values[2],
+                        station_en: values[3]
+                    });
+                }
+            }
+            return result;
+        }
+        
+        async function login() {
+            const quizId = $('quiz-id-input').value.trim();
+            const username = $('manager-username-input').value.trim();
+            const password = $('manager-password-input').value;
+            
+            if (!quizId || !username || !password) {
+                MetroCommon.showToast('请填写所有字段', 'error');
+                return;
+            }
+            
+            try {
+                await FirebaseConfig.init();
+                
+                const quiz = await FirebaseConfig.getQuiz(quizId);
+                
+                if (!quiz) {
+                    MetroCommon.showToast('题组不存在', 'error');
+                    return;
+                }
+                
+                const access = FirebaseConfig.validateManagerAccess(quiz, username, password);
+                
+                if (!access.valid) {
+                    MetroCommon.showToast(access.error, 'error');
+                    return;
+                }
+                
+                currentQuiz = quiz;
+                showManageSection();
+                MetroCommon.showToast('登录成功', 'success');
+            } catch (e) {
+                console.error('Login failed:', e);
+                MetroCommon.showToast('登录失败: ' + e.message, 'error');
+            }
+        }
+        
+        function showManageSection() {
+            $('login-section').classList.add('hidden');
+            $('manage-section').classList.remove('hidden');
+            
+            updateQuizInfo();
+            loadLeaderboard();
+        }
+        
+        function updateQuizInfo() {
+            $('quiz-name-display').textContent = currentQuiz.name;
+            $('quiz-meta-display').textContent = `${currentQuiz.questions.length}题 · ${MetroCommon.getDifficultyLabel(currentQuiz.difficultyLevel)} · ${currentQuiz.isPublic ? '公开' : '私有'}`;
+            $('quiz-id-display').textContent = currentQuiz.id;
+            
+            $('stat-play-count').textContent = currentQuiz.playCount || 0;
+            $('stat-question-count').textContent = currentQuiz.questions.length;
+            $('stat-difficulty').textContent = MetroCommon.getDifficultyLabel(currentQuiz.difficultyLevel);
+            
+            const createdDate = new Date(currentQuiz.createdAt);
+            $('stat-created').textContent = `${createdDate.getMonth() + 1}/${createdDate.getDate()}`;
+            
+            const baseUrl = window.location.origin + window.location.pathname.replace('/quiz/manage.html', '');
+            $('share-link-display').value = `${baseUrl}/quiz/play.html?id=${currentQuiz.id}`;
+            
+            $('btn-play-quiz').href = `play.html?id=${currentQuiz.id}`;
+            
+            renderQuestionsList();
+        }
+        
+        function renderQuestionsList() {
+            const container = $('questions-list');
+            container.innerHTML = '';
+            
+            currentQuiz.questions.forEach((q, i) => {
+                const difficulty = MetroCommon.calculateStationDifficulty({ station_en: q.station_en });
+                const difficultyLabel = MetroCommon.getDifficultyLabel(difficulty);
+                const difficultyClass = difficulty;
+                
+                const item = document.createElement('div');
+                item.className = 'question-item flex items-center justify-between animate-fade-in-up';
+                item.style.animationDelay = `${i * 0.03}s`;
+                item.innerHTML = `
+                    <div class="flex items-center gap-3">
+                        <span class="text-xs font-bold text-indigo-600 bg-indigo-50 px-2 py-1 rounded-lg">#${i + 1}</span>
+                        <div>
+                            <span class="font-medium text-slate-800">${escapeHtml(q.station_cn)}</span>
+                            <span class="text-slate-500 text-sm ml-2">${escapeHtml(q.station_en)}</span>
+                        </div>
+                    </div>
+                    <span class="difficulty-tag ${difficultyClass}">${difficultyLabel}</span>
+                `;
+                container.appendChild(item);
+            });
+        }
+        
+        async function loadLeaderboard() {
+            try {
+                const scores = await FirebaseConfig.getQuizLeaderboard(currentQuiz.id, 20);
+                renderLeaderboard(scores);
+            } catch (e) {
+                console.error('Failed to load leaderboard:', e);
+            }
+        }
+        
+        function renderLeaderboard(scores) {
+            const container = $('leaderboard-list');
+            
+            if (scores.length === 0) {
+                container.innerHTML = '<p class="text-slate-500 text-sm text-center py-4">暂无记录</p>';
+                return;
+            }
+            
+            container.innerHTML = '';
+            
+            scores.forEach((entry, i) => {
+                const item = document.createElement('div');
+                item.className = 'leaderboard-item flex items-center justify-between animate-fade-in-up';
+                item.style.animationDelay = `${i * 0.03}s`;
+                
+                let rankClass = 'normal';
+                let rankText = i + 1;
+                if (i === 0) { rankClass = 'gold'; rankText = '1'; }
+                else if (i === 1) { rankClass = 'silver'; rankText = '2'; }
+                else if (i === 2) { rankClass = 'bronze'; rankText = '3'; }
+                
+                item.innerHTML = `
+                    <div class="flex items-center gap-3">
+                        <span class="rank-badge ${rankClass}">${rankText}</span>
+                        <div>
+                            <p class="font-medium text-slate-800">${escapeHtml(entry.playerName)}</p>
+                            <p class="text-xs text-slate-500">${MetroCommon.formatTime(entry.time)} · ${entry.guesses}次猜测</p>
+                        </div>
+                    </div>
+                    <span class="font-bold text-green-600 text-lg font-display">${entry.score}</span>
+                `;
+                container.appendChild(item);
+            });
+        }
+        
+        async function toggleVisibility() {
+            if (!currentQuiz) return;
+            
+            try {
+                const newVisibility = !currentQuiz.isPublic;
+                await FirebaseConfig.updateQuiz(currentQuiz.id, { isPublic: newVisibility });
+                currentQuiz.isPublic = newVisibility;
+                
+                updateQuizInfo();
+                MetroCommon.showToast(`题组已设为${newVisibility ? '公开' : '私有'}`, 'success');
+            } catch (e) {
+                console.error('Failed to toggle visibility:', e);
+                MetroCommon.showToast('操作失败', 'error');
+            }
+        }
+        
+        async function resetInviteCode() {
+            if (!currentQuiz) return;
+            
+            const newCode = MetroCommon.generateUniqueId().substring(0, 6).toUpperCase();
+            
+            try {
+                await FirebaseConfig.updateQuiz(currentQuiz.id, { inviteCode: newCode });
+                currentQuiz.inviteCode = newCode;
+                
+                MetroCommon.showToast(`新邀请码: ${newCode}`, 'success');
+            } catch (e) {
+                console.error('Failed to reset invite code:', e);
+                MetroCommon.showToast('操作失败', 'error');
+            }
+        }
+        
+        async function deleteQuiz() {
+            if (!currentQuiz) return;
+            
+            if (!confirm('确定要删除这个题组吗？此操作不可撤销！')) {
+                return;
+            }
+            
+            if (!confirm('再次确认：删除后所有数据将丢失，确定继续？')) {
+                return;
+            }
+            
+            try {
+                await FirebaseConfig.deleteQuiz(currentQuiz.id);
+                MetroCommon.showToast('题组已删除', 'success');
+                
+                setTimeout(() => {
+                    window.location.href = 'list.html';
+                }, 1500);
+            } catch (e) {
+                console.error('Failed to delete quiz:', e);
+                MetroCommon.showToast('删除失败', 'error');
+            }
+        }
+        
+        function copyShareLink() {
+            MetroCommon.copyToClipboard($('share-link-display').value);
+            MetroCommon.showToast('链接已复制', 'success');
+        }
+        
+        function logout() {
+            currentQuiz = null;
+            $('manage-section').classList.add('hidden');
+            $('login-section').classList.remove('hidden');
+            
+            $('quiz-id-input').value = '';
+            $('manager-username-input').value = '';
+            $('manager-password-input').value = '';
+        }
+        
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+        
+        function setupEventListeners() {
+            $('btn-login').addEventListener('click', login);
+            
+            $('manager-password-input').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    login();
+                }
+            });
+            
+            $('btn-logout').addEventListener('click', logout);
+            $('btn-copy-link').addEventListener('click', copyShareLink);
+            $('btn-toggle-visibility').addEventListener('click', toggleVisibility);
+            $('btn-reset-invite-code').addEventListener('click', resetInviteCode);
+            $('btn-delete-quiz').addEventListener('click', deleteQuiz);
+            
+            const quizId = MetroCommon.getUrlParam('id');
+            if (quizId) {
+                $('quiz-id-input').value = quizId;
+            }
+        }
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            initTheme();
+            loadStationData();
+            setupEventListeners();
+        });
+    </script>
+</body>
+</html>

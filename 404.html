@@ -390,14 +390,31 @@
                 var routePath = path.slice(basePath.length);
                 if (routePath === '' || routePath === '/') {
                     redirectUrl = basePath + '/' + search + hash;
+                } else if (routePath.startsWith('/quiz/')) {
+                    var quizFile = routePath.replace('/quiz/', '');
+                    if (quizFile === '' || quizFile === '/') {
+                        redirectUrl = basePath + '/quiz/list.html' + search + hash;
+                    } else if (!quizFile.endsWith('.html')) {
+                        redirectUrl = basePath + '/quiz/' + quizFile + '.html' + search + hash;
+                    } else {
+                        redirectUrl = basePath + routePath + search + hash;
+                    }
                 } else {
                     redirectUrl = basePath + '/#' + routePath + search + hash;
                 }
             } else {
                 var segments = path.split('/').filter(Boolean);
                 if (segments.length > 0) {
-                    var newHash = '#/' + segments.join('/');
-                    redirectUrl = '/' + newHash + search + hash;
+                    if (segments[0] === 'quiz' && segments.length >= 2) {
+                        var quizFile = segments.slice(1).join('/');
+                        if (!quizFile.endsWith('.html')) {
+                            quizFile += '.html';
+                        }
+                        redirectUrl = '/quiz/' + quizFile + search + hash;
+                    } else {
+                        var newHash = '#/' + segments.join('/');
+                        redirectUrl = '/' + newHash + search + hash;
+                    }
                 } else {
                     redirectUrl = '/' + search + hash;
                 }
