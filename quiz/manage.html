@@ -12,84 +12,12 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@300;400;500;600;700&display=swap" media="print" onload="this.media='all'">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="../styles.css">
+    <link rel="stylesheet" href="../shared-styles.css">
     <script src="../common.js"></script>
     <script src="../firebase-config.js"></script>
     <script src="../station-utils.js"></script>
     <script src="../encrypted_data.js"></script>
     <style>
-        /* Claymorphism 管理面板风格 */
-        .manage-card {
-            background: linear-gradient(145deg, rgba(255, 255, 255, 0.95) 0%, rgba(238, 242, 255, 0.9) 100%);
-            border: 3px solid rgba(129, 140, 248, 0.25);
-            border-radius: 20px;
-            box-shadow: 
-                0 4px 0 rgba(129, 140, 248, 0.15),
-                0 8px 24px rgba(79, 70, 229, 0.12),
-                inset 0 1px 0 rgba(255, 255, 255, 0.8);
-        }
-        
-        /* 与主页面一致的按钮样式 */
-        .mode-btn {
-            transition: background-color 0.25s ease-out, border-color 0.25s ease-out, box-shadow 0.25s ease-out;
-            background-color: rgba(255, 255, 255, 0.9);
-            border: 2px solid rgba(129, 140, 248, 0.3);
-            box-shadow: 0 2px 8px rgba(79, 70, 229, 0.08);
-        }
-        
-        .mode-btn:hover {
-            background-color: rgba(238, 242, 255, 0.95);
-            border-color: #818CF8;
-            box-shadow: 0 4px 16px rgba(79, 70, 229, 0.15);
-        }
-        
-        .mode-btn.active {
-            background: linear-gradient(135deg, #4F46E5 0%, #818CF8 100%);
-            color: white;
-            border-color: transparent;
-            box-shadow: 0 4px 16px rgba(79, 70, 229, 0.3), 0 0 20px rgba(129, 140, 248, 0.2);
-        }
-        
-        .btn-primary {
-            background: linear-gradient(135deg, #4F46E5 0%, #818CF8 100%);
-            transition: transform 0.15s ease-out, box-shadow 0.15s ease-out;
-            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
-        }
-        
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(79, 70, 229, 0.4), 0 0 30px rgba(129, 140, 248, 0.3);
-        }
-        
-        .btn-danger {
-            background: linear-gradient(135deg, #ef4444 0%, #f87171 100%);
-            transition: transform 0.15s ease-out, box-shadow 0.15s ease-out;
-            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
-        }
-        
-        .btn-danger:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(239, 68, 68, 0.4), 0 0 30px rgba(248, 113, 113, 0.3);
-        }
-        
-        .clay-input {
-            background: linear-gradient(145deg, #ffffff 0%, #f8fafc 100%);
-            border: 3px solid rgba(129, 140, 248, 0.25);
-            border-radius: 12px;
-            box-shadow: 
-                0 2px 0 rgba(129, 140, 248, 0.15),
-                inset 0 1px 0 rgba(255, 255, 255, 0.8);
-            transition: all 0.2s ease;
-        }
-        
-        .clay-input:focus {
-            outline: none;
-            border-color: #4F46E5;
-            box-shadow: 
-                0 2px 0 rgba(79, 70, 229, 0.2),
-                0 0 0 4px rgba(79, 70, 229, 0.1);
-        }
-        
-        /* 统计卡片 */
         .stat-card {
             background: linear-gradient(145deg, rgba(255, 255, 255, 0.9) 0%, rgba(248, 250, 252, 0.8) 100%);
             border: 2px solid rgba(129, 140, 248, 0.2);
@@ -119,7 +47,6 @@
             font-weight: 500;
         }
         
-        /* 题目列表项 */
         .question-item {
             background: linear-gradient(145deg, rgba(255, 255, 255, 0.9) 0%, rgba(248, 250, 252, 0.8) 100%);
             border: 2px solid rgba(129, 140, 248, 0.15);
@@ -133,7 +60,6 @@
             box-shadow: 0 2px 8px rgba(79, 70, 229, 0.08);
         }
         
-        /* 排行榜项 */
         .leaderboard-item {
             background: linear-gradient(145deg, rgba(255, 255, 255, 0.9) 0%, rgba(248, 250, 252, 0.8) 100%);
             border: 2px solid rgba(129, 140, 248, 0.15);
@@ -147,167 +73,12 @@
             border-color: rgba(129, 140, 248, 0.3);
         }
         
-        .rank-badge {
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 700;
-            font-size: 0.875rem;
-        }
-        
-        .rank-badge.gold {
-            background: linear-gradient(145deg, #fbbf24 0%, #f59e0b 100%);
-            color: white;
-            box-shadow: 0 2px 0 #d97706;
-        }
-        
-        .rank-badge.silver {
-            background: linear-gradient(145deg, #e5e7eb 0%, #9ca3af 100%);
-            color: white;
-            box-shadow: 0 2px 0 #6b7280;
-        }
-        
-        .rank-badge.bronze {
-            background: linear-gradient(145deg, #fdba74 0%, #f97316 100%);
-            color: white;
-            box-shadow: 0 2px 0 #c2410c;
-        }
-        
-        .rank-badge.normal {
-            background: linear-gradient(145deg, #f1f5f9 0%, #e2e8f0 100%);
-            color: #64748b;
-            box-shadow: 0 2px 0 #cbd5e1;
-        }
-        
-        /* 难度标签 */
-        .difficulty-tag {
-            display: inline-flex;
-            align-items: center;
-            padding: 4px 12px;
-            border-radius: 9999px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            border: 2px solid;
-        }
-        
-        .difficulty-tag.easy {
-            background: linear-gradient(145deg, #dcfce7 0%, #bbf7d0 100%);
-            border-color: #86efac;
-            color: #166534;
-            box-shadow: 0 2px 0 #86efac;
-        }
-        
-        .difficulty-tag.normal {
-            background: linear-gradient(145deg, #fef3c7 0%, #fde68a 100%);
-            border-color: #fcd34d;
-            color: #92400e;
-            box-shadow: 0 2px 0 #fcd34d;
-        }
-        
-        .difficulty-tag.hard {
-            background: linear-gradient(145deg, #fee2e2 0%, #fecaca 100%);
-            border-color: #fca5a5;
-            color: #991b1b;
-            box-shadow: 0 2px 0 #fca5a5;
-        }
-        
-        /* 主题切换 */
-        .theme-toggle-clay {
-            background: linear-gradient(145deg, #ffffff 0%, #f1f5f9 100%);
-            border: 3px solid rgba(129, 140, 248, 0.25);
-            border-radius: 14px;
-            box-shadow: 
-                0 3px 0 rgba(129, 140, 248, 0.15),
-                0 4px 12px rgba(79, 70, 229, 0.1);
-            transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
-        }
-        
-        .theme-toggle-clay:hover {
-            transform: translateY(-2px) rotate(15deg);
-        }
-        
-        /* 页面标题 */
-        .page-title {
-            font-family: 'Fredoka', sans-serif;
-            background: linear-gradient(135deg, #1E1B4B 0%, #4F46E5 50%, #6366F1 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-        
-        /* 分享框 */
-        .share-box {
-            background: linear-gradient(145deg, rgba(129, 140, 248, 0.1) 0%, rgba(199, 210, 254, 0.1) 100%);
-            border: 2px solid rgba(129, 140, 248, 0.2);
-            border-radius: 16px;
-            padding: 16px;
-        }
-        
-        /* 暗色模式 */
-        .dark .manage-card {
-            background: linear-gradient(145deg, rgba(30, 41, 59, 0.95) 0%, rgba(51, 65, 85, 0.9) 100%);
-            border-color: rgba(71, 85, 105, 0.4);
-            box-shadow: 
-                0 4px 0 rgba(0, 0, 0, 0.3),
-                0 8px 24px rgba(0, 0, 0, 0.3);
-        }
-        
-        .dark .mode-btn {
-            background-color: rgba(30, 41, 59, 0.9);
-            border-color: rgba(71, 85, 105, 0.5);
-            color: #e2e8f0;
-        }
-        
-        .dark .mode-btn:hover {
-            background-color: rgba(51, 65, 85, 0.95);
-            border-color: rgba(96, 165, 250, 0.5);
-        }
-        
-        .dark .mode-btn.active {
-            background: linear-gradient(135deg, #4F46E5 0%, #6366F1 100%);
-            box-shadow: 0 4px 16px rgba(79, 70, 229, 0.4), 0 0 20px rgba(99, 102, 241, 0.2);
-        }
-        
-        .dark .clay-input {
-            background: linear-gradient(145deg, #334155 0%, #1e293b 100%);
-            border-color: rgba(71, 85, 105, 0.5);
-            color: #e2e8f0;
-        }
-        
         .dark .stat-card,
         .dark .question-item,
         .dark .leaderboard-item {
             background: linear-gradient(145deg, rgba(51, 65, 85, 0.9) 0%, rgba(30, 41, 59, 0.8) 100%);
             border-color: rgba(71, 85, 105, 0.4);
         }
-        
-        .dark .share-box {
-            background: linear-gradient(145deg, rgba(51, 65, 85, 0.5) 0%, rgba(30, 41, 59, 0.3) 100%);
-            border-color: rgba(71, 85, 105, 0.4);
-        }
-        
-        .dark .page-title {
-            background: linear-gradient(135deg, #f1f5f9 0%, #a5b4fc 100%);
-            -webkit-background-clip: text;
-            background-clip: text;
-        }
-        
-        /* 动画 */
-        @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        
-        .animate-fade-in-up {
-            animation: fadeInUp 0.5s ease-out forwards;
-        }
-        
-        .stagger-1 { animation-delay: 0.05s; }
-        .stagger-2 { animation-delay: 0.1s; }
-        .stagger-3 { animation-delay: 0.15s; }
     </style>
 </head>
 <body class="bg-gradient-to-br from-indigo-50 via-purple-50 to-blue-100 min-h-screen text-slate-800 transition-colors duration-300">

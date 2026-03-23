@@ -9,6 +9,59 @@ const MetroCommon = {
         return el;
     },
     
+    CITIES: [
+        '北京', '上海', '广州', '深圳', '成都', '杭州', '南京', '武汉', 
+        '西安', '重庆', '天津', '苏州', '郑州', '长沙', '沈阳', '青岛',
+        '大连', '宁波', '厦门', '无锡', '福州', '合肥', '昆明', '哈尔滨',
+        '济南', '佛山', '长春', '石家庄', '南宁', '贵阳', '兰州', '太原'
+    ],
+    
+    initTheme() {
+        this.initDarkMode();
+        const btnTheme = this.$('btn-theme');
+        if (btnTheme) {
+            btnTheme.addEventListener('click', () => {
+                this.toggleDarkMode();
+                this.updateThemeIcon();
+            });
+        }
+    },
+    
+    updateThemeIcon() {
+        const isDark = this.isDarkMode();
+        const moonIcon = this.$('theme-moon-icon');
+        const sunIcon = this.$('theme-sun-icon');
+        if (moonIcon) moonIcon.classList.toggle('hidden', isDark);
+        if (sunIcon) sunIcon.classList.toggle('hidden', !isDark);
+    },
+    
+    initCitySelect(selectId, selectedValue = 'all') {
+        const select = this.$(selectId);
+        if (!select) return;
+        this.CITIES.forEach(city => {
+            const option = document.createElement('option');
+            option.value = city;
+            option.textContent = city;
+            if (city === selectedValue) option.selected = true;
+            select.appendChild(option);
+        });
+    },
+    
+    formatTimeAgo(timestamp) {
+        if (!timestamp) return '未知';
+        const now = Date.now();
+        const diff = now - timestamp;
+        const minutes = Math.floor(diff / 60000);
+        const hours = Math.floor(diff / 3600000);
+        const days = Math.floor(diff / 86400000);
+        if (minutes < 1) return '刚刚';
+        if (minutes < 60) return `${minutes}分钟前`;
+        if (hours < 24) return `${hours}小时前`;
+        if (days < 30) return `${days}天前`;
+        const date = new Date(timestamp);
+        return `${date.getMonth() + 1}月${date.getDate()}日`;
+    },
+    
     LETTER_FREQUENCY: {
         superCommon: ['a', 'e', 'i', 'n', 'o', 's', 'u'],
         common: ['g', 'h', 't', 'l', 'r', 'd', 'c'],
@@ -154,6 +207,13 @@ const MetroCommon = {
         const mins = Math.floor(seconds / 60);
         const secs = seconds % 60;
         return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    },
+    
+    escapeHtml(text) {
+        if (!text) return '';
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
     },
     
     formatNumber(num) {

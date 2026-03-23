@@ -12,127 +12,96 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@300;400;500;600;700&display=swap" media="print" onload="this.media='all'">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="../styles.css">
+    <link rel="stylesheet" href="../shared-styles.css">
     <script src="../common.js"></script>
     <script src="../firebase-config.js"></script>
     <script src="../station-utils.js"></script>
     <script src="../encrypted_data.js"></script>
     <style>
-        /* Claymorphism 表单风格 */
-        .form-card {
-            background: linear-gradient(145deg, rgba(255, 255, 255, 0.95) 0%, rgba(238, 242, 255, 0.9) 100%);
-            border: 3px solid rgba(129, 140, 248, 0.25);
-            border-radius: 20px;
-            box-shadow: 
-                0 4px 0 rgba(129, 140, 248, 0.15),
-                0 8px 24px rgba(79, 70, 229, 0.12),
-                inset 0 1px 0 rgba(255, 255, 255, 0.8);
-        }
-        
-        /* 与主页面一致的按钮样式 */
-        .mode-btn {
-            transition: background-color 0.25s ease-out, border-color 0.25s ease-out, box-shadow 0.25s ease-out;
-            background-color: rgba(255, 255, 255, 0.9);
-            border: 2px solid rgba(129, 140, 248, 0.3);
-            box-shadow: 0 2px 8px rgba(79, 70, 229, 0.08);
-        }
-        
-        .mode-btn:hover {
-            background-color: rgba(238, 242, 255, 0.95);
-            border-color: #818CF8;
-            box-shadow: 0 4px 16px rgba(79, 70, 229, 0.15);
-        }
-        
-        .mode-btn.active {
-            background: linear-gradient(135deg, #4F46E5 0%, #818CF8 100%);
-            color: white;
-            border-color: transparent;
-            box-shadow: 0 4px 16px rgba(79, 70, 229, 0.3), 0 0 20px rgba(129, 140, 248, 0.2);
-        }
-        
-        .btn-primary {
-            background: linear-gradient(135deg, #4F46E5 0%, #818CF8 100%);
-            transition: transform 0.15s ease-out, box-shadow 0.15s ease-out;
-            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
-        }
-        
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(79, 70, 229, 0.4), 0 0 30px rgba(129, 140, 248, 0.3);
-        }
-        
-        .btn-secondary {
-            background: linear-gradient(135deg, #F97316 0%, #FB923C 100%);
-            transition: transform 0.15s ease-out, box-shadow 0.15s ease-out;
-            box-shadow: 0 4px 12px rgba(249, 115, 22, 0.3);
-        }
-        
-        .btn-secondary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(249, 115, 22, 0.4), 0 0 30px rgba(251, 146, 60, 0.3);
-        }
-        
-        .clay-input {
-            background: linear-gradient(145deg, #ffffff 0%, #f8fafc 100%);
-            border: 3px solid rgba(129, 140, 248, 0.25);
-            border-radius: 12px;
-            box-shadow: 
-                0 2px 0 rgba(129, 140, 248, 0.15),
-                inset 0 1px 0 rgba(255, 255, 255, 0.8);
-            transition: all 0.2s ease;
-        }
-        
-        .clay-input:focus {
-            outline: none;
-            border-color: #4F46E5;
-            box-shadow: 
-                0 2px 0 rgba(79, 70, 229, 0.2),
-                0 0 0 4px rgba(79, 70, 229, 0.1);
-        }
-        
-        .clay-select {
-            background: linear-gradient(145deg, #ffffff 0%, #f8fafc 100%);
-            border: 3px solid rgba(129, 140, 248, 0.25);
-            border-radius: 12px;
-            box-shadow: 
-                0 2px 0 rgba(129, 140, 248, 0.15),
-                inset 0 1px 0 rgba(255, 255, 255, 0.8);
-            transition: all 0.2s ease;
-            appearance: none;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%234F46E5' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
-            background-repeat: no-repeat;
-            background-position: right 12px center;
-            padding-right: 40px;
-        }
-        
-        .clay-select:focus {
-            outline: none;
-            border-color: #4F46E5;
-            box-shadow: 
-                0 2px 0 rgba(79, 70, 229, 0.2),
-                0 0 0 4px rgba(79, 70, 229, 0.1);
-        }
-        
-        .clay-checkbox {
-            width: 22px;
-            height: 22px;
-            border: 3px solid rgba(129, 140, 248, 0.3);
-            border-radius: 6px;
-            box-shadow: 0 2px 0 rgba(129, 140, 248, 0.15);
-            transition: all 0.2s ease;
-            cursor: pointer;
-        }
-        
-        .clay-checkbox:checked {
-            background: linear-gradient(145deg, #4F46E5 0%, #6366F1 100%);
-            border-color: transparent;
+        /* 移动端表单优化 */
+        @media (max-width: 640px) {
+            .form-card {
+                padding: 1rem !important;
+                border-radius: 16px;
+                border-width: 2px;
+            }
+
+            main.container {
+                padding-left: 0.75rem;
+                padding-right: 0.75rem;
+                padding-top: 0.75rem;
+                padding-bottom: 0.75rem;
+            }
+
+            /* 标题区域 */
+            header.mb-6 {
+                margin-bottom: 1rem !important;
+            }
+
+            header .text-3xl {
+                font-size: 1.5rem !important;
+            }
+
+            /* 导航按钮 */
+            nav.mb-6 {
+                margin-bottom: 1rem !important;
+            }
+
+            nav .mode-btn {
+                padding: 0.5rem 0.75rem !important;
+                font-size: 0.75rem !important;
+            }
+
+            /* 表单区块 */
+            section.mb-6 {
+                margin-bottom: 1rem !important;
+            }
+
+            section h2 {
+                font-size: 1rem !important;
+                margin-bottom: 0.75rem !important;
+            }
+
+            section h2 .w-8 {
+                width: 1.5rem !important;
+                height: 1.5rem !important;
+            }
+
+            /* 输入框 */
+            .clay-input, .clay-select {
+                padding: 0.5rem 0.75rem !important;
+                font-size: 0.875rem !important;
+            }
+
+            /* 标签 */
+            label.block.text-sm {
+                font-size: 0.8125rem !important;
+                margin-bottom: 0.375rem !important;
+            }
+
+            /* 间距 */
+            .space-y-4 > * + * {
+                margin-top: 0.75rem !important;
+            }
+
+            /* 综合难度区域 */
+            .bg-indigo-50\/50 {
+                padding: 0.75rem !important;
+            }
+
+            /* 提交按钮 */
+            #btn-submit, #btn-save-draft {
+                padding: 0.625rem 1rem !important;
+                font-size: 0.875rem !important;
+            }
         }
         
         /* 题目卡片 - 紧凑行式布局 */
         .question-card {
             background: linear-gradient(145deg, rgba(255, 255, 255, 0.9) 0%, rgba(248, 250, 252, 0.8) 100%);
             border: 2px solid rgba(129, 140, 248, 0.2);
-            border-radius: 12px;
-            padding: 10px 14px;
+            border-radius: 10px;
+            padding: 8px 10px;
             transition: all 0.2s ease;
         }
 
@@ -150,158 +119,192 @@
         .question-row {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
             flex-wrap: wrap;
         }
 
         .question-row .question-num {
-            width: 28px;
-            height: 28px;
+            width: 24px;
+            height: 24px;
             display: flex;
             align-items: center;
             justify-content: center;
             background: linear-gradient(135deg, #4F46E5 0%, #6366F1 100%);
             color: white;
-            border-radius: 8px;
-            font-size: 0.8rem;
+            border-radius: 6px;
+            font-size: 0.75rem;
             font-weight: 700;
             flex-shrink: 0;
         }
 
         .question-row .input-compact {
             flex: 1;
-            min-width: 120px;
-            padding: 8px 10px;
-            font-size: 0.875rem;
+            min-width: 100px;
+            padding: 6px 8px;
+            font-size: 0.8125rem;
         }
 
         .question-row .city-select-compact {
-            width: 90px;
-            padding: 8px 10px;
-            font-size: 0.875rem;
+            width: 80px;
+            padding: 6px 8px;
+            font-size: 0.8125rem;
         }
 
         .question-row .btn-random-compact {
-            padding: 6px 10px;
+            padding: 5px 10px;
             font-size: 0.75rem;
-            border-radius: 8px;
+            border-radius: 6px;
             white-space: nowrap;
+            font-weight: 500;
         }
 
         .question-row .difficulty-badge-compact {
-            font-size: 0.65rem;
-            padding: 2px 8px;
+            font-size: 0.6rem;
+            padding: 1px 6px;
             border-radius: 9999px;
         }
-        
-        /* 难度标签 */
-        .difficulty-badge {
-            display: inline-flex;
-            align-items: center;
-            padding: 4px 12px;
-            border-radius: 9999px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            border: 2px solid;
+
+        /* 移动端优化 - 重新设计布局 */
+        @media (max-width: 640px) {
+            .question-card {
+                padding: 12px;
+                border-radius: 12px;
+            }
+
+            .question-row {
+                display: grid;
+                grid-template-columns: 28px 1fr auto auto;
+                grid-template-rows: auto auto;
+                gap: 8px 6px;
+                align-items: center;
+            }
+
+            .question-row .question-num {
+                width: 28px;
+                height: 28px;
+                font-size: 0.85rem;
+                border-radius: 8px;
+                grid-row: 1;
+                grid-column: 1;
+            }
+
+            /* 输入框区域 - 第一行占据剩余空间 */
+            .question-row > .flex-1 {
+                grid-row: 1;
+                grid-column: 2 / -1;
+                display: flex;
+                gap: 8px;
+                min-width: 0;
+            }
+
+            .question-row .input-compact {
+                flex: 1;
+                min-width: 0;
+                padding: 10px 12px;
+                font-size: 0.9rem;
+            }
+
+            /* 城市选择器 - 第二行左侧 */
+            .question-row .city-select-compact {
+                width: 75px;
+                min-width: 75px;
+                padding: 8px 10px;
+                font-size: 0.85rem;
+                padding-right: 22px;
+                background-position: right 5px center;
+                background-size: 12px;
+                grid-row: 2;
+                grid-column: 2;
+                justify-self: start;
+            }
+
+            /* 随机按钮 - 第二行中间 */
+            .question-row .btn-random-compact {
+                padding: 8px 14px;
+                font-size: 0.85rem;
+                grid-row: 2;
+                grid-column: 3;
+                justify-self: start;
+            }
+
+            .question-row .btn-random-compact .btn-random-text {
+                display: inline;
+            }
+
+            /* 难度标签 - 第二行右侧 */
+            .question-row .difficulty-badge-compact {
+                font-size: 0.7rem;
+                padding: 3px 10px;
+                white-space: nowrap;
+                grid-row: 2;
+                grid-column: 4;
+                justify-self: end;
+            }
+
+            /* 城市标签 - 当城市锁定时 */
+            .city-label {
+                font-size: 0.8rem;
+                padding: 6px 10px;
+                grid-row: 2;
+                grid-column: 2;
+                justify-self: start;
+            }
+
+            /* 间距 */
+            #questions-container {
+                gap: 10px !important;
+            }
         }
-        
-        .difficulty-badge.easy {
-            background: linear-gradient(145deg, #dcfce7 0%, #bbf7d0 100%);
-            border-color: #86efac;
-            color: #166534;
-            box-shadow: 0 2px 0 #86efac;
-        }
-        
-        .difficulty-badge.normal {
-            background: linear-gradient(145deg, #fef3c7 0%, #fde68a 100%);
-            border-color: #fcd34d;
-            color: #92400e;
-            box-shadow: 0 2px 0 #fcd34d;
-        }
-        
-        .difficulty-badge.hard {
-            background: linear-gradient(145deg, #fee2e2 0%, #fecaca 100%);
-            border-color: #fca5a5;
-            color: #991b1b;
-            box-shadow: 0 2px 0 #fca5a5;
-        }
-        
-        /* 主题切换 */
-        .theme-toggle-clay {
-            background: linear-gradient(145deg, #ffffff 0%, #f1f5f9 100%);
-            border: 3px solid rgba(129, 140, 248, 0.25);
-            border-radius: 14px;
-            box-shadow: 
-                0 3px 0 rgba(129, 140, 248, 0.15),
-                0 4px 12px rgba(79, 70, 229, 0.1);
-            transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
-        }
-        
-        .theme-toggle-clay:hover {
-            transform: translateY(-2px) rotate(15deg);
-        }
-        
-        /* 页面标题 */
-        .page-title {
-            font-family: 'Fredoka', sans-serif;
-            background: linear-gradient(135deg, #1E1B4B 0%, #4F46E5 50%, #6366F1 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-        
-        /* 分享框 */
-        .share-box {
-            background: linear-gradient(145deg, rgba(129, 140, 248, 0.1) 0%, rgba(199, 210, 254, 0.1) 100%);
-            border: 2px solid rgba(129, 140, 248, 0.2);
-            border-radius: 16px;
-            padding: 16px;
-        }
-        
-        /* 成功面板 */
-        .success-icon {
-            width: 80px;
-            height: 80px;
-            border-radius: 24px;
-            background: linear-gradient(145deg, #4ade80 0%, #22c55e 100%);
-            box-shadow: 
-                0 4px 0 #16a34a,
-                0 8px 24px rgba(34, 197, 94, 0.3);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        /* 暗色模式 */
-        .dark .form-card {
-            background: linear-gradient(145deg, rgba(30, 41, 59, 0.95) 0%, rgba(51, 65, 85, 0.9) 100%);
-            border-color: rgba(71, 85, 105, 0.4);
-            box-shadow: 
-                0 4px 0 rgba(0, 0, 0, 0.3),
-                0 8px 24px rgba(0, 0, 0, 0.3);
-        }
-        
-        .dark .mode-btn {
-            background-color: rgba(30, 41, 59, 0.9);
-            border-color: rgba(71, 85, 105, 0.5);
-            color: #e2e8f0;
-        }
-        
-        .dark .mode-btn:hover {
-            background-color: rgba(51, 65, 85, 0.95);
-            border-color: rgba(96, 165, 250, 0.5);
-        }
-        
-        .dark .mode-btn.active {
-            background: linear-gradient(135deg, #4F46E5 0%, #6366F1 100%);
-            box-shadow: 0 4px 16px rgba(79, 70, 229, 0.4), 0 0 20px rgba(99, 102, 241, 0.2);
-        }
-        
-        .dark .clay-input,
-        .dark .clay-select {
-            background: linear-gradient(145deg, #334155 0%, #1e293b 100%);
-            border-color: rgba(71, 85, 105, 0.5);
-            color: #e2e8f0;
+
+        /* 超小屏幕优化 */
+        @media (max-width: 380px) {
+            .question-card {
+                padding: 10px;
+            }
+
+            .question-row {
+                grid-template-columns: 26px 1fr auto auto;
+                gap: 6px 5px;
+            }
+
+            .question-row .question-num {
+                width: 26px;
+                height: 26px;
+                font-size: 0.8rem;
+                border-radius: 6px;
+            }
+
+            .question-row .input-compact {
+                padding: 8px 10px;
+                font-size: 0.85rem;
+            }
+
+            .question-row .city-select-compact {
+                width: 70px;
+                min-width: 70px;
+                padding: 6px 8px;
+                font-size: 0.8rem;
+            }
+
+            .question-row .btn-random-compact {
+                padding: 6px 10px;
+                font-size: 0.8rem;
+            }
+
+            .question-row .btn-random-compact svg {
+                width: 14px;
+                height: 14px;
+            }
+
+            .question-row .difficulty-badge-compact {
+                font-size: 0.65rem;
+                padding: 2px 8px;
+            }
+
+            .city-label {
+                font-size: 0.75rem;
+                padding: 5px 8px;
+            }
         }
         
         .dark .question-card {
@@ -317,31 +320,6 @@
         .dark .question-row .question-num {
             background: linear-gradient(135deg, #6366F1 0%, #818CF8 100%);
         }
-        
-        .dark .share-box {
-            background: linear-gradient(145deg, rgba(51, 65, 85, 0.5) 0%, rgba(30, 41, 59, 0.3) 100%);
-            border-color: rgba(71, 85, 105, 0.4);
-        }
-        
-        .dark .page-title {
-            background: linear-gradient(135deg, #f1f5f9 0%, #a5b4fc 100%);
-            -webkit-background-clip: text;
-            background-clip: text;
-        }
-        
-        /* 动画 */
-        @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        
-        .animate-fade-in-up {
-            animation: fadeInUp 0.5s ease-out forwards;
-        }
-        
-        .stagger-1 { animation-delay: 0.05s; }
-        .stagger-2 { animation-delay: 0.1s; }
-        .stagger-3 { animation-delay: 0.15s; }
     </style>
 </head>
 <body class="bg-gradient-to-br from-indigo-50 via-purple-50 to-blue-100 min-h-screen text-slate-800 transition-colors duration-300">
@@ -710,18 +688,25 @@
                 item.innerHTML = `
                     <div class="question-row">
                         <span class="question-num">${i + 1}</span>
-                        <input type="text" class="clay-input input-compact station-cn" placeholder="中文站名"
-                            value="${escapeHtml(question.station_cn)}" data-index="${i}" required>
-                        <input type="text" class="clay-input input-compact station-en" placeholder="英文站名"
-                            value="${escapeHtml(question.station_en)}" data-index="${i}" required>
+                        <div class="flex-1 flex gap-2 min-w-0">
+                            <input type="text" class="clay-input input-compact station-cn flex-1 min-w-0" placeholder="中文站名"
+                                value="${escapeHtml(question.station_cn)}" data-index="${i}" required>
+                            <input type="text" class="clay-input input-compact station-en flex-1 min-w-0" placeholder="英文站名"
+                                value="${escapeHtml(question.station_en)}" data-index="${i}" required>
+                        </div>
                         <select class="clay-select city-select-compact city-select cursor-pointer ${isCityLocked ? 'hidden' : ''}" data-index="${i}">
                             ${CITIES.map(c => `<option value="${c}" ${question.city_cn === c ? 'selected' : ''}>${c}</option>`).join('')}
                         </select>
-                        ${isCityLocked ? `<span class="text-xs text-slate-500 bg-slate-100 px-2 py-1 rounded city-label">${displayCity}</span>` : ''}
-                        <button type="button" class="btn-random-compact mode-btn text-indigo-600 cursor-pointer btn-random" data-index="${i}">
-                            <svg class="w-3 h-3 inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"></path>
+                        ${isCityLocked ? `<span class="text-xs text-slate-500 bg-slate-100 px-2 py-1 rounded city-label whitespace-nowrap">${displayCity}</span>` : ''}
+                        <button type="button" class="btn-random-compact mode-btn text-indigo-600 cursor-pointer btn-random flex-shrink-0 inline-flex items-center gap-1" data-index="${i}" title="随机选择站点">
+                            <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="2" y="2" width="20" height="20" rx="4" ry="4"></rect>
+                                <circle cx="8" cy="8" r="1.5" fill="currentColor" stroke="none"></circle>
+                                <circle cx="16" cy="16" r="1.5" fill="currentColor" stroke="none"></circle>
+                                <circle cx="16" cy="8" r="1.5" fill="currentColor" stroke="none"></circle>
+                                <circle cx="8" cy="16" r="1.5" fill="currentColor" stroke="none"></circle>
                             </svg>
+                            <span class="btn-random-text">随机</span>
                         </button>
                         ${difficultyHtml}
                     </div>
@@ -786,44 +771,54 @@
         function fillRandomStation(index) {
             const cityScope = $('city-scope').value;
             let pool = stationDatabase;
-            
+
             if (cityScope !== 'all') {
                 pool = stationDatabase.filter(s => s.city_cn === cityScope);
             }
-            
+
             if (pool.length === 0) {
                 MetroCommon.showToast('没有可用的站点数据', 'error');
                 return;
             }
-            
+
             const usedStations = currentQuestions.filter((q, i) => i !== index && q.station_en).map(q => q.station_en);
             const available = pool.filter(s => !usedStations.includes(s.station_en));
-            
+
             if (available.length === 0) {
                 MetroCommon.showToast('已用完所有可用站点', 'error');
                 return;
             }
-            
+
             const station = available[Math.floor(Math.random() * available.length)];
-            
+
             currentQuestions[index] = {
                 station_cn: station.station_cn,
                 station_en: station.station_en,
                 city_cn: station.city_cn
             };
-            
+
             const cnInput = document.querySelector(`.station-cn[data-index="${index}"]`);
             const enInput = document.querySelector(`.station-en[data-index="${index}"]`);
             const citySelect = document.querySelector(`.city-select[data-index="${index}"]`);
-            
+
             if (cnInput) cnInput.value = station.station_cn;
             if (enInput) enInput.value = station.station_en;
-            if (citySelect) citySelect.value = station.city_cn;
-            
+            if (citySelect) {
+                // 检查城市选项是否存在，不存在则动态添加
+                let option = citySelect.querySelector(`option[value="${station.city_cn}"]`);
+                if (!option) {
+                    option = document.createElement('option');
+                    option.value = station.city_cn;
+                    option.textContent = station.city_cn;
+                    citySelect.appendChild(option);
+                }
+                citySelect.value = station.city_cn;
+            }
+
             updateQuestionCardState(index);
             updateQuestionDifficulty(index);
             saveDraft();
-            
+
             MetroCommon.showToast(`已随机选择: ${station.station_cn}`, 'success');
         }
         
