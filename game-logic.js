@@ -117,13 +117,7 @@ const MetroGameLogic = {
 
     getDisplayText(stationEn, revealedLetters, isSolved, devMode = false, revealedSpecialChars = new Set()) {
         if (isSolved || devMode) {
-            return stationEn.split('').map(char => {
-                const lowerChar = char.toLowerCase();
-                if (/[a-z]/.test(lowerChar)) {
-                    return `<span class="letter-reveal text-green-600">${char}</span>`;
-                }
-                return char;
-            }).join('');
+            return stationEn;
         }
 
         return stationEn.split('').map(char => {
@@ -132,7 +126,7 @@ const MetroGameLogic = {
                 if (revealedLetters && revealedLetters.has(lowerChar)) {
                     return `<span class="letter-reveal text-blue-600">${char}</span>`;
                 }
-                return '<span class="text-slate-400">*</span>';
+                return '*';
             }
             if (char === ' ') {
                 return ' ';

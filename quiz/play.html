@@ -616,12 +616,15 @@
                 <p class="text-sm text-slate-500 mb-5">该题组需要邀请码才能访问</p>
                 <input type="text" id="invite-code-input" placeholder="请输入邀请码" 
                     class="clay-input w-full px-4 py-3 mb-4 text-center uppercase tracking-widest text-lg font-mono" maxlength="10">
-                <div class="flex justify-center gap-3">
+                <div class="flex justify-center gap-3 flex-wrap">
                     <a href="list.html" class="mode-btn rounded-lg px-5 py-2.5 text-slate-700 font-medium cursor-pointer no-underline">
                         返回列表
                     </a>
                     <button id="btn-confirm-invite" class="btn-primary rounded-lg px-6 py-2.5 font-medium cursor-pointer text-white">
                         确认
+                    </button>
+                    <button id="btn-skip-invite" class="mode-btn rounded-lg px-5 py-2.5 text-slate-700 font-medium cursor-pointer">
+                        跳过
                     </button>
                 </div>
             </div>
@@ -938,7 +941,7 @@
         async function loadWithInviteCode() {
             const inviteCode = $('invite-code-input').value.trim().toUpperCase();
             
-            if (!inviteCode) {
+            if (!inviteCode && !gameState?.devMode) {
                 MetroCommon.showToast('请输入邀请码', 'error');
                 return;
             }
@@ -948,6 +951,12 @@
                 
                 if (!quiz) {
                     showError('题组不存在');
+                    return;
+                }
+                
+                if (gameState?.devMode) {
+                    quizData = quiz;
+                    initGame();
                     return;
                 }
                 
@@ -1002,7 +1011,9 @@
                 index: i
             }));
             
+            const devMode = gameState?.devMode || false;
             gameState = MetroGameLogic.initGameState(stations, quizData.difficultyLevel);
+            gameState.devMode = devMode;
             
             renderStations();
             renderKeyboard();
@@ -1480,6 +1491,12 @@
             });
             
             $('btn-confirm-invite').addEventListener('click', loadWithInviteCode);
+            
+            $('btn-skip-invite').addEventListener('click', () => {
+                gameState = gameState || {};
+                gameState.devMode = true;
+                loadWithInviteCode();
+            });
             
             $('invite-code-input').addEventListener('keypress', (e) => {
                 if (e.key === 'Enter') {
