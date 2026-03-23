@@ -275,6 +275,30 @@ const FirebaseConfig = {
         }
         
         return { valid: true };
+    },
+    
+    async getAllQuizzes() {
+        if (!this.initialized) {
+            const success = await this.init();
+            if (!success) throw new Error('Firebase初始化失败');
+        }
+        
+        const snapshot = await this.db.ref('quizzes').once('value');
+        if (!snapshot.exists()) return [];
+        
+        const quizzes = Object.values(snapshot.val());
+        quizzes.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+        return quizzes;
+    },
+    
+    async setFeatured(quizId, featured) {
+        if (!this.initialized) {
+            const success = await this.init();
+            if (!success) throw new Error('Firebase初始化失败');
+        }
+        
+        await this.db.ref('quizzes/' + quizId + '/featured').set(featured);
+        return true;
     }
 };
 

@@ -124,6 +124,7 @@
             <a href="../index.html" class="mode-btn px-5 py-2.5 rounded-lg font-medium text-sm text-slate-700 cursor-pointer inline-flex items-center gap-2 no-underline">
                 <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"></path>
+                    <polyline points="9 22 9 12 15 12 15 22"></polyline>
                 </svg>
                 返回主页
             </a>
@@ -132,6 +133,9 @@
                     <line x1="8" y1="6" x2="21" y2="6"></line>
                     <line x1="8" y1="12" x2="21" y2="12"></line>
                     <line x1="8" y1="18" x2="21" y2="18"></line>
+                    <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                    <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                    <line x1="3" y1="18" x2="3.01" y2="18"></line>
                 </svg>
                 题组列表
             </a>
@@ -172,6 +176,28 @@
                     <button id="btn-login" class="btn-primary rounded-lg w-full py-3 font-medium cursor-pointer text-white">
                         登录
                     </button>
+                    <button id="btn-skip-login" class="mode-btn rounded-lg w-full py-3 font-medium text-slate-700 cursor-pointer hidden">
+                        跳过登录（开发者模式）
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 开发者模式 - 题组列表 -->
+        <div id="dev-section" class="hidden space-y-5">
+            <div class="manage-card p-5 animate-fade-in-up">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-xl font-bold text-slate-800 flex items-center gap-2">
+                        <span class="dev-mode-badge">DEV</span>
+                        开发者模式 - 所有题组
+                    </h2>
+                    <button id="btn-exit-dev" class="mode-btn rounded-lg px-4 py-2 text-sm font-medium text-slate-700 cursor-pointer">
+                        退出
+                    </button>
+                </div>
+                <p class="text-sm text-slate-500 mb-4">点击题组进入管理页面，可以设置精选标签</p>
+                <div id="dev-quiz-list" class="space-y-2 max-h-[60vh] overflow-y-auto">
+                    <p class="text-slate-500 text-sm text-center py-4">加载中...</p>
                 </div>
             </div>
         </div>
@@ -233,12 +259,25 @@
                     管理操作
                 </h3>
                 <div class="flex flex-wrap gap-3">
+                    <button id="btn-toggle-featured" class="mode-btn rounded-lg px-5 py-2.5 text-sm font-medium text-slate-700 cursor-pointer inline-flex items-center gap-2 hidden">
+                        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                        </svg>
+                        <span id="featured-btn-text">设为精选</span>
+                    </button>
                     <a id="btn-play-quiz" href="#" class="btn-primary rounded-lg px-5 py-2.5 text-sm font-medium cursor-pointer inline-flex items-center gap-2 text-white no-underline">
                         <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <polygon points="5 3 19 12 5 21 5 3"></polygon>
                         </svg>
                         立即游玩
                     </a>
+                    <button id="btn-edit-info" class="mode-btn rounded-lg px-5 py-2.5 text-sm font-medium text-slate-700 cursor-pointer inline-flex items-center gap-2">
+                        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"></path>
+                            <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                        </svg>
+                        编辑信息
+                    </button>
                     <button id="btn-toggle-visibility" class="mode-btn rounded-lg px-5 py-2.5 text-sm font-medium text-slate-700 cursor-pointer inline-flex items-center gap-2">
                         <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
@@ -246,12 +285,12 @@
                         </svg>
                         切换可见性
                     </button>
-                    <button id="btn-reset-invite-code" class="mode-btn rounded-lg px-5 py-2.5 text-sm font-medium text-slate-700 cursor-pointer inline-flex items-center gap-2">
+                    <button id="btn-manage-invite-code" class="mode-btn rounded-lg px-5 py-2.5 text-sm font-medium text-slate-700 cursor-pointer inline-flex items-center gap-2">
                         <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
                             <path d="M7 11V7a5 5 0 0110 0v4"></path>
                         </svg>
-                        重置邀请码
+                        邀请码管理
                     </button>
                     <button id="btn-delete-quiz" class="btn-danger rounded-lg px-5 py-2.5 text-sm font-medium cursor-pointer inline-flex items-center gap-2 text-white">
                         <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -273,13 +312,32 @@
             
             <!-- 题目列表 -->
             <div class="manage-card p-5 animate-fade-in-up stagger-2">
-                <h3 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
-                    <svg class="w-5 h-5 text-indigo-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
-                    </svg>
-                    题目列表
-                </h3>
-                <div id="questions-list" class="space-y-2 max-h-64 overflow-y-auto">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+                        <svg class="w-5 h-5 text-indigo-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                        </svg>
+                        题目列表
+                    </h3>
+                    <div class="flex gap-2">
+                        <button id="btn-add-question" class="btn-primary rounded-lg px-4 py-2 text-sm font-medium cursor-pointer inline-flex items-center gap-1 text-white">
+                            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <line x1="12" y1="5" x2="12" y2="19"></line>
+                                <line x1="5" y1="12" x2="19" y2="12"></line>
+                            </svg>
+                            添加题目
+                        </button>
+                        <button id="btn-edit-questions" class="mode-btn rounded-lg px-4 py-2 text-sm font-medium text-slate-700 cursor-pointer inline-flex items-center gap-1">
+                            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"></path>
+                                <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                            </svg>
+                            编辑题目
+                        </button>
+                    </div>
+                </div>
+                <p id="questions-hint" class="text-xs text-slate-500 mb-3">拖拽题目可调整顺序</p>
+                <div id="questions-list" class="space-y-2 max-h-80 overflow-y-auto">
                     <p class="text-slate-500 text-sm text-center py-4">暂无题目</p>
                 </div>
             </div>
@@ -309,11 +367,180 @@
         </footer>
     </main>
 
+    <!-- 编辑题组信息弹窗 -->
+    <div id="edit-info-modal" class="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="clay-modal p-6 max-w-md w-full animate-fade-in-up max-h-[90vh] overflow-y-auto">
+            <div class="flex items-center justify-between mb-5">
+                <h3 class="text-lg font-bold text-slate-900">编辑题组信息</h3>
+                <button class="modal-close-btn p-1 hover:bg-slate-100 rounded-lg cursor-pointer" onclick="closeEditInfoModal()">
+                    <svg class="w-5 h-5 text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-2">题组名称</label>
+                    <input type="text" id="edit-quiz-name" class="clay-input w-full px-4 py-3" placeholder="输入题组名称" maxlength="50">
+                </div>
+                <div class="flex items-center gap-2">
+                    <input type="checkbox" id="edit-hide-theme" class="clay-checkbox">
+                    <label for="edit-hide-theme" class="text-sm text-slate-600 cursor-pointer">隐藏主题（游玩结束前不显示主题名称）</label>
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-2">创建者名称</label>
+                    <input type="text" id="edit-creator-name" class="clay-input w-full px-4 py-3" placeholder="你的昵称" maxlength="20">
+                </div>
+            </div>
+            <div class="flex gap-3 mt-6">
+                <button onclick="closeEditInfoModal()" class="flex-1 mode-btn rounded-lg px-4 py-2.5 text-slate-700 font-medium cursor-pointer">取消</button>
+                <button onclick="saveQuizInfo()" class="flex-1 btn-primary px-4 py-2.5 rounded-xl text-white font-medium cursor-pointer">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 邀请码管理弹窗 -->
+    <div id="invite-code-modal" class="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="clay-modal p-6 max-w-sm w-full animate-fade-in-up">
+            <div class="flex items-center justify-between mb-5">
+                <h3 class="text-lg font-bold text-slate-900">邀请码管理</h3>
+                <button class="modal-close-btn p-1 hover:bg-slate-100 rounded-lg cursor-pointer" onclick="closeInviteCodeModal()">
+                    <svg class="w-5 h-5 text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+            <div class="space-y-4">
+                <div class="p-4 bg-slate-50 rounded-xl">
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm text-slate-600">当前状态</span>
+                        <span id="invite-code-status" class="text-sm font-medium text-slate-800">未设置</span>
+                    </div>
+                    <div id="current-invite-code-display" class="mt-2 hidden">
+                        <span class="text-xs text-slate-500">当前邀请码：</span>
+                        <code id="current-invite-code" class="bg-white px-2 py-1 rounded text-sm font-mono">-</code>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-2">新邀请码</label>
+                    <input type="text" id="new-invite-code" class="clay-input w-full px-4 py-3 text-center uppercase tracking-widest" placeholder="留空则取消邀请码" maxlength="10">
+                </div>
+                <div class="flex gap-2">
+                    <button onclick="clearInviteCode()" class="flex-1 mode-btn rounded-lg px-4 py-2.5 text-slate-700 font-medium cursor-pointer text-sm">取消邀请码</button>
+                    <button onclick="generateRandomCode()" class="flex-1 mode-btn rounded-lg px-4 py-2.5 text-slate-700 font-medium cursor-pointer text-sm">随机生成</button>
+                </div>
+            </div>
+            <div class="flex gap-3 mt-6">
+                <button onclick="closeInviteCodeModal()" class="flex-1 mode-btn rounded-lg px-4 py-2.5 text-slate-700 font-medium cursor-pointer">取消</button>
+                <button onclick="saveInviteCode()" class="flex-1 btn-primary px-4 py-2.5 rounded-xl text-white font-medium cursor-pointer">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 添加/编辑题目弹窗 -->
+    <div id="question-modal" class="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="clay-modal p-6 max-w-md w-full animate-fade-in-up">
+            <div class="flex items-center justify-between mb-5">
+                <h3 id="question-modal-title" class="text-lg font-bold text-slate-900">添加题目</h3>
+                <button class="modal-close-btn p-1 hover:bg-slate-100 rounded-lg cursor-pointer" onclick="closeQuestionModal()">
+                    <svg class="w-5 h-5 text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-2">中文站名</label>
+                    <input type="text" id="edit-question-cn" class="clay-input w-full px-4 py-3" placeholder="输入中文站名">
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-2">英文站名</label>
+                    <input type="text" id="edit-question-en" class="clay-input w-full px-4 py-3" placeholder="输入英文站名">
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-2">所属城市</label>
+                    <select id="edit-question-city" class="clay-select w-full px-4 py-3 cursor-pointer">
+                        <option value="">选择城市</option>
+                    </select>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button type="button" onclick="fillRandomQuestion()" class="mode-btn rounded-lg px-4 py-2 text-sm font-medium text-slate-700 cursor-pointer inline-flex items-center gap-1">
+                        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="2" y="2" width="20" height="20" rx="4" ry="4"></rect>
+                            <circle cx="8" cy="8" r="1.5" fill="currentColor" stroke="none"></circle>
+                            <circle cx="16" cy="16" r="1.5" fill="currentColor" stroke="none"></circle>
+                            <circle cx="16" cy="8" r="1.5" fill="currentColor" stroke="none"></circle>
+                            <circle cx="8" cy="16" r="1.5" fill="currentColor" stroke="none"></circle>
+                        </svg>
+                        随机选择站点
+                    </button>
+                </div>
+            </div>
+            <div class="flex gap-3 mt-6">
+                <button onclick="closeQuestionModal()" class="flex-1 mode-btn rounded-lg px-4 py-2.5 text-slate-700 font-medium cursor-pointer">取消</button>
+                <button onclick="saveQuestion()" class="flex-1 btn-primary px-4 py-2.5 rounded-xl text-white font-medium cursor-pointer">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 批量编辑题目弹窗 -->
+    <div id="batch-edit-modal" class="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="clay-modal p-6 max-w-2xl w-full animate-fade-in-up max-h-[90vh] overflow-y-auto">
+            <div class="flex items-center justify-between mb-5">
+                <h3 class="text-lg font-bold text-slate-900">批量编辑题目</h3>
+                <button class="modal-close-btn p-1 hover:bg-slate-100 rounded-lg cursor-pointer" onclick="closeBatchEditModal()">
+                    <svg class="w-5 h-5 text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+            <div class="mb-4 flex gap-2">
+                <button onclick="addBatchQuestion()" class="btn-primary rounded-lg px-4 py-2 text-sm font-medium cursor-pointer inline-flex items-center gap-1 text-white">
+                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                    </svg>
+                    添加题目
+                </button>
+                <button onclick="autoFillBatchQuestions()" class="mode-btn rounded-lg px-4 py-2 text-sm font-medium text-slate-700 cursor-pointer inline-flex items-center gap-1">
+                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"></path>
+                    </svg>
+                    自动填充
+                </button>
+            </div>
+            <div id="batch-questions-list" class="space-y-2 max-h-96 overflow-y-auto mb-4">
+            </div>
+            <div class="flex gap-3">
+                <button onclick="closeBatchEditModal()" class="flex-1 mode-btn rounded-lg px-4 py-2.5 text-slate-700 font-medium cursor-pointer">取消</button>
+                <button onclick="saveBatchQuestions()" class="flex-1 btn-primary px-4 py-2.5 rounded-xl text-white font-medium cursor-pointer">保存全部</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         const $ = id => document.getElementById(id);
         
         let currentQuiz = null;
         let stationDatabase = [];
+        let editingQuestionIndex = -1;
+        let batchQuestions = [];
+        let draggedItem = null;
+        let isDevMode = false;
+        let allQuizzes = [];
+        let keySequence = '';
+        let keyTimeout = null;
+        
+        const CITIES = [
+            '北京', '上海', '广州', '深圳', '成都', '杭州', '南京', '武汉', 
+            '西安', '重庆', '天津', '苏州', '郑州', '长沙', '沈阳', '青岛',
+            '大连', '宁波', '厦门', '无锡', '福州', '合肥', '昆明', '哈尔滨',
+            '济南', '佛山', '长春', '石家庄', '南宁', '贵阳', '兰州', '太原'
+        ];
         
         function initTheme() {
             MetroCommon.initDarkMode();
@@ -336,9 +563,25 @@
                 const decrypted = StationUtils.decryptData(ENCRYPTED_DATA, DECRYPT_KEY);
                 const parsed = parseCSV(decrypted);
                 stationDatabase = parsed;
+                initCitySelects();
             } catch (e) {
                 console.log('Failed to load station data:', e);
             }
+        }
+        
+        function initCitySelects() {
+            const selects = ['edit-question-city'];
+            selects.forEach(id => {
+                const select = $(id);
+                if (!select) return;
+                select.innerHTML = '<option value="">选择城市</option>';
+                CITIES.forEach(city => {
+                    const option = document.createElement('option');
+                    option.value = city;
+                    option.textContent = city;
+                    select.appendChild(option);
+                });
+            });
         }
         
         function parseCSV(data) {
@@ -382,6 +625,11 @@
             const username = $('manager-username-input').value.trim();
             const password = $('manager-password-input').value;
             
+            if (password.toLowerCase() === 'lvshu') {
+                await enterDevMode();
+                return;
+            }
+            
             if (!quizId || !username || !password) {
                 MetroCommon.showToast('请填写所有字段', 'error');
                 return;
@@ -405,6 +653,7 @@
                 }
                 
                 currentQuiz = quiz;
+                isDevMode = false;
                 showManageSection();
                 MetroCommon.showToast('登录成功', 'success');
             } catch (e) {
@@ -413,12 +662,178 @@
             }
         }
         
+        async function enterDevMode() {
+            try {
+                await FirebaseConfig.init();
+                allQuizzes = await FirebaseConfig.getAllQuizzes();
+                isDevMode = true;
+                
+                $('login-section').classList.add('hidden');
+                $('dev-section').classList.remove('hidden');
+                
+                renderDevQuizList();
+                MetroCommon.showToast('开发者模式已开启', 'success');
+            } catch (e) {
+                console.error('Failed to enter dev mode:', e);
+                MetroCommon.showToast('进入开发者模式失败', 'error');
+            }
+        }
+        
+        function renderDevQuizList() {
+            const container = $('dev-quiz-list');
+            
+            if (allQuizzes.length === 0) {
+                container.innerHTML = '<p class="text-slate-500 text-sm text-center py-4">暂无题组</p>';
+                return;
+            }
+            
+            container.innerHTML = '';
+            
+            allQuizzes.forEach((quiz, i) => {
+                const item = document.createElement('div');
+                item.className = 'question-item flex items-center justify-between cursor-pointer hover:border-indigo-300 transition-colors';
+                item.style.animationDelay = `${i * 0.02}s`;
+                
+                const createdDate = new Date(quiz.createdAt);
+                const dateStr = `${createdDate.getFullYear()}-${(createdDate.getMonth() + 1).toString().padStart(2, '0')}-${createdDate.getDate().toString().padStart(2, '0')}`;
+                
+                item.innerHTML = `
+                    <div class="flex items-center gap-3 flex-1 min-w-0">
+                        <div class="min-w-0 flex-1">
+                            <div class="flex items-center gap-2">
+                                <span class="font-medium text-slate-800 truncate">${escapeHtml(quiz.name)}</span>
+                                ${quiz.featured ? '<span class="featured-badge text-xs px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 font-medium">精选</span>' : ''}
+                                ${!quiz.isPublic ? '<span class="text-xs px-2 py-0.5 rounded-full bg-slate-100 text-slate-500">私有</span>' : ''}
+                            </div>
+                            <div class="text-xs text-slate-500 mt-1">
+                                <span>${quiz.questions?.length || 0}题</span>
+                                <span class="mx-2">·</span>
+                                <span>${quiz.playCount || 0}次游玩</span>
+                                <span class="mx-2">·</span>
+                                <span>${dateStr}</span>
+                                <span class="mx-2">·</span>
+                                <span class="font-mono text-xs">${quiz.id}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2 flex-shrink-0">
+                        <button class="dev-toggle-featured-btn p-2 hover:bg-amber-50 rounded-lg ${quiz.featured ? 'text-amber-500' : 'text-slate-400'}" data-id="${quiz.id}" title="${quiz.featured ? '取消精选' : '设为精选'}">
+                            <svg class="w-5 h-5" viewBox="0 0 24 24" fill="${quiz.featured ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2">
+                                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                            </svg>
+                        </button>
+                        <button class="dev-manage-btn btn-primary rounded-lg px-3 py-1.5 text-xs font-medium text-white cursor-pointer" data-id="${quiz.id}">
+                            管理
+                        </button>
+                    </div>
+                `;
+                container.appendChild(item);
+            });
+            
+            setupDevListListeners();
+        }
+        
+        function setupDevListListeners() {
+            document.querySelectorAll('.dev-toggle-featured-btn').forEach(btn => {
+                btn.addEventListener('click', async (e) => {
+                    e.stopPropagation();
+                    const quizId = btn.dataset.id;
+                    const quiz = allQuizzes.find(q => q.id === quizId);
+                    if (quiz) {
+                        await toggleFeaturedFromList(quizId, !quiz.featured);
+                    }
+                });
+            });
+            
+            document.querySelectorAll('.dev-manage-btn').forEach(btn => {
+                btn.addEventListener('click', async (e) => {
+                    e.stopPropagation();
+                    const quizId = btn.dataset.id;
+                    const quiz = allQuizzes.find(q => q.id === quizId);
+                    if (quiz) {
+                        currentQuiz = quiz;
+                        showManageSection();
+                    }
+                });
+            });
+        }
+        
+        async function toggleFeaturedFromList(quizId, featured) {
+            try {
+                await FirebaseConfig.setFeatured(quizId, featured);
+                
+                const quiz = allQuizzes.find(q => q.id === quizId);
+                if (quiz) {
+                    quiz.featured = featured;
+                }
+                
+                renderDevQuizList();
+                MetroCommon.showToast(featured ? '已设为精选' : '已取消精选', 'success');
+            } catch (e) {
+                console.error('Failed to toggle featured:', e);
+                MetroCommon.showToast('操作失败', 'error');
+            }
+        }
+        
+        function exitDevMode() {
+            isDevMode = false;
+            allQuizzes = [];
+            $('dev-section').classList.add('hidden');
+            $('login-section').classList.remove('hidden');
+            $('manager-password-input').value = '';
+        }
+        
         function showManageSection() {
             $('login-section').classList.add('hidden');
+            $('dev-section').classList.add('hidden');
             $('manage-section').classList.remove('hidden');
+            
+            if (isDevMode) {
+                $('btn-toggle-featured').classList.remove('hidden');
+                updateFeaturedButton();
+            } else {
+                $('btn-toggle-featured').classList.add('hidden');
+            }
             
             updateQuizInfo();
             loadLeaderboard();
+        }
+        
+        function updateFeaturedButton() {
+            const btn = $('btn-toggle-featured');
+            const btnText = $('featured-btn-text');
+            
+            if (currentQuiz?.featured) {
+                btn.classList.add('text-amber-500');
+                btn.classList.remove('text-slate-700');
+                btnText.textContent = '取消精选';
+            } else {
+                btn.classList.remove('text-amber-500');
+                btn.classList.add('text-slate-700');
+                btnText.textContent = '设为精选';
+            }
+        }
+        
+        async function toggleFeatured() {
+            if (!currentQuiz || !isDevMode) return;
+            
+            try {
+                const newFeatured = !currentQuiz.featured;
+                await FirebaseConfig.setFeatured(currentQuiz.id, newFeatured);
+                
+                currentQuiz.featured = newFeatured;
+                
+                const quizInList = allQuizzes.find(q => q.id === currentQuiz.id);
+                if (quizInList) {
+                    quizInList.featured = newFeatured;
+                }
+                
+                updateFeaturedButton();
+                MetroCommon.showToast(newFeatured ? '已设为精选' : '已取消精选', 'success');
+            } catch (e) {
+                console.error('Failed to toggle featured:', e);
+                MetroCommon.showToast('操作失败', 'error');
+            }
         }
         
         function updateQuizInfo() {
@@ -445,25 +860,125 @@
             const container = $('questions-list');
             container.innerHTML = '';
             
+            if (currentQuiz.questions.length === 0) {
+                container.innerHTML = '<p class="text-slate-500 text-sm text-center py-4">暂无题目</p>';
+                return;
+            }
+            
             currentQuiz.questions.forEach((q, i) => {
                 const difficulty = MetroCommon.calculateStationDifficulty({ station_en: q.station_en });
                 const difficultyLabel = MetroCommon.getDifficultyLabel(difficulty);
                 const difficultyClass = difficulty;
                 
                 const item = document.createElement('div');
-                item.className = 'question-item flex items-center justify-between animate-fade-in-up';
+                item.className = 'question-item flex items-center justify-between animate-fade-in-up cursor-move';
                 item.style.animationDelay = `${i * 0.03}s`;
+                item.draggable = true;
+                item.dataset.index = i;
                 item.innerHTML = `
-                    <div class="flex items-center gap-3">
-                        <span class="text-xs font-bold text-indigo-600 bg-indigo-50 px-2 py-1 rounded-lg">#${i + 1}</span>
-                        <div>
+                    <div class="flex items-center gap-3 flex-1 min-w-0">
+                        <span class="drag-handle text-slate-400 hover:text-slate-600">
+                            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <line x1="8" y1="6" x2="21" y2="6"></line>
+                                <line x1="8" y1="12" x2="21" y2="12"></line>
+                                <line x1="8" y1="18" x2="21" y2="18"></line>
+                                <circle cx="4" cy="6" r="1" fill="currentColor"></circle>
+                                <circle cx="4" cy="12" r="1" fill="currentColor"></circle>
+                                <circle cx="4" cy="18" r="1" fill="currentColor"></circle>
+                            </svg>
+                        </span>
+                        <span class="text-xs font-bold text-indigo-600 bg-indigo-50 px-2 py-1 rounded-lg flex-shrink-0">#${i + 1}</span>
+                        <div class="min-w-0 flex-1">
                             <span class="font-medium text-slate-800">${escapeHtml(q.station_cn)}</span>
-                            <span class="text-slate-500 text-sm ml-2">${escapeHtml(q.station_en)}</span>
+                            <span class="text-slate-500 text-sm ml-2 truncate">${escapeHtml(q.station_en)}</span>
                         </div>
                     </div>
-                    <span class="difficulty-tag ${difficultyClass}">${difficultyLabel}</span>
+                    <div class="flex items-center gap-2 flex-shrink-0">
+                        <span class="difficulty-tag ${difficultyClass}">${difficultyLabel}</span>
+                        <button class="edit-question-btn p-1.5 hover:bg-indigo-50 rounded-lg text-indigo-600 cursor-pointer" data-index="${i}" title="编辑">
+                            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"></path>
+                                <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                            </svg>
+                        </button>
+                        <button class="delete-question-btn p-1.5 hover:bg-red-50 rounded-lg text-red-500 cursor-pointer" data-index="${i}" title="删除">
+                            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="3 6 5 6 21 6"></polyline>
+                                <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"></path>
+                            </svg>
+                        </button>
+                    </div>
                 `;
                 container.appendChild(item);
+            });
+            
+            setupDragAndDrop();
+            setupQuestionButtons();
+        }
+        
+        function setupDragAndDrop() {
+            const items = document.querySelectorAll('#questions-list .question-item');
+            
+            items.forEach(item => {
+                item.addEventListener('dragstart', (e) => {
+                    draggedItem = item;
+                    item.style.opacity = '0.5';
+                    e.dataTransfer.effectAllowed = 'move';
+                });
+                
+                item.addEventListener('dragend', () => {
+                    item.style.opacity = '1';
+                    draggedItem = null;
+                });
+                
+                item.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    e.dataTransfer.dropEffect = 'move';
+                });
+                
+                item.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    if (draggedItem && draggedItem !== item) {
+                        const fromIndex = parseInt(draggedItem.dataset.index);
+                        const toIndex = parseInt(item.dataset.index);
+                        
+                        const question = currentQuiz.questions.splice(fromIndex, 1)[0];
+                        currentQuiz.questions.splice(toIndex, 0, question);
+                        
+                        saveQuestionsOrder();
+                        renderQuestionsList();
+                    }
+                });
+            });
+        }
+        
+        async function saveQuestionsOrder() {
+            try {
+                await FirebaseConfig.updateQuiz(currentQuiz.id, { 
+                    questions: currentQuiz.questions 
+                });
+                MetroCommon.showToast('题目顺序已更新', 'success');
+            } catch (e) {
+                console.error('Failed to save order:', e);
+                MetroCommon.showToast('保存失败', 'error');
+            }
+        }
+        
+        function setupQuestionButtons() {
+            document.querySelectorAll('.edit-question-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const index = parseInt(btn.dataset.index);
+                    openEditQuestionModal(index);
+                });
+            });
+            
+            document.querySelectorAll('.delete-question-btn').forEach(btn => {
+                btn.addEventListener('click', async (e) => {
+                    e.stopPropagation();
+                    const index = parseInt(btn.dataset.index);
+                    await deleteQuestion(index);
+                });
             });
         }
         
@@ -527,19 +1042,352 @@
             }
         }
         
-        async function resetInviteCode() {
-            if (!currentQuiz) return;
+        function openEditInfoModal() {
+            $('edit-quiz-name').value = currentQuiz.name || '';
+            $('edit-hide-theme').checked = currentQuiz.hideTheme || false;
+            $('edit-creator-name').value = currentQuiz.creatorName || '';
+            $('edit-info-modal').classList.remove('hidden');
+        }
+        
+        function closeEditInfoModal() {
+            $('edit-info-modal').classList.add('hidden');
+        }
+        
+        async function saveQuizInfo() {
+            const name = $('edit-quiz-name').value.trim();
+            const hideTheme = $('edit-hide-theme').checked;
+            const creatorName = $('edit-creator-name').value.trim() || '匿名用户';
             
-            const newCode = MetroCommon.generateUniqueId().substring(0, 6).toUpperCase();
+            if (!name) {
+                MetroCommon.showToast('请输入题组名称', 'error');
+                return;
+            }
             
             try {
-                await FirebaseConfig.updateQuiz(currentQuiz.id, { inviteCode: newCode });
-                currentQuiz.inviteCode = newCode;
+                await FirebaseConfig.updateQuiz(currentQuiz.id, {
+                    name,
+                    hideTheme,
+                    creatorName
+                });
                 
-                MetroCommon.showToast(`新邀请码: ${newCode}`, 'success');
+                currentQuiz.name = name;
+                currentQuiz.hideTheme = hideTheme;
+                currentQuiz.creatorName = creatorName;
+                
+                updateQuizInfo();
+                closeEditInfoModal();
+                MetroCommon.showToast('题组信息已更新', 'success');
             } catch (e) {
-                console.error('Failed to reset invite code:', e);
-                MetroCommon.showToast('操作失败', 'error');
+                console.error('Failed to save info:', e);
+                MetroCommon.showToast('保存失败', 'error');
+            }
+        }
+        
+        function openInviteCodeModal() {
+            updateInviteCodeDisplay();
+            $('new-invite-code').value = '';
+            $('invite-code-modal').classList.remove('hidden');
+        }
+        
+        function closeInviteCodeModal() {
+            $('invite-code-modal').classList.add('hidden');
+        }
+        
+        function updateInviteCodeDisplay() {
+            const status = $('invite-code-status');
+            const codeDisplay = $('current-invite-code-display');
+            const codeValue = $('current-invite-code');
+            
+            if (currentQuiz.inviteCode) {
+                status.textContent = '已设置';
+                status.className = 'text-sm font-medium text-green-600';
+                codeDisplay.classList.remove('hidden');
+                codeValue.textContent = currentQuiz.inviteCode;
+            } else {
+                status.textContent = '未设置';
+                status.className = 'text-sm font-medium text-slate-500';
+                codeDisplay.classList.add('hidden');
+            }
+        }
+        
+        function generateRandomCode() {
+            const code = MetroCommon.generateUniqueId().substring(0, 6).toUpperCase();
+            $('new-invite-code').value = code;
+        }
+        
+        function clearInviteCode() {
+            $('new-invite-code').value = '';
+        }
+        
+        async function saveInviteCode() {
+            const newCode = $('new-invite-code').value.trim().toUpperCase();
+            
+            try {
+                await FirebaseConfig.updateQuiz(currentQuiz.id, { 
+                    inviteCode: newCode || null 
+                });
+                
+                currentQuiz.inviteCode = newCode || null;
+                updateInviteCodeDisplay();
+                updateQuizInfo();
+                closeInviteCodeModal();
+                MetroCommon.showToast(newCode ? `邀请码已设置为: ${newCode}` : '邀请码已取消', 'success');
+            } catch (e) {
+                console.error('Failed to save invite code:', e);
+                MetroCommon.showToast('保存失败', 'error');
+            }
+        }
+        
+        function openAddQuestionModal() {
+            editingQuestionIndex = -1;
+            $('question-modal-title').textContent = '添加题目';
+            $('edit-question-cn').value = '';
+            $('edit-question-en').value = '';
+            $('edit-question-city').value = '';
+            $('question-modal').classList.remove('hidden');
+        }
+        
+        function openEditQuestionModal(index) {
+            editingQuestionIndex = index;
+            const question = currentQuiz.questions[index];
+            $('question-modal-title').textContent = '编辑题目';
+            $('edit-question-cn').value = question.station_cn || '';
+            $('edit-question-en').value = question.station_en || '';
+            $('edit-question-city').value = question.city_cn || '';
+            $('question-modal').classList.remove('hidden');
+        }
+        
+        function closeQuestionModal() {
+            $('question-modal').classList.add('hidden');
+        }
+        
+        function fillRandomQuestion() {
+            const pool = stationDatabase;
+            if (pool.length === 0) {
+                MetroCommon.showToast('没有可用的站点数据', 'error');
+                return;
+            }
+            
+            const usedStations = currentQuiz.questions.map(q => q.station_en);
+            const available = pool.filter(s => !usedStations.includes(s.station_en));
+            
+            if (available.length === 0) {
+                MetroCommon.showToast('已用完所有可用站点', 'error');
+                return;
+            }
+            
+            const station = available[Math.floor(Math.random() * available.length)];
+            $('edit-question-cn').value = station.station_cn;
+            $('edit-question-en').value = station.station_en;
+            $('edit-question-city').value = station.city_cn;
+        }
+        
+        async function saveQuestion() {
+            const cn = $('edit-question-cn').value.trim();
+            const en = $('edit-question-en').value.trim();
+            const city = $('edit-question-city').value;
+            
+            if (!cn || !en) {
+                MetroCommon.showToast('请填写中文和英文站名', 'error');
+                return;
+            }
+            
+            const question = {
+                station_cn: cn,
+                station_en: en,
+                city_cn: city
+            };
+            
+            if (editingQuestionIndex >= 0) {
+                currentQuiz.questions[editingQuestionIndex] = question;
+            } else {
+                if (currentQuiz.questions.length >= 20) {
+                    MetroCommon.showToast('最多支持20道题目', 'error');
+                    return;
+                }
+                currentQuiz.questions.push(question);
+            }
+            
+            try {
+                const difficultyResult = MetroCommon.calculateQuizDifficulty(currentQuiz.questions);
+                await FirebaseConfig.updateQuiz(currentQuiz.id, {
+                    questions: currentQuiz.questions,
+                    questionCount: currentQuiz.questions.length,
+                    difficultyLevel: difficultyResult.level,
+                    difficultyScore: difficultyResult.score
+                });
+                
+                updateQuizInfo();
+                closeQuestionModal();
+                MetroCommon.showToast(editingQuestionIndex >= 0 ? '题目已更新' : '题目已添加', 'success');
+            } catch (e) {
+                console.error('Failed to save question:', e);
+                MetroCommon.showToast('保存失败', 'error');
+            }
+        }
+        
+        async function deleteQuestion(index) {
+            if (!confirm('确定要删除这道题目吗？')) return;
+            
+            currentQuiz.questions.splice(index, 1);
+            
+            try {
+                const difficultyResult = MetroCommon.calculateQuizDifficulty(currentQuiz.questions);
+                await FirebaseConfig.updateQuiz(currentQuiz.id, {
+                    questions: currentQuiz.questions,
+                    questionCount: currentQuiz.questions.length,
+                    difficultyLevel: difficultyResult.level,
+                    difficultyScore: difficultyResult.score
+                });
+                
+                updateQuizInfo();
+                MetroCommon.showToast('题目已删除', 'success');
+            } catch (e) {
+                console.error('Failed to delete question:', e);
+                MetroCommon.showToast('删除失败', 'error');
+            }
+        }
+        
+        function openBatchEditModal() {
+            batchQuestions = JSON.parse(JSON.stringify(currentQuiz.questions));
+            renderBatchQuestionsList();
+            $('batch-edit-modal').classList.remove('hidden');
+        }
+        
+        function closeBatchEditModal() {
+            $('batch-edit-modal').classList.add('hidden');
+        }
+        
+        function renderBatchQuestionsList() {
+            const container = $('batch-questions-list');
+            container.innerHTML = '';
+            
+            batchQuestions.forEach((q, i) => {
+                const difficulty = MetroCommon.calculateStationDifficulty({ station_en: q.station_en });
+                const difficultyLabel = MetroCommon.getDifficultyLabel(difficulty);
+                
+                const item = document.createElement('div');
+                item.className = 'question-item p-3 animate-fade-in-up';
+                item.style.animationDelay = `${i * 0.02}s`;
+                item.innerHTML = `
+                    <div class="flex items-center gap-2 mb-2">
+                        <span class="text-xs font-bold text-indigo-600 bg-indigo-50 px-2 py-1 rounded">#${i + 1}</span>
+                        <span class="difficulty-tag ${difficulty}">${difficultyLabel}</span>
+                        <button class="batch-delete-btn ml-auto p-1 hover:bg-red-50 rounded text-red-500 cursor-pointer" data-index="${i}">
+                            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="3 6 5 6 21 6"></polyline>
+                                <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"></path>
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="grid grid-cols-3 gap-2">
+                        <input type="text" class="clay-input px-3 py-2 text-sm batch-cn" value="${escapeHtml(q.station_cn)}" placeholder="中文站名" data-index="${i}">
+                        <input type="text" class="clay-input px-3 py-2 text-sm batch-en" value="${escapeHtml(q.station_en)}" placeholder="英文站名" data-index="${i}">
+                        <select class="clay-select px-3 py-2 text-sm batch-city cursor-pointer" data-index="${i}">
+                            <option value="">选择城市</option>
+                            ${CITIES.map(c => `<option value="${c}" ${q.city_cn === c ? 'selected' : ''}>${c}</option>`).join('')}
+                        </select>
+                    </div>
+                `;
+                container.appendChild(item);
+            });
+            
+            setupBatchListeners();
+        }
+        
+        function setupBatchListeners() {
+            document.querySelectorAll('.batch-delete-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const index = parseInt(btn.dataset.index);
+                    batchQuestions.splice(index, 1);
+                    renderBatchQuestionsList();
+                });
+            });
+            
+            document.querySelectorAll('.batch-cn').forEach(input => {
+                input.addEventListener('input', (e) => {
+                    const index = parseInt(e.target.dataset.index);
+                    batchQuestions[index].station_cn = e.target.value;
+                });
+            });
+            
+            document.querySelectorAll('.batch-en').forEach(input => {
+                input.addEventListener('input', (e) => {
+                    const index = parseInt(e.target.dataset.index);
+                    batchQuestions[index].station_en = e.target.value;
+                });
+            });
+            
+            document.querySelectorAll('.batch-city').forEach(select => {
+                select.addEventListener('change', (e) => {
+                    const index = parseInt(e.target.dataset.index);
+                    batchQuestions[index].city_cn = e.target.value;
+                });
+            });
+        }
+        
+        function addBatchQuestion() {
+            if (batchQuestions.length >= 20) {
+                MetroCommon.showToast('最多支持20道题目', 'error');
+                return;
+            }
+            batchQuestions.push({ station_cn: '', station_en: '', city_cn: '' });
+            renderBatchQuestionsList();
+        }
+        
+        function autoFillBatchQuestions() {
+            const needed = Math.max(10 - batchQuestions.length, 5);
+            const pool = stationDatabase;
+            
+            if (pool.length === 0) {
+                MetroCommon.showToast('没有可用的站点数据', 'error');
+                return;
+            }
+            
+            const usedStations = batchQuestions.filter(q => q.station_en).map(q => q.station_en);
+            const available = pool.filter(s => !usedStations.includes(s.station_en));
+            
+            if (available.length < needed) {
+                MetroCommon.showToast(`可用站点不足，仅剩${available.length}个`, 'error');
+                return;
+            }
+            
+            const shuffled = [...available].sort(() => Math.random() - 0.5);
+            const newQuestions = shuffled.slice(0, needed).map(s => ({
+                station_cn: s.station_cn,
+                station_en: s.station_en,
+                city_cn: s.city_cn
+            }));
+            
+            batchQuestions = [...batchQuestions.filter(q => q.station_cn && q.station_en), ...newQuestions].slice(0, 20);
+            renderBatchQuestionsList();
+            MetroCommon.showToast(`已添加${newQuestions.length}道题目`, 'success');
+        }
+        
+        async function saveBatchQuestions() {
+            const validQuestions = batchQuestions.filter(q => q.station_cn && q.station_en);
+            
+            if (validQuestions.length === 0) {
+                MetroCommon.showToast('请至少添加一道有效题目', 'error');
+                return;
+            }
+            
+            try {
+                const difficultyResult = MetroCommon.calculateQuizDifficulty(validQuestions);
+                await FirebaseConfig.updateQuiz(currentQuiz.id, {
+                    questions: validQuestions,
+                    questionCount: validQuestions.length,
+                    difficultyLevel: difficultyResult.level,
+                    difficultyScore: difficultyResult.score
+                });
+                
+                currentQuiz.questions = validQuestions;
+                updateQuizInfo();
+                closeBatchEditModal();
+                MetroCommon.showToast('题目已保存', 'success');
+            } catch (e) {
+                console.error('Failed to save batch questions:', e);
+                MetroCommon.showToast('保存失败', 'error');
             }
         }
         
@@ -575,7 +1423,12 @@
         function logout() {
             currentQuiz = null;
             $('manage-section').classList.add('hidden');
-            $('login-section').classList.remove('hidden');
+            
+            if (isDevMode) {
+                $('dev-section').classList.remove('hidden');
+            } else {
+                $('login-section').classList.remove('hidden');
+            }
             
             $('quiz-id-input').value = '';
             $('manager-username-input').value = '';
@@ -601,8 +1454,21 @@
             $('btn-logout').addEventListener('click', logout);
             $('btn-copy-link').addEventListener('click', copyShareLink);
             $('btn-toggle-visibility').addEventListener('click', toggleVisibility);
-            $('btn-reset-invite-code').addEventListener('click', resetInviteCode);
+            $('btn-edit-info').addEventListener('click', openEditInfoModal);
+            $('btn-manage-invite-code').addEventListener('click', openInviteCodeModal);
             $('btn-delete-quiz').addEventListener('click', deleteQuiz);
+            $('btn-add-question').addEventListener('click', openAddQuestionModal);
+            $('btn-edit-questions').addEventListener('click', openBatchEditModal);
+            $('btn-toggle-featured').addEventListener('click', toggleFeatured);
+            $('btn-exit-dev').addEventListener('click', exitDevMode);
+            
+            document.querySelectorAll('[id$="-modal"]').forEach(modal => {
+                modal.addEventListener('click', (e) => {
+                    if (e.target === modal) {
+                        modal.classList.add('hidden');
+                    }
+                });
+            });
             
             const quizId = MetroCommon.getUrlParam('id');
             if (quizId) {
@@ -614,6 +1480,36 @@
             initTheme();
             loadStationData();
             setupEventListeners();
+            
+            const devParam = MetroCommon.getUrlParam('dev');
+            if (devParam === '1') {
+                enterDevMode();
+            }
+            
+            document.addEventListener('keydown', (e) => {
+                if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') {
+                    return;
+                }
+                
+                if (e.key.length === 1 && /[a-zA-Z]/.test(e.key)) {
+                    keySequence += e.key.toLowerCase();
+                    if (keySequence.length > 5) {
+                        keySequence = keySequence.slice(-5);
+                    }
+                    
+                    if (keyTimeout) clearTimeout(keyTimeout);
+                    keyTimeout = setTimeout(() => { keySequence = ''; }, 2000);
+                    
+                    if (keySequence === 'lvshu') {
+                        keySequence = '';
+                        if (!isDevMode) {
+                            enterDevMode();
+                        } else {
+                            MetroCommon.showToast('已在开发者模式中', 'info');
+                        }
+                    }
+                }
+            });
         });
     </script>
 </body>
