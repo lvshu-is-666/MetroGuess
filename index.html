@@ -84,7 +84,39 @@
             };
         }
     </script>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        // Tailwind CSS 加载器 - CDN优先，本地回退
+        (function() {
+            var cdnLoaded = false;
+            var script = document.createElement('script');
+            script.src = 'https://cdn.tailwindcss.com';
+            script.async = false;
+            
+            script.onload = function() {
+                cdnLoaded = true;
+            };
+            
+            script.onerror = function() {
+                // CDN加载失败，使用本地备份
+                var fallback = document.createElement('link');
+                fallback.rel = 'stylesheet';
+                fallback.href = 'dist/tailwind-backup.css';
+                document.head.appendChild(fallback);
+            };
+            
+            document.head.appendChild(script);
+            
+            // 超时检测：如果3秒内CDN未加载完成，使用本地备份
+            setTimeout(function() {
+                if (!cdnLoaded && typeof tailwind === 'undefined') {
+                    var fallback = document.createElement('link');
+                    fallback.rel = 'stylesheet';
+                    fallback.href = 'dist/tailwind-backup.css';
+                    document.head.appendChild(fallback);
+                }
+            }, 3000);
+        })();
+    </script>
     <script src="station-utils.js"></script>
     <script src="game-logic.js"></script>
     <script src="common.js"></script>

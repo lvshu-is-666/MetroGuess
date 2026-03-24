@@ -1,0 +1,11 @@
+{
+  "name": "metro-guess",
+  "version": "1.0.0",
+  "description": "地铁站名猜谜游戏",
+  "scripts": {
+    "build:css": "npx tailwindcss -i ./src/input.css -o ./dist/tailwind-backup.css --minify"
+  },
+  "devDependencies": {
+    "tailwindcss": "^3.4.0"
+  }
+}

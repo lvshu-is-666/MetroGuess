@@ -11,7 +11,37 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@300;400;500;600;700&display=swap" media="print" onload="this.media='all'">
-    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        // Tailwind CSS 加载器 - CDN优先，本地回退
+        (function() {
+            var cdnLoaded = false;
+            var script = document.createElement('script');
+            script.src = 'https://cdn.tailwindcss.com';
+            script.async = false;
+            
+            script.onload = function() {
+                cdnLoaded = true;
+            };
+            
+            script.onerror = function() {
+                var fallback = document.createElement('link');
+                fallback.rel = 'stylesheet';
+                fallback.href = '../dist/tailwind-backup.css';
+                document.head.appendChild(fallback);
+            };
+            
+            document.head.appendChild(script);
+            
+            setTimeout(function() {
+                if (!cdnLoaded && typeof tailwind === 'undefined') {
+                    var fallback = document.createElement('link');
+                    fallback.rel = 'stylesheet';
+                    fallback.href = '../dist/tailwind-backup.css';
+                    document.head.appendChild(fallback);
+                }
+            }, 3000);
+        })();
+    </script>
     <link rel="stylesheet" href="../styles.css">
     <link rel="stylesheet" href="../shared-styles.css">
     <link rel="stylesheet" href="../shared-nav.css">

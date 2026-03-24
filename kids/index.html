@@ -69,7 +69,37 @@
             };
         }
     </script>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        // Tailwind CSS 加载器 - CDN优先，本地回退
+        (function() {
+            var cdnLoaded = false;
+            var script = document.createElement('script');
+            script.src = 'https://cdn.tailwindcss.com';
+            script.async = false;
+            
+            script.onload = function() {
+                cdnLoaded = true;
+            };
+            
+            script.onerror = function() {
+                var fallback = document.createElement('link');
+                fallback.rel = 'stylesheet';
+                fallback.href = '../dist/tailwind-backup.css';
+                document.head.appendChild(fallback);
+            };
+            
+            document.head.appendChild(script);
+            
+            setTimeout(function() {
+                if (!cdnLoaded && typeof tailwind === 'undefined') {
+                    var fallback = document.createElement('link');
+                    fallback.rel = 'stylesheet';
+                    fallback.href = '../dist/tailwind-backup.css';
+                    document.head.appendChild(fallback);
+                }
+            }, 3000);
+        })();
+    </script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="../shared-nav.css">

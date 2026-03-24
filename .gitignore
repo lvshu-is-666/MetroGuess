@@ -19,3 +19,9 @@ subway_stations_temp.csv
 # OS files
 .DS_Store
 Thumbs.db
+
+# Node.js
+node_modules/
+
+# Build source (keep dist output)
+src/

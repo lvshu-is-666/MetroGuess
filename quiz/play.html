@@ -10,7 +10,37 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@300;400;500;600;700&display=swap" media="print" onload="this.media='all'">
-    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        // Tailwind CSS 加载器 - CDN优先，本地回退
+        (function() {
+            var cdnLoaded = false;
+            var script = document.createElement('script');
+            script.src = 'https://cdn.tailwindcss.com';
+            script.async = false;
+            
+            script.onload = function() {
+                cdnLoaded = true;
+            };
+            
+            script.onerror = function() {
+                var fallback = document.createElement('link');
+                fallback.rel = 'stylesheet';
+                fallback.href = '../dist/tailwind-backup.css';
+                document.head.appendChild(fallback);
+            };
+            
+            document.head.appendChild(script);
+            
+            setTimeout(function() {
+                if (!cdnLoaded && typeof tailwind === 'undefined') {
+                    var fallback = document.createElement('link');
+                    fallback.rel = 'stylesheet';
+                    fallback.href = '../dist/tailwind-backup.css';
+                    document.head.appendChild(fallback);
+                }
+            }, 3000);
+        })();
+    </script>
     <link rel="stylesheet" href="../styles.css">
     <link rel="stylesheet" href="../shared-styles.css">
     <link rel="stylesheet" href="../shared-nav.css">
@@ -214,6 +244,11 @@
 
     <main class="relative z-10 container mx-auto px-4 py-6 max-w-6xl main-with-nav main-content-offset">
 
+        <!-- 题组信息 -->
+        <section id="quiz-info" class="game-card p-4 mb-5 animate-fade-in-up hidden">
+            <h1 id="quiz-title" class="text-xl font-bold text-slate-800 text-center mb-1"></h1>
+            <p id="quiz-subtitle" class="text-sm text-slate-500 text-center"></p>
+        </section>
 
         <!-- 游戏统计面板 -->
         <section id="game-settings" class="game-card p-4 mb-5 animate-fade-in-up">
@@ -873,6 +908,7 @@
         function initGame() {
             $('loading-section').classList.add('hidden');
             $('invite-code-section').classList.add('hidden');
+            $('quiz-info').classList.remove('hidden');
             $('game-area').classList.remove('hidden');
 
             const displayName = quizData.hideTheme ? '神秘题组' : quizData.name;
@@ -1401,44 +1437,7 @@
             $('btn-play-again').addEventListener('click', resetGame);
         }
 
-        const elements = {
-            mobileNavToggle: null,
-            sidebar: null,
-            sidebarOverlay: null
-        };
-
-        function toggleSidebar() {
-            if (elements.sidebar && elements.sidebarOverlay) {
-                elements.sidebar.classList.toggle('open');
-                elements.sidebarOverlay.classList.toggle('active');
-            }
-        }
-
-        function closeSidebar() {
-            if (elements.sidebar && elements.sidebarOverlay) {
-                elements.sidebar.classList.remove('open');
-                elements.sidebarOverlay.classList.remove('active');
-            }
-        }
-
-        function initNavElements() {
-            elements.mobileNavToggle = document.getElementById('mobile-nav-toggle');
-            elements.sidebar = document.getElementById('sidebar');
-            elements.sidebarOverlay = document.getElementById('sidebar-overlay');
-        }
-
-        function initNavEventListeners() {
-            if (elements.mobileNavToggle) {
-                elements.mobileNavToggle.addEventListener('click', toggleSidebar);
-            }
-            if (elements.sidebarOverlay) {
-                elements.sidebarOverlay.addEventListener('click', closeSidebar);
-            }
-        }
-
         document.addEventListener('DOMContentLoaded', () => {
-            initNavElements();
-            initNavEventListeners();
             initTheme();
             initAudio();
             setupEventListeners();
