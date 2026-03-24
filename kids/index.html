@@ -2484,12 +2484,12 @@
             card.innerHTML = `
                 <div class="flex items-center justify-between mb-2">
                     <span class="text-xs font-medium text-slate-500">#${index + 1}</span>
-                    <span class="solved-badge ${isSolved ? '' : 'hidden'} text-green-600 text-sm font-medium flex items-center gap-1">
-                        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                    <span class="solved-badge ${isSolved ? '' : 'hidden'} text-green-600 text-xs font-medium flex items-center gap-1">
+                        <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
                         已解开
                     </span>
                 </div>
-                <div class="letter-display text-lg md:text-xl font-bold text-slate-800 mb-3 text-center py-2 bg-white/50 rounded-lg dark:bg-slate-700/50 dark:text-slate-200">
+                <div class="letter-display text-lg md:text-xl font-bold text-slate-800 mb-2 text-center py-2 bg-white/50 rounded-lg dark:bg-slate-700/50 dark:text-slate-200">
                     ${displayText}
                 </div>
                 ${translationHtml}

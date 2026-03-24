@@ -761,6 +761,7 @@
         function renderStations() {
             const container = $('stations-container');
             container.innerHTML = '';
+            container.className = 'grid grid-cols-1 md:grid-cols-2 gap-4';
 
             const fragment = document.createDocumentFragment();
 
@@ -779,15 +780,15 @@
                 card.style.animationDelay = `${index * 0.05}s`;
                 card.id = `station-${index}`;
                 card.innerHTML = `
-                    <div class="flex items-center justify-between mb-3">
+                    <div class="flex items-center justify-between mb-2">
                         <div class="flex items-center gap-2">
                             <span class="text-xs font-bold text-slate-400 bg-slate-100 px-2 py-1 rounded-lg">#${index + 1}</span>
                             ${gameState.devMode ? '<span class="dev-mode-badge">DEV</span>' : ''}
                         </div>
                         <div class="flex items-center gap-2">
-                            <span class="text-xs px-2.5 py-1 rounded-lg border-2 font-medium ${difficultyClass}">${difficultyLabel}</span>
+                            <span class="text-xs px-2 py-0.5 rounded-lg border font-medium ${difficultyClass}">${difficultyLabel}</span>
                             ${isSolved ? `
-                                <span class="flex items-center gap-1 text-xs font-bold text-green-600 bg-green-100 px-2 py-1 rounded-lg">
+                                <span class="flex items-center gap-1 text-xs font-bold text-green-600 bg-green-100 px-2 py-0.5 rounded-lg">
                                     <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
                                         <polyline points="20 6 9 17 4 12"></polyline>
                                     </svg>
@@ -796,13 +797,13 @@
                             ` : ''}
                         </div>
                     </div>
-                    <div class="letter-display text-xl md:text-2xl font-bold text-slate-800 mb-3 text-center py-3 bg-white/60 rounded-xl border-2 border-slate-100">
+                    <div class="letter-display text-lg md:text-xl font-bold text-slate-800 mb-2 text-center py-2 bg-white/60 rounded-xl border-2 border-slate-100">
                         ${displayText}
                     </div>
                     ${(isSolved || gameState.devMode) ? `
                         <div class="text-center pt-2 border-t border-slate-200/60">
-                            <p class="text-slate-800 font-bold text-lg">${escapeHtml(station.station_cn)}</p>
-                            <p class="text-slate-500 text-xs mt-1">${escapeHtml(station.city_cn || '')}</p>
+                            <p class="text-slate-800 font-bold">${escapeHtml(station.station_cn)}</p>
+                            <p class="text-slate-500 text-xs mt-0.5">${escapeHtml(station.city_cn || '')}</p>
                         </div>
                     ` : ''}
                 `;

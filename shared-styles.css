@@ -494,6 +494,88 @@ h1, h2, h3, h4, h5, h6, .font-display {
         height: 28px;
         font-size: 0.75rem;
     }
+
+    .game-card,
+    .station-card {
+        padding: 10px !important;
+    }
+
+    .game-card .flex.items-center.justify-between.mb-2,
+    .game-card .flex.items-center.justify-between.mb-3,
+    .station-card .flex.items-center.justify-between.mb-2,
+    .station-card .flex.items-center.justify-between.mb-3 {
+        margin-bottom: 6px !important;
+    }
+
+    .game-card .letter-display,
+    .station-card .letter-display {
+        font-size: 1rem !important;
+        padding: 8px 6px !important;
+        margin-bottom: 6px !important;
+        letter-spacing: 0.1em !important;
+    }
+
+    .game-card .station-info,
+    .station-card .station-info,
+    .game-card .text-center.pt-2,
+    .station-card .text-center.pt-2 {
+        padding-top: 6px !important;
+        margin-top: 4px !important;
+    }
+
+    .game-card .station-info .station-cn,
+    .station-card .station-info .station-cn,
+    .game-card .text-center.pt-2 p:first-child,
+    .station-card .text-center.pt-2 p:first-child {
+        font-size: 0.9375rem !important;
+    }
+
+    .game-card .station-info p:last-child,
+    .station-card .station-info p:last-child,
+    .game-card .text-center.pt-2 p:last-child,
+    .station-card .text-center.pt-2 p:last-child {
+        font-size: 0.6875rem !important;
+        margin-top: 2px !important;
+    }
+
+    .game-card .text-xs,
+    .station-card .text-xs {
+        font-size: 0.6875rem !important;
+    }
+
+    .game-card .text-xs.font-bold.text-slate-400,
+    .station-card .text-xs.font-bold.text-slate-400 {
+        padding: 2px 6px !important;
+    }
+
+    .game-card .difficulty-badge,
+    .station-card .difficulty-badge {
+        padding: 2px 6px !important;
+    }
+
+    .game-card .solved-badge,
+    .station-card .solved-badge {
+        font-size: 0.6875rem !important;
+        padding: 2px 6px !important;
+    }
+
+    #stations-container {
+        gap: 8px !important;
+    }
+
+    .word-card {
+        padding: 10px !important;
+    }
+
+    .word-card .flex.items-center.justify-between {
+        margin-bottom: 6px !important;
+    }
+
+    .word-card .letter-display {
+        font-size: 1rem !important;
+        padding: 8px 6px !important;
+        margin-bottom: 6px !important;
+    }
 }
 
 @media (prefers-reduced-motion: reduce) {
