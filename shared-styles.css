@@ -578,6 +578,112 @@ h1, h2, h3, h4, h5, h6, .font-display {
     }
 }
 
+/* 深色模式 - 标签样式 */
+.dark .tag-clay.easy {
+    background: linear-gradient(145deg, #14532d 0%, #166534 100%);
+    border-color: #22c55e;
+    color: #86efac;
+}
+
+.dark .tag-clay.normal {
+    background: linear-gradient(145deg, #713f12 0%, #854d0e 100%);
+    border-color: #eab308;
+    color: #fde047;
+}
+
+.dark .tag-clay.hard {
+    background: linear-gradient(145deg, #7f1d1d 0%, #991b1b 100%);
+    border-color: #ef4444;
+    color: #fca5a5;
+}
+
+.dark .tag-clay.city {
+    background: linear-gradient(145deg, #312e81 0%, #3730a3 100%);
+    border-color: #818cf8;
+    color: #c7d2fe;
+}
+
+.dark .tag-clay.count {
+    background: linear-gradient(145deg, #334155 0%, #475569 100%);
+    border-color: #94a3b8;
+    color: #e2e8f0;
+}
+
+/* 深色模式 - 统计标签 */
+.dark .stat-label {
+    color: #94a3b8;
+}
+
+/* 深色模式 - 难度徽章 */
+.dark .difficulty-badge.easy,
+.dark .difficulty-tag.easy {
+    background: linear-gradient(145deg, #14532d 0%, #166534 100%);
+    border-color: #22c55e;
+    color: #86efac;
+}
+
+.dark .difficulty-badge.normal,
+.dark .difficulty-tag.normal {
+    background: linear-gradient(145deg, #713f12 0%, #854d0e 100%);
+    border-color: #eab308;
+    color: #fde047;
+}
+
+.dark .difficulty-badge.hard,
+.dark .difficulty-tag.hard {
+    background: linear-gradient(145deg, #7f1d1d 0%, #991b1b 100%);
+    border-color: #ef4444;
+    color: #fca5a5;
+}
+
+/* 深色模式 - 排名徽章 */
+.dark .rank-badge.normal {
+    background: linear-gradient(145deg, #334155 0%, #475569 100%);
+    color: #cbd5e1;
+    box-shadow: 0 2px 0 #334155;
+}
+
+/* 深色模式 - 成功图标 */
+.dark .success-icon {
+    background: linear-gradient(145deg, #15803d 0%, #16a34a 100%);
+    box-shadow: 0 4px 0 #14532d, 0 8px 24px rgba(22, 163, 74, 0.3);
+}
+
+/* 深色模式 - 链接 */
+.dark a {
+    color: #60a5fa;
+}
+
+.dark a:hover {
+    color: #93c5fd;
+}
+
+/* 深色模式 - 输入框placeholder */
+.dark input::placeholder,
+.dark textarea::placeholder {
+    color: #64748b;
+}
+
+/* 深色模式 - 滚动条 */
+.dark ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+.dark ::-webkit-scrollbar-track {
+    background: #0f172a;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+    background: #334155;
+    border-radius: 4px;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+    background: #475569;
+}
+
+/* 减少动画偏好 */
 @media (prefers-reduced-motion: reduce) {
     *,
     *::before,

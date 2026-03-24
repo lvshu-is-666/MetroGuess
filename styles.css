@@ -1436,3 +1436,126 @@ h1, h2, h3, h4, h5, h6, .font-display {
     text-transform: uppercase;
     letter-spacing: 0.05em;
 }
+
+/* ========== 深色模式补充 ========== */
+
+/* 深色模式 - 题组卡片 */
+.dark .quiz-card-new {
+    background: linear-gradient(145deg, rgba(51, 65, 85, 0.9) 0%, rgba(30, 41, 59, 0.8) 100%);
+    border-color: rgba(71, 85, 105, 0.4);
+}
+
+.dark .quiz-card-new:hover {
+    border-color: rgba(96, 165, 250, 0.5);
+}
+
+.dark .quiz-card-new.featured {
+    background: linear-gradient(145deg, rgba(120, 53, 15, 0.3) 0%, rgba(146, 64, 14, 0.2) 100%);
+    border-color: rgba(251, 191, 36, 0.2);
+}
+
+.dark .quiz-card-new.featured:hover {
+    border-color: rgba(251, 191, 36, 0.4);
+}
+
+/* 深色模式 - 表单标签 */
+.dark .quiz-form-label {
+    color: #cbd5e1;
+}
+
+.dark .quiz-form-input,
+.dark .quiz-form-select {
+    background-color: #1e293b;
+    border-color: #475569;
+    color: #e2e8f0;
+}
+
+.dark .quiz-form-input:focus,
+.dark .quiz-form-select:focus {
+    border-color: #60a5fa;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+}
+
+.dark .quiz-form-input::placeholder {
+    color: #64748b;
+}
+
+/* 深色模式 - 复选框标签 */
+.dark input[type="checkbox"] + label {
+    color: #cbd5e1;
+}
+
+/* 深色模式 - 题组问题项 */
+.dark .quiz-question-item {
+    background: rgba(30, 41, 59, 0.5);
+    border-color: #475569;
+}
+
+.dark .quiz-question-number {
+    color: #a5b4fc;
+}
+
+/* 深色模式 - 难度显示 */
+.dark .quiz-difficulty-display {
+    background: rgba(99, 102, 241, 0.1);
+}
+
+.dark .quiz-difficulty-value {
+    color: #a5b4fc;
+}
+
+.dark .quiz-difficulty-label {
+    color: #94a3b8;
+}
+
+/* 深色模式 - 分享框 */
+.dark .quiz-share-box {
+    background: rgba(30, 41, 59, 0.5);
+    border-color: #475569;
+}
+
+.dark .quiz-share-link input,
+.dark .quiz-share-text {
+    background-color: #1e293b;
+    border-color: #475569;
+    color: #e2e8f0;
+}
+
+/* 深色模式 - 筛选器 */
+.dark .filter-select {
+    background-color: #1e293b;
+    border-color: #475569;
+    color: #e2e8f0;
+}
+
+/* 深色模式 - 空状态 */
+.dark .empty-state {
+    color: #94a3b8;
+}
+
+.dark .empty-state-title {
+    color: #cbd5e1;
+}
+
+/* 深色模式 - 统计数字 */
+.dark .stat-number {
+    background: linear-gradient(135deg, #818cf8 0%, #a5b4fc 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+}
+
+/* 深色模式 - 页面背景渐变 */
+.dark body {
+    background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #1e293b 100%);
+}
+
+/* 深色模式 - 加载动画 */
+.dark .loading-clay {
+    border-color: rgba(99, 102, 241, 0.2);
+    border-top-color: #818cf8;
+}
+
+/* 深色模式 - 开发者标记 */
+.dark .dev-mode-badge {
+    background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
+}

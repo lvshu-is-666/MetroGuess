@@ -72,6 +72,8 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="../shared-nav.css">
+    <script src="../shared-nav.js"></script>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;500;600;700;800&family=Comic+Neue:wght@300;400;700&display=swap" media="print" onload="this.media='all'">
     <style>
         .icon {
@@ -1291,10 +1293,188 @@
 <body class="bg-gradient-to-br from-indigo-50 via-purple-50 to-blue-100 min-h-screen text-slate-800 transition-colors duration-300">
 
     <div id="toast-container" class="fixed top-4 right-4 z-50 space-y-2" role="alert" aria-live="polite"></div>
+
+    <div class="mobile-nav-bar">
+        <button id="mobile-nav-toggle" class="mobile-nav-toggle" aria-label="打开导航菜单" aria-expanded="false" aria-controls="sidebar">
+            <div class="hamburger-icon">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </button>
+        <div class="mobile-nav-title">
+            <div class="mobile-nav-logo-icon">
+                <svg class="text-white" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 2C6 2 3 4 3 8v8c0 2.5 2 4.5 4.5 4.5h1.5l-2 2h2l2-2h2l2 2h2l-2-2h1.5c2.5 0 4.5-2 4.5-4.5V8c0-4-3-6-9-6zM7.5 18c-1.5 0-2.5-1-2.5-2.5S6 13 7.5 13s2.5 1 2.5 2.5S9 18 7.5 18zm9 0c-1.5 0-2.5-1-2.5-2.5s1-2.5 2.5-2.5 2.5 1 2.5 2.5-1 2.5-2.5 2.5zm2.5-7H5V8c0-1.5 1-2.5 2.5-2.5h9c1.5 0 2.5 1 2.5 2.5v3z"/>
+                </svg>
+            </div>
+            <span>开字母乐园</span>
+        </div>
+        <div class="mobile-nav-modes">
+            <a href="../index.html" class="nav-mode-btn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+                </svg>
+                <span>普通</span>
+            </a>
+            <a href="../quiz/list.html" class="nav-mode-btn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="8" y1="6" x2="21" y2="6"></line>
+                    <line x1="8" y1="12" x2="21" y2="12"></line>
+                    <line x1="8" y1="18" x2="21" y2="18"></line>
+                    <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                    <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                    <line x1="3" y1="18" x2="3.01" y2="18"></line>
+                </svg>
+                <span>题组</span>
+            </a>
+            <a href="index.html" class="nav-mode-btn active">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="8" r="5"></circle>
+                    <path d="M20 21a8 8 0 1 0-16 0"></path>
+                </svg>
+                <span>学英语</span>
+            </a>
+        </div>
+        <button id="mobile-nav-theme" class="mobile-nav-theme" aria-label="切换主题">
+            <svg id="nav-theme-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+            </svg>
+            <svg id="nav-theme-sun" class="hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="5"></circle>
+                <line x1="12" y1="1" x2="12" y2="3"></line>
+                <line x1="12" y1="21" x2="12" y2="23"></line>
+                <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                <line x1="1" y1="12" x2="3" y2="12"></line>
+                <line x1="21" y1="12" x2="23" y2="12"></line>
+                <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+            </svg>
+        </button>
+    </div>
+
+    <div id="sidebar-overlay" class="sidebar-overlay"></div>
+
+    <aside id="sidebar" class="sidebar" role="navigation" aria-label="主导航">
+        <button id="sidebar-close-btn" class="sidebar-close-btn" aria-label="关闭导航菜单">
+            <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+        </button>
+
+        <div class="sidebar-header">
+            <a href="../index.html" class="sidebar-logo" data-tooltip="返回首页">
+                <div class="sidebar-logo-icon">
+                    <svg class="text-white" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 2C6 2 3 4 3 8v8c0 2.5 2 4.5 4.5 4.5h1.5l-2 2h2l2-2h2l2 2h2l-2-2h1.5c2.5 0 4.5-2 4.5-4.5V8c0-4-3-6-9-6zM7.5 18c-1.5 0-2.5-1-2.5-2.5S6 13 7.5 13s2.5 1 2.5 2.5S9 18 7.5 18zm9 0c-1.5 0-2.5-1-2.5-2.5s1-2.5 2.5-2.5 2.5 1 2.5 2.5-1 2.5-2.5 2.5zm2.5-7H5V8c0-1.5 1-2.5 2.5-2.5h9c1.5 0 2.5 1 2.5 2.5v3z"/>
+                    </svg>
+                </div>
+                <div>
+                    <div class="sidebar-logo-text">地铁站名猜谜</div>
+                    <div class="sidebar-logo-sub">开字母 · 猜站名</div>
+                </div>
+            </a>
+        </div>
+
+        <div class="nav-current-indicator">
+            <svg class="nav-current-indicator-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="8" r="5"></circle>
+                <path d="M20 21a8 8 0 1 0-16 0"></path>
+            </svg>
+            <span class="nav-current-indicator-text">学英语</span>
+        </div>
+
+        <div class="sidebar-content">
+            <div class="nav-group">
+                <div class="nav-group-label">普通模式</div>
+                <a href="../index.html" class="nav-item" data-tooltip="普通模式">
+                    <svg class="nav-item-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+                    </svg>
+                    <span>普通模式</span>
+                </a>
+                <a href="../index.html#multiplayer" class="nav-item" data-tooltip="联机对战">
+                    <svg class="nav-item-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"></path>
+                        <circle cx="9" cy="7" r="4"></circle>
+                        <path d="M23 21v-2a4 4 0 00-3-3.87"></path>
+                        <path d="M16 3.13a4 4 0 010 7.75"></path>
+                    </svg>
+                    <span>联机对战</span>
+                </a>
+                <a href="../index.html#leaderboard" class="nav-item" data-tooltip="排行榜">
+                    <svg class="nav-item-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                    </svg>
+                    <span>排行榜</span>
+                </a>
+            </div>
+
+            <div class="nav-group">
+                <div class="nav-group-label">自定义题组</div>
+                <a href="../quiz/list.html" class="nav-item" data-tooltip="浏览所有题组">
+                    <svg class="nav-item-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="8" y1="6" x2="21" y2="6"></line>
+                        <line x1="8" y1="12" x2="21" y2="12"></line>
+                        <line x1="8" y1="18" x2="21" y2="18"></line>
+                        <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                        <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                        <line x1="3" y1="18" x2="3.01" y2="18"></line>
+                    </svg>
+                    <span>题组列表</span>
+                    <span class="nav-item-badge ugc">UGC</span>
+                </a>
+                <a href="../quiz/create.html" class="nav-item" data-tooltip="创建新题组">
+                    <svg class="nav-item-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                    </svg>
+                    <span>创建题组</span>
+                </a>
+            </div>
+
+            <div class="nav-group">
+                <div class="nav-group-label">更多模式</div>
+                <a href="index.html" class="nav-item active" data-tooltip="学英语模式">
+                    <svg class="nav-item-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="8" r="5"></circle>
+                        <path d="M20 21a8 8 0 1 0-16 0"></path>
+                    </svg>
+                    <span>学英语</span>
+                    <span class="nav-item-badge new">NEW</span>
+                </a>
+            </div>
+
+            <div class="nav-group nav-dev-group" data-dev-mode="true" style="display: none;">
+                <div class="nav-group-label">开发者模式</div>
+                <a href="../quiz/play.html?mode=reverse" class="nav-item">
+                    <svg class="nav-item-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"></path>
+                    </svg>
+                    <span>逆向模式</span>
+                </a>
+                <a href="../quiz/manage.html" class="nav-item">
+                    <svg class="nav-item-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path>
+                    </svg>
+                    <span>管理所有题组</span>
+                    <span class="nav-item-badge" style="background: linear-gradient(135deg, #EF4444 0%, #F97316 100%); color: white;">DEV</span>
+                </a>
+            </div>
+        </div>
+
+        <div class="sidebar-footer">
+            <div class="sidebar-footer-text">
+                制作者：<a href="https://space.bilibili.com/1944366810" target="_blank" rel="noopener noreferrer" class="sidebar-footer-link">bilibili@lvshu</a>
+            </div>
+        </div>
+    </aside>
     
     <div id="floating-scores" class="fixed inset-0 pointer-events-none z-40" aria-hidden="true"></div>
     
-    <button id="sound-toggle" class="sound-toggle glass-panel shadow-lg cursor-pointer" title="切换音效" aria-label="切换音效">
+    <button id="sound-toggle" class="sound-toggle glass-panel shadow-lg cursor-pointer" title="切换音效" aria-label="切换音效" style="z-index: 997;">
         <svg id="sound-on-icon" class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
             <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
@@ -1306,37 +1486,8 @@
         </svg>
     </button>
     
-    <main class="relative z-10 container mx-auto px-4 py-6 max-w-6xl">
-        <header class="text-center mb-6">
-            <div class="flex justify-center items-center gap-4 mb-2">
-                <h1 class="text-3xl md:text-4xl font-bold text-slate-900 neon-glow flex items-center gap-3">
-                    <svg class="w-10 h-10 text-indigo-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <circle cx="12" cy="8" r="5"></circle>
-                        <path d="M20 21a8 8 0 1 0-16 0"></path>
-                    </svg>
-                    开字母乐园
-                </h1>
-                <button id="btn-theme" class="p-2 rounded-lg bg-slate-200 hover:bg-slate-300 transition-all cursor-pointer" title="切换主题 (T)" aria-label="切换主题">
-                    <svg id="theme-moon-icon" class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
-                    </svg>
-                    <svg id="theme-sun-icon" class="icon hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <circle cx="12" cy="12" r="5"></circle>
-                        <line x1="12" y1="1" x2="12" y2="3"></line>
-                        <line x1="12" y1="21" x2="12" y2="23"></line>
-                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
-                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
-                        <line x1="1" y1="12" x2="3" y2="12"></line>
-                        <line x1="21" y1="12" x2="23" y2="12"></line>
-                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
-                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
-                    </svg>
-                </button>
-            </div>
-            <p class="text-slate-600 text-sm md:text-base">
-                开字母 · 猜单词 · 学习英语
-            </p>
-        </header>
+    <main class="relative z-10 container mx-auto px-4 py-6 max-w-6xl main-with-nav main-content-offset">
+
         
         <section id="level-select-area" class="glass-panel rounded-2xl p-4 mb-4 shadow-lg">
             <div class="flex justify-between items-center mb-4">
@@ -1921,7 +2072,6 @@
             btnBackLevels: $('btn-back-levels'),
             btnRestart: $('btn-restart'),
             btnHint: $('btn-hint'),
-            btnTheme: $('btn-theme'),
             btnNextLevel: $('btn-next-level'),
             modeLevels: $('mode-levels'),
             modeLeaderboard: $('mode-leaderboard'),
@@ -3188,19 +3338,19 @@
             isDarkMode = !isDarkMode;
             document.body.classList.toggle('dark', isDarkMode);
             
-            const moonIcon = $('theme-moon-icon');
-            const sunIcon = $('theme-sun-icon');
+            const navMoonIcon = $('nav-theme-moon');
+            const navSunIcon = $('nav-theme-sun');
             
             if (isDarkMode) {
                 document.body.classList.remove('bg-gradient-to-br', 'from-indigo-50', 'via-purple-50', 'to-blue-100');
                 document.body.classList.add('bg-gradient-to-br', 'from-slate-950', 'via-indigo-950', 'to-slate-950', 'text-slate-200');
-                if (moonIcon) moonIcon.classList.add('hidden');
-                if (sunIcon) sunIcon.classList.remove('hidden');
+                if (navMoonIcon) navMoonIcon.classList.add('hidden');
+                if (navSunIcon) navSunIcon.classList.remove('hidden');
             } else {
                 document.body.classList.remove('bg-gradient-to-br', 'from-slate-950', 'via-indigo-950', 'to-slate-950', 'text-slate-200');
                 document.body.classList.add('bg-gradient-to-br', 'from-indigo-50', 'via-purple-50', 'to-blue-100', 'text-slate-800');
-                if (moonIcon) moonIcon.classList.remove('hidden');
-                if (sunIcon) sunIcon.classList.add('hidden');
+                if (navMoonIcon) navMoonIcon.classList.remove('hidden');
+                if (navSunIcon) navSunIcon.classList.add('hidden');
             }
             showToast(isDarkMode ? '已切换到暗色模式' : '已切换到亮色模式', 'info');
         }
@@ -3227,7 +3377,6 @@
                 useHint();
             });
             
-            elements.btnTheme.addEventListener('click', toggleTheme);
             elements.soundToggle.addEventListener('click', toggleSound);
             
             elements.btnNextLevel.addEventListener('click', () => {
@@ -3276,9 +3425,10 @@
             document.addEventListener('keydown', (e) => {
                 if (e.key === 'Escape') {
                     elements.victoryModal.classList.add('hidden');
+                    closeSidebar();
                 }
             });
-            
+
             $('tutorial-skip')?.addEventListener('click', skipTutorial);
             $('tutorial-prev')?.addEventListener('click', prevTutorialStep);
             $('tutorial-next')?.addEventListener('click', nextTutorialStep);

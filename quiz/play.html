@@ -13,6 +13,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="../styles.css">
     <link rel="stylesheet" href="../shared-styles.css">
+    <link rel="stylesheet" href="../shared-nav.css">
     <script src="../common.js"></script>
     <script src="../game-logic.js"></script>
     <script src="../firebase-config.js"></script>
@@ -29,6 +30,175 @@
     <div id="toast-container" class="fixed top-4 right-4 z-50 space-y-2" role="alert" aria-live="polite"></div>
     <div id="floating-scores" class="fixed inset-0 pointer-events-none z-40" aria-hidden="true"></div>
 
+    <div class="mobile-nav-bar">
+        <button id="mobile-nav-toggle" class="mobile-nav-toggle" aria-label="打开导航菜单" aria-expanded="false" aria-controls="sidebar">
+            <div class="hamburger-icon">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </button>
+        <div class="mobile-nav-title">
+            <div class="mobile-nav-logo-icon">
+                <svg class="text-white" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 2C6 2 3 4 3 8v8c0 2.5 2 4.5 4.5 4.5h1.5l-2 2h2l2-2h2l2 2h2l-2-2h1.5c2.5 0 4.5-2 4.5-4.5V8c0-4-3-6-9-6zM7.5 18c-1.5 0-2.5-1-2.5-2.5S6 13 7.5 13s2.5 1 2.5 2.5S9 18 7.5 18zm9 0c-1.5 0-2.5-1-2.5-2.5s1-2.5 2.5-2.5 2.5 1 2.5 2.5-1 2.5-2.5 2.5zm2.5-7H5V8c0-1.5 1-2.5 2.5-2.5h9c1.5 0 2.5 1 2.5 2.5v3z"/>
+                </svg>
+            </div>
+            <span>游玩题组</span>
+        </div>
+        <div class="mobile-nav-modes">
+            <a href="../index.html" class="nav-mode-btn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+                </svg>
+                <span>普通</span>
+            </a>
+            <a href="list.html" class="nav-mode-btn active">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="8" y1="6" x2="21" y2="6"></line>
+                    <line x1="8" y1="12" x2="21" y2="12"></line>
+                    <line x1="8" y1="18" x2="21" y2="18"></line>
+                    <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                    <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                    <line x1="3" y1="18" x2="3.01" y2="18"></line>
+                </svg>
+                <span>题组</span>
+            </a>
+            <a href="../kids/index.html" class="nav-mode-btn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="8" r="5"></circle>
+                    <path d="M20 21a8 8 0 1 0-16 0"></path>
+                </svg>
+                <span>学英语</span>
+            </a>
+        </div>
+        <button id="mobile-nav-theme" class="mobile-nav-theme" aria-label="切换主题">
+            <svg id="nav-theme-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+            </svg>
+            <svg id="nav-theme-sun" class="hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="5"></circle>
+                <line x1="12" y1="1" x2="12" y2="3"></line>
+                <line x1="12" y1="21" x2="12" y2="23"></line>
+                <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                <line x1="1" y1="12" x2="3" y2="12"></line>
+                <line x1="21" y1="12" x2="23" y2="12"></line>
+                <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+            </svg>
+        </button>
+    </div>
+
+    <div id="sidebar-overlay" class="sidebar-overlay"></div>
+
+    <aside id="sidebar" class="sidebar" role="navigation" aria-label="主导航">
+        <button id="sidebar-close-btn" class="sidebar-close-btn" aria-label="关闭导航菜单">
+            <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+        </button>
+        <div class="sidebar-header">
+            <a href="../index.html" class="sidebar-logo" data-tooltip="返回首页">
+                <div class="sidebar-logo-icon">
+                    <svg class="text-white" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 2C6 2 3 4 3 8v8c0 2.5 2 4.5 4.5 4.5h1.5l-2 2h2l2-2h2l2 2h2l-2-2h1.5c2.5 0 4.5-2 4.5-4.5V8c0-4-3-6-9-6zM7.5 18c-1.5 0-2.5-1-2.5-2.5S6 13 7.5 13s2.5 1 2.5 2.5S9 18 7.5 18zm9 0c-1.5 0-2.5-1-2.5-2.5s1-2.5 2.5-2.5 2.5 1 2.5 2.5-1 2.5-2.5 2.5zm2.5-7H5V8c0-1.5 1-2.5 2.5-2.5h9c1.5 0 2.5 1 2.5 2.5v3z"/>
+                    </svg>
+                </div>
+                <div>
+                    <div class="sidebar-logo-text">地铁站名猜谜</div>
+                    <div class="sidebar-logo-sub">开字母 · 猜站名</div>
+                </div>
+            </a>
+        </div>
+
+        <div class="sidebar-content">
+            <div class="nav-group">
+                <div class="nav-group-label">普通模式</div>
+                <a href="../index.html" class="nav-item" data-tooltip="普通模式">
+                    <svg class="nav-item-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+                    </svg>
+                    <span>普通模式</span>
+                </a>
+                <a href="../index.html#multiplayer" class="nav-item">
+                    <svg class="nav-item-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"></path>
+                        <circle cx="9" cy="7" r="4"></circle>
+                        <path d="M23 21v-2a4 4 0 00-3-3.87"></path>
+                        <path d="M16 3.13a4 4 0 010 7.75"></path>
+                    </svg>
+                    <span>联机对战</span>
+                </a>
+                <a href="../index.html#leaderboard" class="nav-item">
+                    <svg class="nav-item-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                    </svg>
+                    <span>排行榜</span>
+                </a>
+            </div>
+
+            <div class="nav-group">
+                <div class="nav-group-label">自定义题组</div>
+                <a href="list.html" class="nav-item">
+                    <svg class="nav-item-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="8" y1="6" x2="21" y2="6"></line>
+                        <line x1="8" y1="12" x2="21" y2="12"></line>
+                        <line x1="8" y1="18" x2="21" y2="18"></line>
+                        <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                        <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                        <line x1="3" y1="18" x2="3.01" y2="18"></line>
+                    </svg>
+                    <span>题组列表</span>
+                    <span class="nav-item-badge ugc">UGC</span>
+                </a>
+                <a href="create.html" class="nav-item">
+                    <svg class="nav-item-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                    </svg>
+                    <span>创建题组</span>
+                </a>
+            </div>
+
+            <div class="nav-group">
+                <div class="nav-group-label">更多模式</div>
+                <a href="../kids/index.html" class="nav-item">
+                    <svg class="nav-item-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="8" r="5"></circle>
+                        <path d="M20 21a8 8 0 1 0-16 0"></path>
+                    </svg>
+                    <span>学英语</span>
+                    <span class="nav-item-badge new">NEW</span>
+                </a>
+            </div>
+
+            <div class="nav-group nav-dev-group" data-dev-mode="true" style="display: none;">
+                <div class="nav-group-label">开发者模式</div>
+                <a href="play.html?mode=reverse" class="nav-item">
+                    <svg class="nav-item-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"></path>
+                    </svg>
+                    <span>逆向模式</span>
+                </a>
+                <a href="manage.html" class="nav-item">
+                    <svg class="nav-item-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path>
+                    </svg>
+                    <span>管理所有题组</span>
+                    <span class="nav-item-badge" style="background: linear-gradient(135deg, #EF4444 0%, #F97316 100%); color: white;">DEV</span>
+                </a>
+            </div>
+        </div>
+
+        <div class="sidebar-footer">
+            <div class="sidebar-footer-text">
+                制作者：<a href="https://space.bilibili.com/1944366810" target="_blank" rel="noopener noreferrer" class="sidebar-footer-link">bilibili@lvshu</a>
+            </div>
+        </div>
+    </aside>
+
     <!-- 音效切换按钮 -->
     <button id="sound-toggle" class="sound-toggle cursor-pointer" title="切换音效" aria-label="切换音效">
         <svg id="sound-on-icon" class="w-6 h-6 text-indigo-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -42,34 +212,8 @@
         </svg>
     </button>
 
-    <main class="relative z-10 container mx-auto px-4 py-6 max-w-6xl">
-        <!-- 页面标题 -->
-        <header class="text-center mb-6 animate-fade-in-up">
-            <div class="flex justify-center items-center gap-4 mb-2">
-                <h1 id="quiz-title" class="text-2xl md:text-3xl font-bold page-title">
-                    加载中...
-                </h1>
-                <button id="btn-theme" class="theme-toggle-clay p-2.5 cursor-pointer" title="切换主题" aria-label="切换主题">
-                    <svg id="theme-moon-icon" class="w-5 h-5 text-slate-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
-                    </svg>
-                    <svg id="theme-sun-icon" class="w-5 h-5 text-amber-500 hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <circle cx="12" cy="12" r="5"></circle>
-                        <line x1="12" y1="1" x2="12" y2="3"></line>
-                        <line x1="12" y1="21" x2="12" y2="23"></line>
-                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
-                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
-                        <line x1="1" y1="12" x2="3" y2="12"></line>
-                        <line x1="21" y1="12" x2="23" y2="12"></line>
-                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
-                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
-                    </svg>
-                </button>
-            </div>
-            <p id="quiz-subtitle" class="text-slate-600 text-sm">
-                自定义题组
-            </p>
-        </header>
+    <main class="relative z-10 container mx-auto px-4 py-6 max-w-6xl main-with-nav main-content-offset">
+
 
         <!-- 游戏统计面板 -->
         <section id="game-settings" class="game-card p-4 mb-5 animate-fade-in-up">
@@ -392,16 +536,14 @@
             MetroCommon.initDarkMode();
             updateThemeIcon();
 
-            $('btn-theme').addEventListener('click', () => {
-                MetroCommon.toggleDarkMode();
-                updateThemeIcon();
-            });
         }
 
         function updateThemeIcon() {
             const isDark = MetroCommon.isDarkMode();
-            $('theme-moon-icon').classList.toggle('hidden', isDark);
-            $('theme-sun-icon').classList.toggle('hidden', !isDark);
+            const moonIcon = $('nav-theme-moon');
+            const sunIcon = $('nav-theme-sun');
+            if (moonIcon) moonIcon.classList.toggle('hidden', isDark);
+            if (sunIcon) sunIcon.classList.toggle('hidden', !isDark);
         }
 
         function initAudio() {
@@ -1259,7 +1401,44 @@
             $('btn-play-again').addEventListener('click', resetGame);
         }
 
+        const elements = {
+            mobileNavToggle: null,
+            sidebar: null,
+            sidebarOverlay: null
+        };
+
+        function toggleSidebar() {
+            if (elements.sidebar && elements.sidebarOverlay) {
+                elements.sidebar.classList.toggle('open');
+                elements.sidebarOverlay.classList.toggle('active');
+            }
+        }
+
+        function closeSidebar() {
+            if (elements.sidebar && elements.sidebarOverlay) {
+                elements.sidebar.classList.remove('open');
+                elements.sidebarOverlay.classList.remove('active');
+            }
+        }
+
+        function initNavElements() {
+            elements.mobileNavToggle = document.getElementById('mobile-nav-toggle');
+            elements.sidebar = document.getElementById('sidebar');
+            elements.sidebarOverlay = document.getElementById('sidebar-overlay');
+        }
+
+        function initNavEventListeners() {
+            if (elements.mobileNavToggle) {
+                elements.mobileNavToggle.addEventListener('click', toggleSidebar);
+            }
+            if (elements.sidebarOverlay) {
+                elements.sidebarOverlay.addEventListener('click', closeSidebar);
+            }
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
+            initNavElements();
+            initNavEventListeners();
             initTheme();
             initAudio();
             setupEventListeners();
@@ -1287,5 +1466,6 @@
             });
         });
     </script>
+    <script src="../shared-nav.js"></script>
 </body>
 </html>
