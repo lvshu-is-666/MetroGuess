@@ -562,9 +562,7 @@
         const stickyInputState = {
             initialized: false,
             isInputAreaVisible: true,
-            isNearTop: true,
-            observer: null,
-            headerObserver: null
+            observer: null
         };
 
         function initTheme() {
@@ -691,7 +689,7 @@
                     return;
                 }
 
-                if (stickyInputState.isInputAreaVisible || stickyInputState.isNearTop) {
+                if (stickyInputState.isInputAreaVisible) {
                     stickyContainer.classList.remove('visible');
                     if (soundToggle) soundToggle.classList.remove('shifted');
                 } else {
@@ -718,25 +716,6 @@
                 });
 
                 stickyInputState.observer.observe(inputArea);
-
-                if (stickyInputState.headerObserver) {
-                    stickyInputState.headerObserver.disconnect();
-                }
-                stickyInputState.headerObserver = new IntersectionObserver((entries) => {
-                    entries.forEach(entry => {
-                        stickyInputState.isNearTop = entry.isIntersecting;
-                        updateStickyVisibility();
-                    });
-                }, {
-                    root: null,
-                    rootMargin: '-100px 0px 0px 0px',
-                    threshold: [0]
-                });
-
-                const header = document.querySelector('header');
-                if (header) {
-                    stickyInputState.headerObserver.observe(header);
-                }
 
                 window.addEventListener('resize', () => {
                     updateStickyVisibility();
