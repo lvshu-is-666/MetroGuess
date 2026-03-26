@@ -416,9 +416,17 @@
     /**
      * 初始化开发者模式导航项
      */
+    const DEV_MODE_KEY = 'metro_dev_session';
+    
+    function isDevModeAllowed() {
+        const sessionKey = sessionStorage.getItem(DEV_MODE_KEY);
+        if (!sessionKey) return false;
+        const expectedKey = btoa('lvshu_dev_' + new Date().toDateString());
+        return sessionKey === expectedKey;
+    }
+    
     function initDevModeNav() {
-        const isDevMode = localStorage.getItem('devMode') === 'true' || 
-                          localStorage.getItem('quiz_devMode') === 'true';
+        const isDevMode = isDevModeAllowed();
         
         const devNavItems = document.querySelectorAll('[data-dev-mode="true"]');
         
@@ -435,22 +443,15 @@
         console.log('[Navigation] 开发者模式导航项初始化完成, devMode:', isDevMode, '项目数:', devNavItems.length);
     }
 
-    /**
-     * 监听开发者模式变化
-     */
     function watchDevModeChanges() {
-        const originalSetItem = localStorage.setItem;
-        localStorage.setItem = function(key, value) {
-            originalSetItem.apply(this, arguments);
-            if (key === 'devMode' || key === 'quiz_devMode') {
-                initDevModeNav();
-            }
-        };
-        
         window.addEventListener('storage', (e) => {
-            if (e.key === 'devMode' || e.key === 'quiz_devMode') {
+            if (e.key === DEV_MODE_KEY) {
                 initDevModeNav();
             }
+        });
+        
+        window.addEventListener('devModeChanged', () => {
+            initDevModeNav();
         });
     }
 

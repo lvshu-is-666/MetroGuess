@@ -786,9 +786,22 @@
             updateStickyVisibility();
         }
 
+        const DEV_MODE_KEY = 'metro_dev_session';
+        
+        function generateDevSessionKey() {
+            return btoa('lvshu_dev_' + new Date().toDateString());
+        }
+
         function toggleDevMode() {
             gameState.devMode = !gameState.devMode;
-            localStorage.setItem('quiz_devMode', gameState.devMode);
+            
+            if (gameState.devMode) {
+                sessionStorage.setItem(DEV_MODE_KEY, generateDevSessionKey());
+            } else {
+                sessionStorage.removeItem(DEV_MODE_KEY);
+            }
+            
+            window.dispatchEvent(new CustomEvent('devModeChanged'));
 
             renderStations();
 
@@ -943,7 +956,9 @@
                 index: i
             }));
 
-            const savedDevMode = localStorage.getItem('quiz_devMode') === 'true';
+            const sessionKey = sessionStorage.getItem(DEV_MODE_KEY);
+            const expectedKey = btoa('lvshu_dev_' + new Date().toDateString());
+            const savedDevMode = sessionKey === expectedKey;
             const devMode = gameState?.devMode || savedDevMode || false;
             gameState = MetroGameLogic.initGameState(stations, quizData.difficultyLevel);
             gameState.devMode = devMode;

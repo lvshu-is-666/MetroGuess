@@ -4190,8 +4190,10 @@
             renderAchievements();
             updateStatsDisplay();
             
-            const savedDevMode = localStorage.getItem('devMode');
-            if (savedDevMode === 'true') {
+            const DEV_MODE_KEY = 'metro_dev_session';
+            const sessionKey = sessionStorage.getItem(DEV_MODE_KEY);
+            const expectedKey = btoa('lvshu_dev_' + new Date().toDateString());
+            if (sessionKey === expectedKey) {
                 gameState.devMode = true;
                 if (elements.modeReverse) {
                     elements.modeReverse.classList.remove('hidden');
@@ -4996,7 +4998,13 @@
             
             if (command === 'lvshu') {
                 gameState.devMode = !gameState.devMode;
-                localStorage.setItem('devMode', gameState.devMode);
+                const DEV_MODE_KEY = 'metro_dev_session';
+                if (gameState.devMode) {
+                    sessionStorage.setItem(DEV_MODE_KEY, btoa('lvshu_dev_' + new Date().toDateString()));
+                } else {
+                    sessionStorage.removeItem(DEV_MODE_KEY);
+                }
+                window.dispatchEvent(new CustomEvent('devModeChanged'));
                 renderStations();
                 if (gameState.devMode) {
                     elements.modeReverse.classList.remove('hidden');
@@ -6054,7 +6062,13 @@
                     
                     if (keySequence === 'lvshu') {
                         gameState.devMode = !gameState.devMode;
-                        localStorage.setItem('devMode', gameState.devMode);
+                        const DEV_MODE_KEY = 'metro_dev_session';
+                        if (gameState.devMode) {
+                            sessionStorage.setItem(DEV_MODE_KEY, btoa('lvshu_dev_' + new Date().toDateString()));
+                        } else {
+                            sessionStorage.removeItem(DEV_MODE_KEY);
+                        }
+                        window.dispatchEvent(new CustomEvent('devModeChanged'));
                         renderStations();
                         if (gameState.devMode) {
                             elements.modeReverse.classList.remove('hidden');
