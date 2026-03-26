@@ -69,37 +69,7 @@
             };
         }
     </script>
-    <script>
-        // Tailwind CSS 加载器 - CDN优先，本地回退
-        (function() {
-            var cdnLoaded = false;
-            var script = document.createElement('script');
-            script.src = 'https://cdn.tailwindcss.com';
-            script.async = false;
-            
-            script.onload = function() {
-                cdnLoaded = true;
-            };
-            
-            script.onerror = function() {
-                var fallback = document.createElement('link');
-                fallback.rel = 'stylesheet';
-                fallback.href = '../dist/tailwind-backup.css';
-                document.head.appendChild(fallback);
-            };
-            
-            document.head.appendChild(script);
-            
-            setTimeout(function() {
-                if (!cdnLoaded && typeof tailwind === 'undefined') {
-                    var fallback = document.createElement('link');
-                    fallback.rel = 'stylesheet';
-                    fallback.href = '../dist/tailwind-backup.css';
-                    document.head.appendChild(fallback);
-                }
-            }, 3000);
-        })();
-    </script>
+    <link rel="stylesheet" href="../dist/tailwind-backup.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="../shared-nav.css">
@@ -470,6 +440,87 @@
         
         .sound-toggle:hover {
             transform: scale(1.1);
+        }
+        
+        .sound-toggle.shifted {
+            bottom: calc(84px + env(safe-area-inset-bottom, 0px));
+        }
+        
+        #sticky-input-container {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            z-index: 90;
+            background: linear-gradient(to top, rgba(255, 255, 255, 0.98) 0%, rgba(255, 255, 255, 0.95) 80%, transparent 100%);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border-top: 1px solid rgba(226, 232, 240, 0.5);
+            padding: 12px 16px;
+            transform: translateY(100%);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 -4px 20px rgba(79, 70, 229, 0.1);
+        }
+        
+        #sticky-input-container.visible {
+            transform: translateY(0);
+        }
+        
+        #sticky-input-container .sticky-input-wrapper {
+            display: flex;
+            gap: 8px;
+            max-width: 640px;
+            margin: 0 auto;
+        }
+        
+        #sticky-input-container input {
+            flex: 1;
+            min-height: 40px;
+            font-size: 15px;
+        }
+        
+        #sticky-input-container button {
+            min-height: 40px;
+            min-width: 64px;
+        }
+        
+        .dark #sticky-input-container {
+            background: linear-gradient(to top, rgba(15, 23, 42, 0.98) 0%, rgba(15, 23, 42, 0.95) 80%, transparent 100%);
+            border-top-color: rgba(71, 85, 105, 0.5);
+        }
+        
+        @media (min-width: 768px) {
+            #sticky-input-container {
+                bottom: 16px;
+                left: 50%;
+                transform: translateX(-50%) translateY(calc(100% + 30px));
+                right: auto;
+                width: auto;
+                max-width: 640px;
+                padding: 10px 14px;
+                border-radius: 12px;
+                box-shadow: 0 8px 32px rgba(79, 70, 229, 0.15);
+            }
+            
+            #sticky-input-container.visible {
+                transform: translateX(-50%) translateY(0);
+            }
+            
+            #sticky-input-container input {
+                min-height: 40px;
+                font-size: 15px;
+            }
+            
+            #sticky-input-container button {
+                min-height: 40px;
+                min-width: 64px;
+            }
+        }
+        
+        @media (max-width: 767px) {
+            #sticky-input-container {
+                padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+            }
         }
         
         .dark .glass-panel {
@@ -1341,29 +1392,88 @@
             <span>开字母乐园</span>
         </div>
         <div class="mobile-nav-modes">
-            <a href="../index.html" class="nav-mode-btn">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
-                </svg>
-                <span>普通</span>
-            </a>
-            <a href="../quiz/list.html" class="nav-mode-btn">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <line x1="8" y1="6" x2="21" y2="6"></line>
-                    <line x1="8" y1="12" x2="21" y2="12"></line>
-                    <line x1="8" y1="18" x2="21" y2="18"></line>
-                    <line x1="3" y1="6" x2="3.01" y2="6"></line>
-                    <line x1="3" y1="12" x2="3.01" y2="12"></line>
-                    <line x1="3" y1="18" x2="3.01" y2="18"></line>
-                </svg>
-                <span>题组</span>
-            </a>
+            <div class="nav-mode-wrapper">
+                <a href="../index.html" class="nav-mode-btn">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+                    </svg>
+                    <span class="nav-mode-text-short">普通</span>
+                    <span class="nav-mode-text-medium">普通</span>
+                    <span class="nav-mode-text-full">普通模式</span>
+                    <svg class="nav-mode-dropdown-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="6 9 12 15 18 9"></polyline>
+                    </svg>
+                </a>
+                <div class="nav-mode-dropdown">
+                    <a href="../index.html" class="nav-mode-dropdown-item">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+                        </svg>
+                        普通模式
+                    </a>
+                    <a href="../index.html#multiplayer" class="nav-mode-dropdown-item">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"></path>
+                            <circle cx="9" cy="7" r="4"></circle>
+                            <path d="M23 21v-2a4 4 0 00-3-3.87"></path>
+                            <path d="M16 3.13a4 4 0 010 7.75"></path>
+                        </svg>
+                        联机对战
+                    </a>
+                    <a href="../index.html#leaderboard" class="nav-mode-dropdown-item">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                        </svg>
+                        排行榜
+                    </a>
+                </div>
+            </div>
+            <div class="nav-mode-wrapper">
+                <a href="../quiz/list.html" class="nav-mode-btn">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="8" y1="6" x2="21" y2="6"></line>
+                        <line x1="8" y1="12" x2="21" y2="12"></line>
+                        <line x1="8" y1="18" x2="21" y2="18"></line>
+                        <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                        <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                        <line x1="3" y1="18" x2="3.01" y2="18"></line>
+                    </svg>
+                    <span class="nav-mode-text-short">题组</span>
+                    <span class="nav-mode-text-medium">主题题组</span>
+                    <span class="nav-mode-text-full">主题题组</span>
+                    <svg class="nav-mode-dropdown-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="6 9 12 15 18 9"></polyline>
+                    </svg>
+                </a>
+                <div class="nav-mode-dropdown">
+                    <a href="../quiz/list.html" class="nav-mode-dropdown-item">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="8" y1="6" x2="21" y2="6"></line>
+                            <line x1="8" y1="12" x2="21" y2="12"></line>
+                            <line x1="8" y1="18" x2="21" y2="18"></line>
+                            <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                            <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                            <line x1="3" y1="18" x2="3.01" y2="18"></line>
+                        </svg>
+                        题组列表
+                    </a>
+                    <a href="../quiz/create.html" class="nav-mode-dropdown-item">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="12" y1="5" x2="12" y2="19"></line>
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                        </svg>
+                        创建题组
+                    </a>
+                </div>
+            </div>
             <a href="index.html" class="nav-mode-btn active">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <circle cx="12" cy="8" r="5"></circle>
                     <path d="M20 21a8 8 0 1 0-16 0"></path>
                 </svg>
-                <span>学英语</span>
+                <span class="nav-mode-text-short">英语</span>
+                <span class="nav-mode-text-medium">学英语</span>
+                <span class="nav-mode-text-full">学英语</span>
             </a>
         </div>
         <button id="mobile-nav-theme" class="mobile-nav-theme" aria-label="切换主题">
@@ -1479,7 +1589,7 @@
 
             <div class="nav-group nav-dev-group" data-dev-mode="true" style="display: none;">
                 <div class="nav-group-label">开发者模式</div>
-                <a href="../quiz/play.html?mode=reverse" class="nav-item">
+                <a href="../index.html#reverse" class="nav-item">
                     <svg class="nav-item-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"></path>
                     </svg>
@@ -1695,6 +1805,22 @@
             <p>制作者：<a href="https://space.bilibili.com/1944366810" target="_blank" rel="noopener noreferrer" class="text-indigo-600 hover:text-indigo-700 font-medium">bilibili@lvshu</a></p>
         </footer>
     </main>
+    
+    <!-- 粘性输入框 -->
+    <div id="sticky-input-container">
+        <div class="sticky-input-wrapper">
+            <input 
+                type="text" 
+                id="sticky-guess-input" 
+                placeholder="输入字母或单词猜测" 
+                class="px-4 py-3 rounded-lg border border-slate-200 bg-white text-slate-800 placeholder-slate-400 focus:outline-none focus:border-indigo-500 transition-all"
+                autocomplete="off"
+            >
+            <button id="sticky-btn-submit" class="btn-secondary px-5 py-3 rounded-lg text-white font-medium cursor-pointer">
+                提交
+            </button>
+        </div>
+    </div>
     
     <div id="victory-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl p-6 md:p-8 max-w-md w-full shadow-2xl transform scale-100 transition-transform">
@@ -2074,6 +2200,14 @@
             demoWord: 'apple',
             demoRevealed: new Set(),
             demoAnimationRunning: false
+        };
+
+        let stickyInputState = {
+            initialized: false,
+            isInputAreaVisible: true,
+            isNearTop: true,
+            observer: null,
+            headerObserver: null
         };
 
         const MULTIPLAYER_CONFIG = {
@@ -3778,6 +3912,7 @@
             switchMode('levels');
             initTutorial();
             initMobileOptimizations();
+            initStickyInput();
         }
         
         function initMobileOptimizations() {
@@ -3806,6 +3941,124 @@
                     }, 300);
                 });
             }
+        }
+
+        function initStickyInput() {
+            const inputArea = $('game-area');
+            const stickyContainer = $('sticky-input-container');
+            const stickyInput = $('sticky-guess-input');
+            const stickySubmitBtn = $('sticky-btn-submit');
+            const mainInput = $('guess-input');
+            const mainSubmitBtn = $('btn-submit');
+            const soundToggle = $('sound-toggle');
+
+            if (!inputArea || !stickyContainer) {
+                return;
+            }
+
+            function updateStickyVisibility() {
+                const inputAreaHidden = inputArea.offsetParent === null ||
+                    inputArea.classList.contains('hidden') ||
+                    gameState.gameWon;
+
+                if (inputAreaHidden) {
+                    stickyContainer.classList.remove('visible');
+                    if (soundToggle) soundToggle.classList.remove('shifted');
+                    return;
+                }
+
+                if (stickyInputState.isInputAreaVisible || stickyInputState.isNearTop) {
+                    stickyContainer.classList.remove('visible');
+                    if (soundToggle) soundToggle.classList.remove('shifted');
+                } else {
+                    stickyContainer.classList.add('visible');
+                    if (soundToggle) soundToggle.classList.add('shifted');
+                }
+            }
+
+            if (!stickyInputState.initialized) {
+                stickyInputState.initialized = true;
+
+                if (stickyInputState.observer) {
+                    stickyInputState.observer.disconnect();
+                }
+                stickyInputState.observer = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        stickyInputState.isInputAreaVisible = entry.isIntersecting && entry.intersectionRatio > 0.1;
+                        updateStickyVisibility();
+                    });
+                }, {
+                    root: null,
+                    rootMargin: '0px',
+                    threshold: [0, 0.1, 0.5, 1]
+                });
+
+                stickyInputState.observer.observe(inputArea);
+
+                if (stickyInputState.headerObserver) {
+                    stickyInputState.headerObserver.disconnect();
+                }
+                stickyInputState.headerObserver = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        stickyInputState.isNearTop = entry.isIntersecting;
+                        updateStickyVisibility();
+                    });
+                }, {
+                    root: null,
+                    rootMargin: '-100px 0px 0px 0px',
+                    threshold: [0]
+                });
+
+                const header = document.querySelector('header');
+                if (header) {
+                    stickyInputState.headerObserver.observe(header);
+                }
+            }
+
+            if (stickyInput && stickySubmitBtn) {
+                stickyInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        if (mainSubmitBtn) {
+                            mainSubmitBtn.click();
+                        }
+                    }
+                });
+
+                stickySubmitBtn.addEventListener('click', function() {
+                    if (mainSubmitBtn) {
+                        mainSubmitBtn.click();
+                    }
+                });
+
+                if (mainInput) {
+                    mainInput.addEventListener('input', function() {
+                        if (stickyInput) {
+                            stickyInput.value = mainInput.value;
+                        }
+                    });
+
+                    stickyInput.addEventListener('input', function() {
+                        if (mainInput) {
+                            mainInput.value = stickyInput.value;
+                        }
+                    });
+
+                    mainInput.addEventListener('focus', function() {
+                        if (stickyInput) {
+                            stickyInput.blur();
+                        }
+                    });
+
+                    stickyInput.addEventListener('focus', function() {
+                        if (mainInput) {
+                            mainInput.blur();
+                        }
+                    });
+                }
+            }
+
+            updateStickyVisibility();
         }
 
         init();

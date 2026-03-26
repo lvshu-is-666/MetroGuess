@@ -10,37 +10,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@300;400;500;600;700&display=swap" media="print" onload="this.media='all'">
-    <script>
-        // Tailwind CSS 加载器 - CDN优先，本地回退
-        (function() {
-            var cdnLoaded = false;
-            var script = document.createElement('script');
-            script.src = 'https://cdn.tailwindcss.com';
-            script.async = false;
-            
-            script.onload = function() {
-                cdnLoaded = true;
-            };
-            
-            script.onerror = function() {
-                var fallback = document.createElement('link');
-                fallback.rel = 'stylesheet';
-                fallback.href = '../dist/tailwind-backup.css';
-                document.head.appendChild(fallback);
-            };
-            
-            document.head.appendChild(script);
-            
-            setTimeout(function() {
-                if (!cdnLoaded && typeof tailwind === 'undefined') {
-                    var fallback = document.createElement('link');
-                    fallback.rel = 'stylesheet';
-                    fallback.href = '../dist/tailwind-backup.css';
-                    document.head.appendChild(fallback);
-                }
-            }, 3000);
-        })();
-    </script>
+    <link rel="stylesheet" href="../dist/tailwind-backup.css">
     <link rel="stylesheet" href="../styles.css">
     <link rel="stylesheet" href="../shared-styles.css">
     <link rel="stylesheet" href="../shared-nav.css">
@@ -132,29 +102,88 @@
             <span>管理题组</span>
         </div>
         <div class="mobile-nav-modes">
-            <a href="../index.html" class="nav-mode-btn">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
-                </svg>
-                <span>普通</span>
-            </a>
-            <a href="list.html" class="nav-mode-btn active">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <line x1="8" y1="6" x2="21" y2="6"></line>
-                    <line x1="8" y1="12" x2="21" y2="12"></line>
-                    <line x1="8" y1="18" x2="21" y2="18"></line>
-                    <line x1="3" y1="6" x2="3.01" y2="6"></line>
-                    <line x1="3" y1="12" x2="3.01" y2="12"></line>
-                    <line x1="3" y1="18" x2="3.01" y2="18"></line>
-                </svg>
-                <span>题组</span>
-            </a>
+            <div class="nav-mode-wrapper">
+                <a href="../index.html" class="nav-mode-btn">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+                    </svg>
+                    <span class="nav-mode-text-short">普通</span>
+                    <span class="nav-mode-text-medium">普通</span>
+                    <span class="nav-mode-text-full">普通模式</span>
+                    <svg class="nav-mode-dropdown-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="6 9 12 15 18 9"></polyline>
+                    </svg>
+                </a>
+                <div class="nav-mode-dropdown">
+                    <a href="../index.html" class="nav-mode-dropdown-item">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+                        </svg>
+                        普通模式
+                    </a>
+                    <a href="../index.html#multiplayer" class="nav-mode-dropdown-item">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"></path>
+                            <circle cx="9" cy="7" r="4"></circle>
+                            <path d="M23 21v-2a4 4 0 00-3-3.87"></path>
+                            <path d="M16 3.13a4 4 0 010 7.75"></path>
+                        </svg>
+                        联机对战
+                    </a>
+                    <a href="../index.html#leaderboard" class="nav-mode-dropdown-item">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                        </svg>
+                        排行榜
+                    </a>
+                </div>
+            </div>
+            <div class="nav-mode-wrapper">
+                <a href="list.html" class="nav-mode-btn active">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="8" y1="6" x2="21" y2="6"></line>
+                        <line x1="8" y1="12" x2="21" y2="12"></line>
+                        <line x1="8" y1="18" x2="21" y2="18"></line>
+                        <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                        <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                        <line x1="3" y1="18" x2="3.01" y2="18"></line>
+                    </svg>
+                    <span class="nav-mode-text-short">题组</span>
+                    <span class="nav-mode-text-medium">主题题组</span>
+                    <span class="nav-mode-text-full">主题题组</span>
+                    <svg class="nav-mode-dropdown-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="6 9 12 15 18 9"></polyline>
+                    </svg>
+                </a>
+                <div class="nav-mode-dropdown">
+                    <a href="list.html" class="nav-mode-dropdown-item">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="8" y1="6" x2="21" y2="6"></line>
+                            <line x1="8" y1="12" x2="21" y2="12"></line>
+                            <line x1="8" y1="18" x2="21" y2="18"></line>
+                            <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                            <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                            <line x1="3" y1="18" x2="3.01" y2="18"></line>
+                        </svg>
+                        题组列表
+                    </a>
+                    <a href="create.html" class="nav-mode-dropdown-item">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="12" y1="5" x2="12" y2="19"></line>
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                        </svg>
+                        创建题组
+                    </a>
+                </div>
+            </div>
             <a href="../kids/index.html" class="nav-mode-btn">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <circle cx="12" cy="8" r="5"></circle>
                     <path d="M20 21a8 8 0 1 0-16 0"></path>
                 </svg>
-                <span>学英语</span>
+                <span class="nav-mode-text-short">英语</span>
+                <span class="nav-mode-text-medium">学英语</span>
+                <span class="nav-mode-text-full">学英语</span>
             </a>
         </div>
         <button id="mobile-nav-theme" class="mobile-nav-theme" aria-label="切换主题">
@@ -225,7 +254,7 @@
             </div>
 
             <div class="nav-group">
-                <div class="nav-group-label">自定义题组</div>
+                <div class="nav-group-label">主题题组</div>
                 <a href="list.html" class="nav-item">
                     <svg class="nav-item-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <line x1="8" y1="6" x2="21" y2="6"></line>
@@ -261,7 +290,7 @@
 
             <div class="nav-group nav-dev-group" data-dev-mode="true" style="display: none;">
                 <div class="nav-group-label">开发者模式</div>
-                <a href="play.html?mode=reverse" class="nav-item">
+                <a href="../index.html#reverse" class="nav-item">
                     <svg class="nav-item-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"></path>
                     </svg>
@@ -559,6 +588,20 @@
                 <div>
                     <label class="block text-sm font-semibold text-slate-700 mb-2">创建者名称</label>
                     <input type="text" id="edit-creator-name" class="clay-input w-full px-4 py-3" placeholder="你的昵称" maxlength="20">
+                </div>
+                <div class="p-4 bg-purple-50/50 rounded-xl border-2 border-purple-100">
+                    <div class="flex items-center gap-2 mb-3">
+                        <input type="checkbox" id="edit-enable-random-pick" class="clay-checkbox">
+                        <label for="edit-enable-random-pick" class="text-sm font-semibold text-slate-700 cursor-pointer">随机抽取题目</label>
+                    </div>
+                    <p class="text-xs text-slate-500 mb-3">开启后，每次游玩时从题库中随机抽取指定数量的题目</p>
+                    <div id="edit-random-pick-settings" class="hidden">
+                        <div class="flex items-center gap-3">
+                            <span class="text-sm text-slate-600">每次游玩抽取</span>
+                            <input type="number" id="edit-random-pick-count" class="clay-input w-20 px-3 py-2 text-center text-sm" min="1" max="100" value="10">
+                            <span class="text-sm text-slate-600">题</span>
+                        </div>
+                    </div>
                 </div>
             </div>
             <div class="flex gap-3 mt-6">
@@ -1212,6 +1255,10 @@
             $('edit-quiz-name').value = currentQuiz.name || '';
             $('edit-hide-theme').checked = currentQuiz.hideTheme || false;
             $('edit-creator-name').value = currentQuiz.creatorName || '';
+            $('edit-enable-random-pick').checked = currentQuiz.enableRandomPick || false;
+            $('edit-random-pick-count').value = currentQuiz.randomPickCount || 10;
+            $('edit-random-pick-count').max = currentQuiz.questions?.length || 100;
+            $('edit-random-pick-settings').classList.toggle('hidden', !currentQuiz.enableRandomPick);
             $('edit-info-modal').classList.remove('hidden');
         }
         
@@ -1223,9 +1270,16 @@
             const name = $('edit-quiz-name').value.trim();
             const hideTheme = $('edit-hide-theme').checked;
             const creatorName = $('edit-creator-name').value.trim() || '匿名用户';
+            const enableRandomPick = $('edit-enable-random-pick').checked;
+            const randomPickCount = parseInt($('edit-random-pick-count').value) || 10;
             
             if (!name) {
                 MetroCommon.showToast('请输入题组名称', 'error');
+                return;
+            }
+            
+            if (enableRandomPick && randomPickCount > currentQuiz.questions.length) {
+                MetroCommon.showToast(`随机抽取数量不能超过题目总数(${currentQuiz.questions.length}题)`, 'error');
                 return;
             }
             
@@ -1233,12 +1287,16 @@
                 await FirebaseConfig.updateQuiz(currentQuiz.id, {
                     name,
                     hideTheme,
-                    creatorName
+                    creatorName,
+                    enableRandomPick,
+                    randomPickCount: enableRandomPick ? randomPickCount : 0
                 });
                 
                 currentQuiz.name = name;
                 currentQuiz.hideTheme = hideTheme;
                 currentQuiz.creatorName = creatorName;
+                currentQuiz.enableRandomPick = enableRandomPick;
+                currentQuiz.randomPickCount = enableRandomPick ? randomPickCount : 0;
                 
                 updateQuizInfo();
                 closeEditInfoModal();
@@ -1615,6 +1673,19 @@
                 if (e.key === 'Enter') {
                     login();
                 }
+            });
+            
+            $('edit-enable-random-pick').addEventListener('change', (e) => {
+                $('edit-random-pick-settings').classList.toggle('hidden', !e.target.checked);
+                if (e.target.checked) {
+                    $('edit-random-pick-count').max = currentQuiz.questions?.length || 100;
+                }
+            });
+            
+            $('edit-random-pick-count').addEventListener('change', (e) => {
+                const max = currentQuiz.questions?.length || 100;
+                const count = Math.min(max, Math.max(1, parseInt(e.target.value) || 10));
+                e.target.value = count;
             });
             
             $('btn-logout').addEventListener('click', logout);
