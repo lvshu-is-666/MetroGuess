@@ -741,18 +741,24 @@
                 }, {
                     root: null,
                     rootMargin: '0px',
-                    threshold: [0, 0.1, 0.5, 1]
+                    threshold: [0.1]
                 });
 
                 stickyInputState.observer.observe(inputArea);
 
-                window.addEventListener('resize', () => {
-                    updateStickyVisibility();
-                });
+                let scrollTicking = false;
+                const throttledScrollHandler = () => {
+                    if (!scrollTicking) {
+                        requestAnimationFrame(() => {
+                            updateStickyVisibility();
+                            scrollTicking = false;
+                        });
+                        scrollTicking = true;
+                    }
+                };
 
-                window.addEventListener('scroll', () => {
-                    updateStickyVisibility();
-                }, { passive: true });
+                window.addEventListener('resize', throttledScrollHandler, { passive: true });
+                window.addEventListener('scroll', throttledScrollHandler, { passive: true });
 
                 if (stickyInput && mainInput) {
                     stickyInput.addEventListener('input', function() {
@@ -789,7 +795,7 @@
         const DEV_MODE_KEY = 'metro_dev_session';
         
         function generateDevSessionKey() {
-            return btoa('lvshu_dev_' + new Date().toDateString());
+            return btoa('lvshu_dev_' + new Date().toISOString().slice(0,10));
         }
 
         function toggleDevMode() {
@@ -957,7 +963,7 @@
             }));
 
             const sessionKey = sessionStorage.getItem(DEV_MODE_KEY);
-            const expectedKey = btoa('lvshu_dev_' + new Date().toDateString());
+            const expectedKey = btoa('lvshu_dev_' + new Date().toISOString().slice(0,10));
             const savedDevMode = sessionKey === expectedKey;
             const devMode = gameState?.devMode || savedDevMode || false;
             gameState = MetroGameLogic.initGameState(stations, quizData.difficultyLevel);

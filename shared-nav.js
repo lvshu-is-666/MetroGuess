@@ -421,7 +421,7 @@
     function isDevModeAllowed() {
         const sessionKey = sessionStorage.getItem(DEV_MODE_KEY);
         if (!sessionKey) return false;
-        const expectedKey = btoa('lvshu_dev_' + new Date().toDateString());
+        const expectedKey = btoa('lvshu_dev_' + new Date().toISOString().slice(0,10));
         return sessionKey === expectedKey;
     }
     

@@ -77,7 +77,8 @@ body {
   z-index: 950;
   display: flex;
   flex-direction: column;
-  transform: translateX(-100%);
+  transform: translateX(-100%) translateZ(0);
+  will-change: transform;
   transition: transform var(--nav-transition);
   overflow-y: auto;
   overflow-x: hidden;
@@ -103,12 +104,12 @@ body {
 }
 
 .sidebar.open {
-  transform: translateX(0);
+  transform: translateX(0) translateZ(0);
 }
 
 @media (min-width: 1024px) {
   .sidebar {
-    transform: translateX(-100%);
+    transform: translateX(-100%) translateZ(0);
   }
 }
 
@@ -123,6 +124,7 @@ body {
   opacity: 0;
   visibility: hidden;
   transition: opacity var(--nav-transition), visibility var(--nav-transition);
+  will-change: opacity;
 }
 
 .sidebar-overlay.active {

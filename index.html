@@ -144,7 +144,7 @@
         }
         
         #letter-keyboard {
-            touch-action: manipulation;
+            touch-action: pan-y manipulation;
         }
         
         * {
@@ -162,6 +162,8 @@
             -webkit-backdrop-filter: blur(12px);
             border: 1px solid rgba(129, 140, 248, 0.3);
             box-shadow: 0 8px 32px rgba(79, 70, 229, 0.1);
+            transform: translateZ(0);
+            will-change: transform;
         }
         
         .station-card {
@@ -169,6 +171,7 @@
             border: 2px solid rgba(129, 140, 248, 0.4);
             transition: border-color var(--transition-normal), box-shadow var(--transition-normal), transform var(--transition-normal);
             box-shadow: 0 4px 16px rgba(79, 70, 229, 0.08);
+            contain: layout style;
         }
         
         .station-card:hover {
@@ -4192,7 +4195,7 @@
             
             const DEV_MODE_KEY = 'metro_dev_session';
             const sessionKey = sessionStorage.getItem(DEV_MODE_KEY);
-            const expectedKey = btoa('lvshu_dev_' + new Date().toDateString());
+            const expectedKey = btoa('lvshu_dev_' + new Date().toISOString().slice(0,10));
             if (sessionKey === expectedKey) {
                 gameState.devMode = true;
                 if (elements.modeReverse) {
@@ -4313,18 +4316,24 @@
                 }, {
                     root: null,
                     rootMargin: '0px',
-                    threshold: [0, 0.1, 0.5, 1]
+                    threshold: [0.1]
                 });
                 
                 stickyInputState.observer.observe(inputArea);
                 
-                window.addEventListener('resize', () => {
-                    updateStickyVisibility();
-                });
+                let scrollTicking = false;
+                const throttledScrollHandler = () => {
+                    if (!scrollTicking) {
+                        requestAnimationFrame(() => {
+                            updateStickyVisibility();
+                            scrollTicking = false;
+                        });
+                        scrollTicking = true;
+                    }
+                };
                 
-                window.addEventListener('scroll', () => {
-                    updateStickyVisibility();
-                }, { passive: true });
+                window.addEventListener('resize', throttledScrollHandler, { passive: true });
+                window.addEventListener('scroll', throttledScrollHandler, { passive: true });
                 
                 if (stickyInput && mainInput) {
                     stickyInput.addEventListener('input', function() {
@@ -5000,7 +5009,7 @@
                 gameState.devMode = !gameState.devMode;
                 const DEV_MODE_KEY = 'metro_dev_session';
                 if (gameState.devMode) {
-                    sessionStorage.setItem(DEV_MODE_KEY, btoa('lvshu_dev_' + new Date().toDateString()));
+                    sessionStorage.setItem(DEV_MODE_KEY, btoa('lvshu_dev_' + new Date().toISOString().slice(0,10)));
                 } else {
                     sessionStorage.removeItem(DEV_MODE_KEY);
                 }
@@ -6064,7 +6073,7 @@
                         gameState.devMode = !gameState.devMode;
                         const DEV_MODE_KEY = 'metro_dev_session';
                         if (gameState.devMode) {
-                            sessionStorage.setItem(DEV_MODE_KEY, btoa('lvshu_dev_' + new Date().toDateString()));
+                            sessionStorage.setItem(DEV_MODE_KEY, btoa('lvshu_dev_' + new Date().toISOString().slice(0,10)));
                         } else {
                             sessionStorage.removeItem(DEV_MODE_KEY);
                         }

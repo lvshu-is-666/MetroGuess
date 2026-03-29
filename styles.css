@@ -69,6 +69,25 @@ h1, h2, h3, h4, h5, h6, .font-display {
 .icon-sm { width: 1em; height: 1em; }
 .icon-lg { width: 1.5em; height: 1.5em; }
 
+/* ========== 性能优化 ========== */
+.station-card,
+.game-card,
+.clay-card,
+.quiz-card,
+.word-card {
+    contain: layout style;
+    content-visibility: auto;
+    contain-intrinsic-size: 0 120px;
+}
+
+#stations-container {
+    contain: layout;
+}
+
+.glass-panel {
+    contain: layout style;
+}
+
 /* ========== Claymorphism 游戏风格组件 ========== */
 
 /* 游戏卡片 - 统一使用 game-card */
@@ -494,6 +513,8 @@ h1, h2, h3, h4, h5, h6, .font-display {
     -webkit-backdrop-filter: blur(12px);
     border: 1px solid rgba(129, 140, 248, 0.3);
     box-shadow: 0 8px 32px rgba(79, 70, 229, 0.1);
+    transform: translateZ(0);
+    will-change: transform;
 }
 
 /* 站点卡片 - 保留兼容 */
@@ -1361,13 +1382,14 @@ h1, h2, h3, h4, h5, h6, .font-display {
     padding: 8px 12px;
     padding-bottom: calc(8px + env(safe-area-inset-bottom, 0px));
     border-top: 1px solid rgba(129, 140, 248, 0.2);
-    transform: translateY(100%);
+    transform: translateY(100%) translateZ(0);
+    will-change: transform;
     transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     box-shadow: 0 -4px 20px rgba(79, 70, 229, 0.1);
 }
 
 #sticky-input-container.visible {
-    transform: translateY(0);
+    transform: translateY(0) translateZ(0);
 }
 
 #sticky-input-container .sticky-input-wrapper {
