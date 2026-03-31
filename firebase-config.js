@@ -13,6 +13,24 @@ const FirebaseConfig = {
     db: null,
     initialized: false,
     
+    async hashPassword(password, salt = null) {
+        if (!salt) {
+            salt = Array.from(crypto.getRandomValues(new Uint8Array(16)))
+                .map(b => b.toString(16).padStart(2, '0')).join('');
+        }
+        const encoder = new TextEncoder();
+        const data = encoder.encode(password + salt);
+        const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+        const hashArray = Array.from(new Uint8Array(hashBuffer));
+        const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        return { hash: hashHex, salt: salt };
+    },
+    
+    async verifyPassword(password, storedHash, salt) {
+        const { hash } = await this.hashPassword(password, salt);
+        return hash === storedHash;
+    },
+    
     async init() {
         if (this.initialized) return true;
         
@@ -71,9 +89,19 @@ const FirebaseConfig = {
         const quizId = MetroCommon.generateUniqueId();
         const now = Date.now();
         
+        let hashedPassword = null;
+        let passwordSalt = null;
+        if (quizData.managerPassword) {
+            const hashResult = await this.hashPassword(quizData.managerPassword);
+            hashedPassword = hashResult.hash;
+            passwordSalt = hashResult.salt;
+        }
+        
         const quiz = {
             id: quizId,
             ...quizData,
+            managerPassword: hashedPassword,
+            passwordSalt: passwordSalt,
             createdAt: now,
             updatedAt: now,
             playCount: 0,
@@ -100,6 +128,12 @@ const FirebaseConfig = {
         if (!this.initialized) {
             const success = await this.init();
             if (!success) throw new Error('Firebase初始化失败');
+        }
+        
+        if (updates.managerPassword) {
+            const hashResult = await this.hashPassword(updates.managerPassword);
+            updates.managerPassword = hashResult.hash;
+            updates.passwordSalt = hashResult.salt;
         }
         
         updates.updatedAt = Date.now();
@@ -261,7 +295,7 @@ const FirebaseConfig = {
         return { valid: true };
     },
     
-    validateManagerAccess(quiz, username, password) {
+    async validateManagerAccess(quiz, username, password) {
         if (!quiz) {
             return { valid: false, error: '题组不存在' };
         }
@@ -270,8 +304,21 @@ const FirebaseConfig = {
             return { valid: false, error: '该题组未设置管理凭证' };
         }
         
-        if (username !== quiz.managerUsername || password !== quiz.managerPassword) {
+        if (username !== quiz.managerUsername) {
             return { valid: false, error: '用户名或密码错误' };
+        }
+        
+        const isHashedPassword = quiz.managerPassword.length === 64 && quiz.passwordSalt;
+        
+        if (isHashedPassword) {
+            const isValid = await this.verifyPassword(password, quiz.managerPassword, quiz.passwordSalt);
+            if (!isValid) {
+                return { valid: false, error: '用户名或密码错误' };
+            }
+        } else {
+            if (password !== quiz.managerPassword) {
+                return { valid: false, error: '用户名或密码错误' };
+            }
         }
         
         return { valid: true };

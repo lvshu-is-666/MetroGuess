@@ -1,0 +1,118 @@
+{
+  "rules": {
+    "quizzes": {
+      ".read": true,
+      "$quizId": {
+        ".write": true,
+        ".validate": "newData.hasChildren(['id', 'createdAt', 'updatedAt'])",
+        "id": { 
+          ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 50" 
+        },
+        "name": { 
+          ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 100" 
+        },
+        "title": { 
+          ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 100" 
+        },
+        "createdAt": { 
+          ".validate": "newData.isNumber() && newData.val() > 0" 
+        },
+        "updatedAt": { 
+          ".validate": "newData.isNumber() && newData.val() > 0" 
+        },
+        "playCount": { 
+          ".validate": "newData.isNumber() && newData.val() >= 0" 
+        },
+        "likeCount": { 
+          ".validate": "newData.isNumber() && newData.val() >= 0" 
+        },
+        "isPublic": { 
+          ".validate": "newData.isBoolean()" 
+        },
+        "featured": { 
+          ".validate": "newData.isBoolean()" 
+        },
+        "cityScope": { 
+          ".validate": "newData.isString()" 
+        },
+        "difficultyLevel": { 
+          ".validate": "newData.isString() && (newData.val() === 'easy' || newData.val() === 'normal' || newData.val() === 'hard')" 
+        },
+        "difficultyScore": { 
+          ".validate": "newData.isNumber()" 
+        },
+        "questionCount": { 
+          ".validate": "newData.isNumber() && newData.val() >= 0" 
+        },
+        "managerUsername": { 
+          ".validate": "newData.isString() && newData.val().length >= 3 && newData.val().length <= 30" 
+        },
+        "managerPassword": { 
+          ".validate": "newData.isString() && newData.val().length >= 6" 
+        },
+        "passwordSalt": { 
+          ".validate": "newData.isString()" 
+        },
+        "inviteCode": { 
+          ".validate": "newData.isString()" 
+        },
+        "creatorName": { 
+          ".validate": "newData.isString() && newData.val().length <= 30" 
+        },
+        "hideTheme": { 
+          ".validate": "newData.isBoolean()" 
+        },
+        "enableRandomPick": { 
+          ".validate": "newData.isBoolean()" 
+        },
+        "randomPickCount": { 
+          ".validate": "newData.isNumber() && newData.val() >= 0" 
+        },
+        "questions": {
+          "$questionId": {
+            ".validate": "newData.hasChildren(['station_cn', 'station_en'])",
+            "station_cn": { 
+              ".validate": "newData.isString() && newData.val().length > 0" 
+            },
+            "station_en": { 
+              ".validate": "newData.isString() && newData.val().length > 0" 
+            },
+            "city_cn": { 
+              ".validate": "newData.isString()" 
+            }
+          }
+        }
+      }
+    },
+    "quizLeaderboards": {
+      "$quizId": {
+        ".read": true,
+        ".write": true,
+        "$scoreId": {
+          ".validate": "newData.hasChildren(['id', 'playerName', 'score', 'createdAt'])",
+          "id": { 
+            ".validate": "newData.isString()" 
+          },
+          "playerName": { 
+            ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 30" 
+          },
+          "score": { 
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 1000000" 
+          },
+          "time": { 
+            ".validate": "newData.isNumber() && newData.val() >= 0" 
+          },
+          "guesses": { 
+            ".validate": "newData.isNumber() && newData.val() >= 0" 
+          },
+          "hintsUsed": { 
+            ".validate": "newData.isNumber() && newData.val() >= 0" 
+          },
+          "createdAt": { 
+            ".validate": "newData.isNumber() && newData.val() > 0" 
+          }
+        }
+      }
+    }
+  }
+}

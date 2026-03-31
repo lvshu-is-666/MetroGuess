@@ -489,6 +489,12 @@
                         </svg>
                         邀请码管理
                     </button>
+                    <button id="btn-change-password" class="mode-btn rounded-lg px-5 py-2.5 text-sm font-medium text-slate-700 cursor-pointer inline-flex items-center gap-2">
+                        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                        </svg>
+                        修改密码
+                    </button>
                     <button id="btn-delete-quiz" class="btn-danger rounded-lg px-5 py-2.5 text-sm font-medium cursor-pointer inline-flex items-center gap-2 text-white">
                         <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <polyline points="3 6 5 6 21 6"></polyline>
@@ -646,6 +652,44 @@
             <div class="flex gap-3 mt-6">
                 <button onclick="closeInviteCodeModal()" class="flex-1 mode-btn rounded-lg px-4 py-2.5 text-slate-700 font-medium cursor-pointer">取消</button>
                 <button onclick="saveInviteCode()" class="flex-1 btn-primary px-4 py-2.5 rounded-xl text-white font-medium cursor-pointer">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 修改密码弹窗 -->
+    <div id="change-password-modal" class="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="clay-modal p-6 max-w-sm w-full animate-fade-in-up">
+            <div class="flex items-center justify-between mb-5">
+                <h3 class="text-lg font-bold text-slate-900">修改管理密码</h3>
+                <button class="modal-close-btn p-1 hover:bg-slate-100 rounded-lg cursor-pointer" onclick="closeChangePasswordModal()">
+                    <svg class="w-5 h-5 text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+            <div class="space-y-4">
+                <div class="p-4 bg-amber-50 rounded-xl border border-amber-200">
+                    <p class="text-sm text-amber-800">
+                        <strong>注意：</strong>修改密码后需要使用新密码登录管理。
+                    </p>
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-2">新用户名</label>
+                    <input type="text" id="new-username" class="clay-input w-full px-4 py-3" placeholder="留空则不修改" maxlength="30">
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-2">新密码</label>
+                    <input type="password" id="new-password" class="clay-input w-full px-4 py-3" placeholder="至少6位字符" minlength="6">
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-2">确认新密码</label>
+                    <input type="password" id="confirm-new-password" class="clay-input w-full px-4 py-3" placeholder="再次输入新密码">
+                </div>
+            </div>
+            <div class="flex gap-3 mt-6">
+                <button onclick="closeChangePasswordModal()" class="flex-1 mode-btn rounded-lg px-4 py-2.5 text-slate-700 font-medium cursor-pointer">取消</button>
+                <button onclick="saveNewPassword()" class="flex-1 btn-primary px-4 py-2.5 rounded-xl text-white font-medium cursor-pointer">保存</button>
             </div>
         </div>
     </div>
@@ -854,7 +898,7 @@
                     return;
                 }
                 
-                const access = FirebaseConfig.validateManagerAccess(quiz, username, password);
+                const access = await FirebaseConfig.validateManagerAccess(quiz, username, password);
                 
                 if (!access.valid) {
                     MetroCommon.showToast(access.error, 'error');
@@ -1362,6 +1406,61 @@
             }
         }
         
+        function openChangePasswordModal() {
+            $('new-username').value = '';
+            $('new-password').value = '';
+            $('confirm-new-password').value = '';
+            $('change-password-modal').classList.remove('hidden');
+        }
+        
+        function closeChangePasswordModal() {
+            $('change-password-modal').classList.add('hidden');
+        }
+        
+        async function saveNewPassword() {
+            const newUsername = $('new-username').value.trim();
+            const newPassword = $('new-password').value;
+            const confirmPassword = $('confirm-new-password').value;
+            
+            if (!newPassword && !newUsername) {
+                MetroCommon.showToast('请输入新用户名或新密码', 'error');
+                return;
+            }
+            
+            if (newPassword) {
+                if (newPassword.length < 6) {
+                    MetroCommon.showToast('密码至少需要6位字符', 'error');
+                    return;
+                }
+                if (newPassword !== confirmPassword) {
+                    MetroCommon.showToast('两次输入的密码不一致', 'error');
+                    return;
+                }
+            }
+            
+            try {
+                const updates = {};
+                if (newUsername) {
+                    updates.managerUsername = newUsername;
+                }
+                if (newPassword) {
+                    updates.managerPassword = newPassword;
+                }
+                
+                await FirebaseConfig.updateQuiz(currentQuiz.id, updates);
+                
+                if (newUsername) {
+                    currentQuiz.managerUsername = newUsername;
+                }
+                
+                closeChangePasswordModal();
+                MetroCommon.showToast('管理凭证已更新', 'success');
+            } catch (e) {
+                console.error('Failed to save password:', e);
+                MetroCommon.showToast('保存失败', 'error');
+            }
+        }
+        
         function openAddQuestionModal() {
             editingQuestionIndex = -1;
             $('question-modal-title').textContent = '添加题目';
@@ -1693,6 +1792,7 @@
             $('btn-toggle-visibility').addEventListener('click', toggleVisibility);
             $('btn-edit-info').addEventListener('click', openEditInfoModal);
             $('btn-manage-invite-code').addEventListener('click', openInviteCodeModal);
+            $('btn-change-password').addEventListener('click', openChangePasswordModal);
             $('btn-delete-quiz').addEventListener('click', deleteQuiz);
             $('btn-add-question').addEventListener('click', openAddQuestionModal);
             $('btn-edit-questions').addEventListener('click', openBatchEditModal);
