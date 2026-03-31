@@ -1,84 +1,140 @@
 {
   "rules": {
+    "rooms": {
+      ".read": true,
+      ".indexOn": ["status", "createdAt"],
+      "$roomId": {
+        ".write": true,
+        ".validate": "!data.exists() && newData.hasChildren(['host', 'createdAt']) || data.exists()",
+        "host": {
+          ".validate": "!newData.exists() || newData.isString()"
+        },
+        "createdAt": {
+          ".validate": "!newData.exists() || newData.isNumber() && newData.val() > 0"
+        },
+        "status": {
+          ".validate": "!newData.exists() || newData.isString()"
+        },
+        "settings": {
+          ".validate": "!newData.exists() || newData.hasChildren()"
+        },
+        "players": {
+          "$playerId": {
+            ".validate": "!newData.exists() || newData.hasChildren(['name', 'ready'])",
+            "name": {
+              ".validate": "!newData.exists() || newData.isString()"
+            },
+            "ready": {
+              ".validate": "!newData.exists() || newData.isBoolean()"
+            }
+          }
+        }
+      }
+    },
+    "users": {
+      "$userId": {
+        ".read": true,
+        ".write": true,
+        ".validate": "!data.exists() && newData.hasChildren(['gamesPlayed', 'gamesWon', 'stationsSolved', 'totalScore']) || data.exists()",
+        "gamesPlayed": {
+          ".validate": "!newData.exists() || newData.isNumber() && newData.val() >= 0"
+        },
+        "gamesWon": {
+          ".validate": "!newData.exists() || newData.isNumber() && newData.val() >= 0"
+        },
+        "stationsSolved": {
+          ".validate": "!newData.exists() || newData.isNumber() && newData.val() >= 0"
+        },
+        "totalScore": {
+          ".validate": "!newData.exists() || newData.isNumber() && newData.val() >= 0"
+        },
+        "unlockedCities": {
+          ".validate": "!newData.exists() || newData.hasChildren()"
+        },
+        "leaderboards": {
+          ".validate": "!newData.exists() || newData.hasChildren()"
+        }
+      }
+    },
     "quizzes": {
       ".read": true,
       "$quizId": {
         ".write": true,
-        ".validate": "newData.hasChildren(['id', 'createdAt', 'updatedAt'])",
+        ".validate": "!data.exists() && newData.hasChildren(['id', 'createdAt', 'updatedAt']) || data.exists()",
         "id": { 
-          ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 50" 
+          ".validate": "!newData.exists() || newData.isString() && newData.val().length > 0 && newData.val().length <= 50" 
         },
         "name": { 
-          ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 100" 
+          ".validate": "!newData.exists() || newData.isString() && newData.val().length > 0 && newData.val().length <= 100" 
         },
         "title": { 
-          ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 100" 
+          ".validate": "!newData.exists() || newData.isString() && newData.val().length > 0 && newData.val().length <= 100" 
         },
         "createdAt": { 
-          ".validate": "newData.isNumber() && newData.val() > 0" 
+          ".validate": "!newData.exists() || newData.isNumber() && newData.val() > 0" 
         },
         "updatedAt": { 
-          ".validate": "newData.isNumber() && newData.val() > 0" 
+          ".validate": "!newData.exists() || newData.isNumber() && newData.val() > 0" 
         },
         "playCount": { 
-          ".validate": "newData.isNumber() && newData.val() >= 0" 
+          ".validate": "!newData.exists() || newData.isNumber() && newData.val() >= 0" 
         },
         "likeCount": { 
-          ".validate": "newData.isNumber() && newData.val() >= 0" 
+          ".validate": "!newData.exists() || newData.isNumber() && newData.val() >= 0" 
         },
         "isPublic": { 
-          ".validate": "newData.isBoolean()" 
+          ".validate": "!newData.exists() || newData.isBoolean()" 
         },
         "featured": { 
-          ".validate": "newData.isBoolean()" 
+          ".validate": "!newData.exists() || newData.isBoolean()" 
         },
         "cityScope": { 
-          ".validate": "newData.isString()" 
+          ".validate": "!newData.exists() || newData.isString()" 
         },
         "difficultyLevel": { 
-          ".validate": "newData.isString() && (newData.val() === 'easy' || newData.val() === 'normal' || newData.val() === 'hard')" 
+          ".validate": "!newData.exists() || newData.isString() && (newData.val() === 'easy' || newData.val() === 'normal' || newData.val() === 'hard')" 
         },
         "difficultyScore": { 
-          ".validate": "newData.isNumber()" 
+          ".validate": "!newData.exists() || newData.isNumber()" 
         },
         "questionCount": { 
-          ".validate": "newData.isNumber() && newData.val() >= 0" 
+          ".validate": "!newData.exists() || newData.isNumber() && newData.val() >= 0" 
         },
         "managerUsername": { 
-          ".validate": "newData.isString() && newData.val().length >= 3 && newData.val().length <= 30" 
+          ".validate": "!newData.exists() || newData.isString() && newData.val().length >= 3 && newData.val().length <= 30" 
         },
         "managerPassword": { 
-          ".validate": "newData.isString() && newData.val().length >= 6" 
+          ".validate": "!newData.exists() || newData.isString() && newData.val().length >= 6" 
         },
         "passwordSalt": { 
-          ".validate": "newData.isString()" 
+          ".validate": "!newData.exists() || newData.isString()" 
         },
         "inviteCode": { 
-          ".validate": "newData.isString()" 
+          ".validate": "!newData.exists() || newData.isString()" 
         },
         "creatorName": { 
-          ".validate": "newData.isString() && newData.val().length <= 30" 
+          ".validate": "!newData.exists() || newData.isString() && newData.val().length <= 30" 
         },
         "hideTheme": { 
-          ".validate": "newData.isBoolean()" 
+          ".validate": "!newData.exists() || newData.isBoolean()" 
         },
         "enableRandomPick": { 
-          ".validate": "newData.isBoolean()" 
+          ".validate": "!newData.exists() || newData.isBoolean()" 
         },
         "randomPickCount": { 
-          ".validate": "newData.isNumber() && newData.val() >= 0" 
+          ".validate": "!newData.exists() || newData.isNumber() && newData.val() >= 0" 
         },
         "questions": {
           "$questionId": {
-            ".validate": "newData.hasChildren(['station_cn', 'station_en'])",
+            ".validate": "!newData.exists() || newData.hasChildren(['station_cn', 'station_en'])",
             "station_cn": { 
-              ".validate": "newData.isString() && newData.val().length > 0" 
+              ".validate": "!newData.exists() || newData.isString() && newData.val().length > 0" 
             },
             "station_en": { 
-              ".validate": "newData.isString() && newData.val().length > 0" 
+              ".validate": "!newData.exists() || newData.isString() && newData.val().length > 0" 
             },
             "city_cn": { 
-              ".validate": "newData.isString()" 
+              ".validate": "!newData.exists() || newData.isString()" 
             }
           }
         }
@@ -89,27 +145,27 @@
         ".read": true,
         ".write": true,
         "$scoreId": {
-          ".validate": "newData.hasChildren(['id', 'playerName', 'score', 'createdAt'])",
+          ".validate": "!data.exists() && newData.hasChildren(['id', 'playerName', 'score', 'createdAt']) || data.exists()",
           "id": { 
-            ".validate": "newData.isString()" 
+            ".validate": "!newData.exists() || newData.isString()" 
           },
           "playerName": { 
-            ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 30" 
+            ".validate": "!newData.exists() || newData.isString() && newData.val().length > 0 && newData.val().length <= 30" 
           },
           "score": { 
-            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 1000000" 
+            ".validate": "!newData.exists() || newData.isNumber() && newData.val() >= 0 && newData.val() <= 1000000" 
           },
           "time": { 
-            ".validate": "newData.isNumber() && newData.val() >= 0" 
+            ".validate": "!newData.exists() || newData.isNumber() && newData.val() >= 0" 
           },
           "guesses": { 
-            ".validate": "newData.isNumber() && newData.val() >= 0" 
+            ".validate": "!newData.exists() || newData.isNumber() && newData.val() >= 0" 
           },
           "hintsUsed": { 
-            ".validate": "newData.isNumber() && newData.val() >= 0" 
+            ".validate": "!newData.exists() || newData.isNumber() && newData.val() >= 0" 
           },
           "createdAt": { 
-            ".validate": "newData.isNumber() && newData.val() > 0" 
+            ".validate": "!newData.exists() || newData.isNumber() && newData.val() > 0" 
           }
         }
       }

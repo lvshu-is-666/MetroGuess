@@ -173,7 +173,8 @@ const MetroCommon = {
     createToastContainer() {
         const container = document.createElement('div');
         container.id = 'toast-container';
-        container.className = 'fixed top-4 right-4 z-50 space-y-2';
+        container.className = 'fixed right-4 z-[1000] space-y-2';
+        container.style.top = '72px';
         container.setAttribute('role', 'alert');
         container.setAttribute('aria-live', 'polite');
         document.body.appendChild(container);
