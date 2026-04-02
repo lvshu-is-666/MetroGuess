@@ -19,458 +19,7 @@
     <script src="../firebase-config.js"></script>
     <script src="../station-utils.js"></script>
     <script src="../encrypted_data.js"></script>
-    <style>
-        /* 移动端表单优化 */
-        @media (max-width: 640px) {
-            .form-card {
-                padding: 1rem !important;
-                border-radius: 16px;
-                border-width: 2px;
-            }
-
-            main.container {
-                padding-left: 0.75rem;
-                padding-right: 0.75rem;
-                padding-top: 0.75rem;
-                padding-bottom: 0.75rem;
-            }
-
-            /* 标题区域 */
-            header.mb-6 {
-                margin-bottom: 1rem !important;
-            }
-
-            header .text-3xl {
-                font-size: 1.5rem !important;
-            }
-
-            /* 导航按钮 */
-            nav.mb-6 {
-                margin-bottom: 1rem !important;
-            }
-
-            nav .mode-btn {
-                padding: 0.5rem 0.75rem !important;
-                font-size: 0.75rem !important;
-            }
-
-            /* 表单区块 */
-            section.mb-6 {
-                margin-bottom: 1rem !important;
-            }
-
-            section h2 {
-                font-size: 1rem !important;
-                margin-bottom: 0.75rem !important;
-            }
-
-            section h2 .w-8 {
-                width: 1.5rem !important;
-                height: 1.5rem !important;
-            }
-
-            /* 输入框 */
-            .clay-input, .clay-select {
-                padding: 0.5rem 0.75rem !important;
-                font-size: 0.875rem !important;
-            }
-
-            /* 标签 */
-            label.block.text-sm {
-                font-size: 0.8125rem !important;
-                margin-bottom: 0.375rem !important;
-            }
-
-            /* 间距 */
-            .space-y-4 > * + * {
-                margin-top: 0.75rem !important;
-            }
-
-            /* 综合难度区域 */
-            .bg-indigo-50\/50 {
-                padding: 0.75rem !important;
-            }
-
-            /* 提交按钮 */
-            #btn-submit, #btn-save-draft {
-                padding: 0.625rem 1rem !important;
-                font-size: 0.875rem !important;
-            }
-        }
-        
-        /* 题目卡片 - 紧凑行式布局 */
-        .question-card {
-            background: linear-gradient(145deg, rgba(255, 255, 255, 0.9) 0%, rgba(248, 250, 252, 0.8)    100%);
-            border: 2px solid rgba(129, 140, 248, 0.2);
-            border-radius: 10px;
-            padding: 8px 10px;
-            transition: all 0.2s ease;
-            position: relative;
-            z-index: 1;
-        }
-
-        .question-card:hover {
-            border-color: rgba(129, 140, 248, 0.4);
-            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.1);
-        }
-
-        .question-card.filled {
-            background: linear-gradient(145deg, rgba(220, 252, 231, 0.5) 0%, rgba(187, 247, 208, 0.3) 100%);
-            border-color: rgba(74, 222, 128, 0.3);
-        }
-
-        .question-card.autocomplete-active {
-            z-index: 1000;
-        }
-
-        /* 紧凑题目行 */
-        .question-row {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            flex-wrap: wrap;
-        }
-
-        .question-row .question-num {
-            width: 24px;
-            height: 24px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: linear-gradient(135deg, #4F46E5 0%, #6366F1 100%);
-            color: white;
-            border-radius: 6px;
-            font-size: 0.75rem;
-            font-weight: 700;
-            flex-shrink: 0;
-        }
-
-        .question-row .input-compact {
-            flex: 1;
-            min-width: 100px;
-            padding: 6px 8px;
-            font-size: 0.8125rem;
-        }
-
-        .question-row .city-select-compact {
-            width: 80px;
-            padding: 6px 8px;
-            font-size: 0.8125rem;
-        }
-
-        .question-row .btn-random-compact {
-            padding: 5px 10px;
-            font-size: 0.75rem;
-            border-radius: 6px;
-            white-space: nowrap;
-            font-weight: 500;
-        }
-
-        .question-row .difficulty-badge-compact {
-            font-size: 0.6rem;
-            padding: 1px 6px;
-            border-radius: 9999px;
-        }
-
-        /* 移动端优化 - 重新设计布局 */
-        @media (max-width: 640px) {
-            .question-card {
-                padding: 12px;
-                border-radius: 12px;
-            }
-
-            .question-row {
-                display: grid;
-                grid-template-columns: 28px 1fr auto auto;
-                grid-template-rows: auto auto;
-                gap: 8px 6px;
-                align-items: center;
-            }
-
-            .question-row .question-num {
-                width: 28px;
-                height: 28px;
-                font-size: 0.85rem;
-                border-radius: 8px;
-                grid-row: 1;
-                grid-column: 1;
-            }
-
-            /* 输入框区域 - 第一行占据剩余空间 */
-            .question-row > .flex-1 {
-                grid-row: 1;
-                grid-column: 2 / -1;
-                display: flex;
-                gap: 8px;
-                min-width: 0;
-            }
-
-            .question-row .input-compact {
-                flex: 1;
-                min-width: 0;
-                padding: 10px 12px;
-                font-size: 0.9rem;
-            }
-
-            /* 城市选择器 - 第二行左侧 */
-            .question-row .city-select-compact {
-                width: 75px;
-                min-width: 75px;
-                padding: 8px 10px;
-                font-size: 0.85rem;
-                padding-right: 22px;
-                background-position: right 5px center;
-                background-size: 12px;
-                grid-row: 2;
-                grid-column: 2;
-                justify-self: start;
-            }
-
-            /* 随机按钮 - 第二行中间 */
-            .question-row .btn-random-compact {
-                padding: 8px 14px;
-                font-size: 0.85rem;
-                grid-row: 2;
-                grid-column: 3;
-                justify-self: start;
-            }
-
-            .question-row .btn-random-compact .btn-random-text {
-                display: inline;
-            }
-
-            /* 难度标签 - 第二行右侧 */
-            .question-row .difficulty-badge-compact {
-                font-size: 0.7rem;
-                padding: 3px 10px;
-                white-space: nowrap;
-                grid-row: 2;
-                grid-column: 4;
-                justify-self: end;
-            }
-
-            /* 城市标签 - 当城市锁定时 */
-            .city-label {
-                font-size: 0.8rem;
-                padding: 6px 10px;
-                grid-row: 2;
-                grid-column: 2;
-                justify-self: start;
-            }
-
-            /* 间距 */
-            #questions-container {
-                gap: 10px !important;
-            }
-        }
-
-        /* 超小屏幕优化 */
-        @media (max-width: 380px) {
-            .question-card {
-                padding: 10px;
-            }
-
-            .question-row {
-                grid-template-columns: 26px 1fr auto auto;
-                gap: 6px 5px;
-            }
-
-            .question-row .question-num {
-                width: 26px;
-                height: 26px;
-                font-size: 0.8rem;
-                border-radius: 6px;
-            }
-
-            .question-row .input-compact {
-                padding: 8px 10px;
-                font-size: 0.85rem;
-            }
-
-            .question-row .city-select-compact {
-                width: 70px;
-                min-width: 70px;
-                padding: 6px 8px;
-                font-size: 0.8rem;
-            }
-
-            .question-row .btn-random-compact {
-                padding: 6px 10px;
-                font-size: 0.8rem;
-            }
-
-            .question-row .btn-random-compact svg {
-                width: 14px;
-                height: 14px;
-            }
-
-            .question-row .difficulty-badge-compact {
-                font-size: 0.65rem;
-                padding: 2px 8px;
-            }
-
-            .city-label {
-                font-size: 0.75rem;
-                padding: 5px 8px;
-            }
-        }
-        
-        .dark .question-card {
-            background: linear-gradient(145deg, rgba(51, 65, 85, 0.9) 0%, rgba(30, 41, 59, 0.8) 100%);
-            border-color: rgba(71, 85, 105, 0.4);
-        }
-
-        .dark .question-card.filled {
-            background: linear-gradient(145deg, rgba(20, 83, 45, 0.5) 0%, rgba(22, 101, 52, 0.3) 100%);
-            border-color: rgba(74, 222, 128, 0.3);
-        }
-
-        .dark .question-row .question-num {
-            background: linear-gradient(135deg, #6366F1 0%, #818CF8 100%);
-        }
-
-        .autocomplete-wrapper {
-            position: relative;
-            flex: 1;
-            min-width: 0;
-        }
-
-        .autocomplete-dropdown {
-            position: absolute;
-            top: 100%;
-            left: 0;
-            right: 0;
-            background: white;
-            border: 2px solid rgba(129, 140, 248, 0.3);
-            border-radius: 10px;
-            box-shadow: 0 8px 24px rgba(79, 70, 229, 0.15);
-            max-height: 280px;
-            overflow-y: auto;
-            z-index: 1001;
-            display: none;
-            margin-top: 4px;
-        }
-
-        .autocomplete-dropdown.show {
-            display: block;
-            animation: dropdownFadeIn 0.15s ease-out;
-        }
-
-        @keyframes dropdownFadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(-8px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .autocomplete-item {
-            padding: 10px 12px;
-            cursor: pointer;
-            border-bottom: 1px solid rgba(129, 140, 248, 0.1);
-            transition: background 0.15s ease;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .autocomplete-item:last-child {
-            border-bottom: none;
-        }
-
-        .autocomplete-item:hover,
-        .autocomplete-item.active {
-            background: linear-gradient(135deg, rgba(79, 70, 229, 0.08) 0%, rgba(99, 102, 241, 0.05) 100%);
-        }
-
-        .autocomplete-item .station-info {
-            display: flex;
-            flex-direction: column;
-            gap: 2px;
-            min-width: 0;
-            flex: 1;
-        }
-
-        .autocomplete-item .station-cn {
-            font-weight: 600;
-            color: #1e293b;
-            font-size: 0.9rem;
-        }
-
-        .autocomplete-item .station-en {
-            font-size: 0.75rem;
-            color: #64748b;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .autocomplete-item .city-badge {
-            font-size: 0.65rem;
-            padding: 2px 8px;
-            background: linear-gradient(135deg, #4F46E5 0%, #6366F1 100%);
-            color: white;
-            border-radius: 9999px;
-            white-space: nowrap;
-            flex-shrink: 0;
-        }
-
-        .autocomplete-empty {
-            padding: 16px;
-            text-align: center;
-            color: #94a3b8;
-            font-size: 0.85rem;
-        }
-
-        .dark .autocomplete-dropdown {
-            background: #1e293b;
-            border-color: rgba(71, 85, 105, 0.5);
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
-        }
-
-        .dark .autocomplete-item {
-            border-bottom-color: rgba(71, 85, 105, 0.3);
-        }
-
-        .dark .autocomplete-item:hover,
-        .dark .autocomplete-item.active {
-            background: linear-gradient(135deg, rgba(99, 102, 241, 0.15) 0%, rgba(129, 140, 248, 0.1) 100%);
-        }
-
-        .dark .autocomplete-item .station-cn {
-            color: #f1f5f9;
-        }
-
-        .dark .autocomplete-item .station-en {
-            color: #94a3b8;
-        }
-
-        .dark .autocomplete-empty {
-            color: #64748b;
-        }
-
-        @media (max-width: 640px) {
-            .autocomplete-dropdown {
-                max-height: 220px;
-            }
-
-            .autocomplete-item {
-                padding: 8px 10px;
-            }
-
-            .autocomplete-item .station-cn {
-                font-size: 0.85rem;
-            }
-
-            .autocomplete-item .station-en {
-                font-size: 0.7rem;
-            }
-        }
-    </style>
+    <link rel="stylesheet" href="../shared-inline.css">
 </head>
 <body class="bg-gradient-to-br from-indigo-50 via-purple-50 to-blue-100 min-h-screen text-slate-800 transition-colors duration-300">
     <a href="#main-content" class="skip-nav-link">跳转到主要内容</a>
@@ -491,7 +40,7 @@
                     <path d="M12 2C6 2 3 4 3 8v8c0 2.5 2 4.5 4.5 4.5h1.5l-2 2h2l2-2h2l2 2h2l-2-2h1.5c2.5 0 4.5-2 4.5-4.5V8c0-4-3-6-9-6zM7.5 18c-1.5 0-2.5-1-2.5-2.5S6 13 7.5 13s2.5 1 2.5 2.5S9 18 7.5 18zm9 0c-1.5 0-2.5-1-2.5-2.5s1-2.5 2.5-2.5 2.5 1 2.5 2.5-1 2.5-2.5 2.5zm2.5-7H5V8c0-1.5 1-2.5 2.5-2.5h9c1.5 0 2.5 1 2.5 2.5v3z"/>
                 </svg>
             </div>
-            <span>创建题组</span>
+            <span class="mobile-nav-title-text">创建题组</span>
         </div>
         <div class="mobile-nav-modes">
             <div class="nav-mode-wrapper">
@@ -513,7 +62,7 @@
                         </svg>
                         普通模式
                     </a>
-                    <a href="../index.html#multiplayer" class="nav-mode-dropdown-item">
+                    <a href="../index.html#/battle" class="nav-mode-dropdown-item">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"></path>
                             <circle cx="9" cy="7" r="4"></circle>
@@ -522,7 +71,7 @@
                         </svg>
                         联机对战
                     </a>
-                    <a href="../index.html#leaderboard" class="nav-mode-dropdown-item">
+                    <a href="../index.html#/rank" class="nav-mode-dropdown-item">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
                         </svg>
@@ -531,7 +80,7 @@
                 </div>
             </div>
             <div class="nav-mode-wrapper">
-                <a href="list.html" class="nav-mode-btn">
+                <a href="list.html" class="nav-mode-btn active">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <line x1="8" y1="6" x2="21" y2="6"></line>
                         <line x1="8" y1="12" x2="21" y2="12"></line>
@@ -716,45 +265,293 @@
 
     <main id="main-content" class="container mx-auto px-4 py-6 max-w-4xl main-with-nav main-content-offset" tabindex="-1">
 
-        
-        <!-- 导航按钮 -->
-        <nav class="flex justify-center gap-3 mb-6 flex-wrap animate-fade-in-up stagger-1">
-            <a href="../index.html" class="mode-btn px-5 py-2.5 rounded-lg font-medium text-sm text-slate-700 cursor-pointer inline-flex items-center gap-2 no-underline">
-                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"></path>
-                    <polyline points="9 22 9 12 15 12 15 22"></polyline>
-                </svg>
-                返回主页
-            </a>
-            <a href="list.html" class="mode-btn px-5 py-2.5 rounded-lg font-medium text-sm text-slate-700 cursor-pointer inline-flex items-center gap-2 no-underline">
-                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <line x1="8" y1="6" x2="21" y2="6"></line>
-                    <line x1="8" y1="12" x2="21" y2="12"></line>
-                    <line x1="8" y1="18" x2="21" y2="18"></line>
-                    <line x1="3" y1="6" x2="3.01" y2="6"></line>
-                    <line x1="3" y1="12" x2="3.01" y2="12"></line>
-                    <line x1="3" y1="18" x2="3.01" y2="18"></line>
-                </svg>
-                题组列表
-            </a>
-            <button class="mode-btn active px-5 py-2.5 rounded-lg font-medium text-sm cursor-pointer inline-flex items-center gap-2">
-                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <line x1="12" y1="5" x2="12" y2="19"></line>
-                    <line x1="5" y1="12" x2="19" y2="12"></line>
-                </svg>
-                创建题组
-            </button>
-            <a href="manage.html" class="mode-btn px-5 py-2.5 rounded-lg font-medium text-sm text-slate-700 cursor-pointer inline-flex items-center gap-2 no-underline">
-                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"></path>
-                    <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-                </svg>
-                管理题组
-            </a>
-        </nav>
-        
-        <!-- 创建表单 -->
-        <form id="quiz-form" class="form-card p-5 md:p-6 animate-fade-in-up stagger-2">
+        <!-- 模式切换标签 -->
+        <div class="flex justify-center mb-4 animate-fade-in-up">
+            <div class="inline-flex bg-white/80 backdrop-blur-sm rounded-2xl p-1.5 shadow-lg border border-indigo-100">
+                <button id="mode-quick" class="mode-tab px-5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-300 flex items-center gap-2">
+                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+                    </svg>
+                    快速创建
+                </button>
+                <button id="mode-advanced" class="mode-tab px-5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-300 flex items-center gap-2">
+                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="3"></circle>
+                        <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"></path>
+                    </svg>
+                    高级设置
+                </button>
+            </div>
+        </div>
+
+        <!-- 快速创建模式 -->
+        <div id="quick-create-container" class="hidden">
+            <!-- 步骤指示器 -->
+            <div class="flex justify-center items-center gap-2 mb-6 animate-fade-in-up stagger-1">
+                <div class="step-indicator active" data-step="1">
+                    <div class="step-circle">1</div>
+                    <span class="step-label hidden sm:inline">主题</span>
+                </div>
+                <div class="step-line"></div>
+                <div class="step-indicator" data-step="2">
+                    <div class="step-circle">2</div>
+                    <span class="step-label hidden sm:inline">站名</span>
+                </div>
+                <div class="step-line"></div>
+                <div class="step-indicator" data-step="3">
+                    <div class="step-circle">3</div>
+                    <span class="step-label hidden sm:inline">凭证</span>
+                </div>
+                <div class="step-line"></div>
+                <div class="step-indicator" data-step="4">
+                    <div class="step-circle">
+                        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg>
+                    </div>
+                    <span class="step-label hidden sm:inline">完成</span>
+                </div>
+            </div>
+
+            <!-- 步骤内容容器 -->
+            <div id="quick-steps-container" class="quick-step-wrapper">
+                <!-- 步骤1: 主题输入 -->
+                <div id="quick-step-1" class="quick-step active">
+                    <div class="quick-card">
+                        <div class="quick-card-header">
+                            <div class="quick-card-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                </svg>
+                            </div>
+                            <h2 class="quick-card-title">给你的题组起个名字</h2>
+                            <p class="quick-card-desc">可以是主题、挑战名称，或任何你喜欢的名字</p>
+                        </div>
+                        <div class="quick-card-body">
+                            <input type="text" id="quick-theme" class="quick-input-lg" placeholder="例如：北京换乘站大挑战" maxlength="50" autofocus>
+                            <div class="quick-input-counter"><span id="quick-theme-count">0</span>/50</div>
+                        </div>
+                        <div class="quick-card-footer">
+                            <button type="button" id="quick-btn-next-1" class="quick-btn-primary" disabled>
+                                下一步：添加站名
+                                <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="9 18 15 12 9 6"></polyline>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 步骤2: 站名输入 -->
+                <div id="quick-step-2" class="quick-step">
+                    <div class="quick-card quick-card-full">
+                        <div class="quick-card-header">
+                            <div class="quick-card-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <circle cx="12" cy="12" r="10"></circle>
+                                    <path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"></path>
+                                    <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                                </svg>
+                            </div>
+                            <h2 class="quick-card-title">添加地铁站名</h2>
+                            <p class="quick-card-desc">输入中文或英文站名搜索，选择后自动进入下一题</p>
+                        </div>
+                        <div class="quick-card-body quick-station-body">
+                            <!-- 进度显示 -->
+                            <div class="quick-progress-bar">
+                                <div class="quick-progress-fill" id="quick-progress-fill"></div>
+                            </div>
+                            <div class="quick-progress-info">
+                                <span id="quick-current-num">1</span> / <span id="quick-total-num">10</span> 题
+                            </div>
+
+                            <!-- 站名输入区域 -->
+                            <div class="quick-station-input-wrapper">
+                                <div class="quick-station-num" id="quick-station-num">1</div>
+                                <div class="quick-station-input-container">
+                                    <input type="text" id="quick-station-input" class="quick-station-input" placeholder="输入站名搜索..." autocomplete="off">
+                                    <div id="quick-station-dropdown" class="quick-dropdown"></div>
+                                </div>
+                            </div>
+
+                            <!-- 已添加的站名列表 -->
+                            <div id="quick-station-list" class="quick-station-list"></div>
+                        </div>
+                        <div class="quick-card-footer quick-card-footer-spread">
+                            <button type="button" id="quick-btn-prev-2" class="quick-btn-secondary">
+                                <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="15 18 9 12 15 6"></polyline>
+                                </svg>
+                                上一步
+                            </button>
+                            <div class="quick-station-nav">
+                                <button type="button" id="quick-btn-prev-station" class="quick-btn-nav" title="上一题">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <polyline points="15 18 9 12 15 6"></polyline>
+                                    </svg>
+                                </button>
+                                <button type="button" id="quick-btn-next-station" class="quick-btn-nav" title="下一题">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <polyline points="9 18 15 12 9 6"></polyline>
+                                    </svg>
+                                </button>
+                            </div>
+                            <button type="button" id="quick-btn-next-2" class="quick-btn-primary" disabled>
+                                下一步：设置凭证
+                                <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="9 18 15 12 9 6"></polyline>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 步骤3: 凭证设置 -->
+                <div id="quick-step-3" class="quick-step">
+                    <div class="quick-card">
+                        <div class="quick-card-header">
+                            <div class="quick-card-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                                    <path d="M7 11V7a5 5 0 0110 0v4"></path>
+                                </svg>
+                            </div>
+                            <h2 class="quick-card-title">设置管理凭证</h2>
+                            <p class="quick-card-desc">用于后续编辑和管理你的题组</p>
+                        </div>
+                        <div class="quick-card-body">
+                            <div class="quick-credential-inputs">
+                                <div class="quick-input-group">
+                                    <label class="quick-input-label">用户名</label>
+                                    <input type="text" id="quick-username" class="quick-input" placeholder="设置用户名" maxlength="20">
+                                </div>
+                                <div class="quick-input-group">
+                                    <label class="quick-input-label">密码</label>
+                                    <div class="quick-password-wrapper">
+                                        <input type="password" id="quick-password" class="quick-input" placeholder="设置密码" maxlength="30">
+                                        <button type="button" id="quick-toggle-password" class="quick-password-toggle">
+                                            <svg class="eye-open" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                                <circle cx="12" cy="12" r="3"></circle>
+                                            </svg>
+                                            <svg class="eye-closed hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"></path>
+                                                <line x1="1" y1="1" x2="23" y2="23"></line>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="quick-card-footer">
+                            <button type="button" id="quick-btn-prev-3" class="quick-btn-secondary">
+                                <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="15 18 9 12 15 6"></polyline>
+                                </svg>
+                                上一步
+                            </button>
+                            <button type="button" id="quick-btn-submit" class="quick-btn-primary quick-btn-submit">
+                                <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="20 6 9 17 4 12"></polyline>
+                                </svg>
+                                创建题组
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 步骤4: 完成 -->
+                <div id="quick-step-4" class="quick-step">
+                    <div class="quick-card quick-card-success">
+                        <div class="quick-success-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="20 6 9 17 4 12"></polyline>
+                            </svg>
+                        </div>
+                        <h2 class="quick-success-title">题组创建成功！</h2>
+                        <p class="quick-success-desc">分享给你的朋友一起来挑战吧</p>
+                        
+                        <div class="quick-share-section">
+                            <div class="quick-share-item">
+                                <label>题组ID</label>
+                                <div class="quick-share-box">
+                                    <input type="text" id="quick-quiz-id" readonly>
+                                    <button type="button" id="quick-copy-id" class="quick-copy-btn">复制</button>
+                                </div>
+                            </div>
+                            <div class="quick-share-item">
+                                <label>分享链接</label>
+                                <div class="quick-share-box">
+                                    <input type="text" id="quick-share-link" readonly>
+                                    <button type="button" id="quick-copy-link" class="quick-copy-btn">复制</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="quick-success-actions">
+                            <a href="list.html" class="quick-btn-secondary quick-btn-action">
+                                <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <line x1="8" y1="6" x2="21" y2="6"></line>
+                                    <line x1="8" y1="12" x2="21" y2="12"></line>
+                                    <line x1="8" y1="18" x2="21" y2="18"></line>
+                                    <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                                    <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                                    <line x1="3" y1="18" x2="3.01" y2="18"></line>
+                                </svg>
+                                题组列表
+                            </a>
+                            <button type="button" id="quick-play-now" class="quick-btn-primary quick-btn-action">
+                                <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                                </svg>
+                                立即游玩
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 高级模式（原有表单） -->
+        <div id="advanced-create-container">
+            <!-- 导航按钮 -->
+            <nav class="flex justify-center gap-3 mb-6 flex-wrap animate-fade-in-up stagger-1">
+                <a href="../index.html" class="mode-btn px-5 py-2.5 rounded-lg font-medium text-sm text-slate-700 cursor-pointer inline-flex items-center gap-2 no-underline">
+                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"></path>
+                        <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                    </svg>
+                    返回主页
+                </a>
+                <a href="list.html" class="mode-btn px-5 py-2.5 rounded-lg font-medium text-sm text-slate-700 cursor-pointer inline-flex items-center gap-2 no-underline">
+                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="8" y1="6" x2="21" y2="6"></line>
+                        <line x1="8" y1="12" x2="21" y2="12"></line>
+                        <line x1="8" y1="18" x2="21" y2="18"></line>
+                        <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                        <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                        <line x1="3" y1="18" x2="3.01" y2="18"></line>
+                    </svg>
+                    题组列表
+                </a>
+                <button class="mode-btn active px-5 py-2.5 rounded-lg font-medium text-sm cursor-pointer inline-flex items-center gap-2">
+                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                    </svg>
+                    创建题组
+                </button>
+                <a href="manage.html" class="mode-btn px-5 py-2.5 rounded-lg font-medium text-sm text-slate-700 cursor-pointer inline-flex items-center gap-2 no-underline">
+                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"></path>
+                        <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                    </svg>
+                    管理题组
+                </a>
+            </nav>
+
+            <!-- 创建表单 -->
+            <form id="quiz-form" class="form-card p-5 md:p-6 animate-fade-in-up stagger-2">
             <!-- 基本信息 -->
             <section class="mb-6">
                 <h2 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
@@ -976,6 +773,7 @@
                 </button>
             </div>
         </div>
+        </div><!-- end advanced-create-container -->
         
         <!-- 页脚 -->
         <footer class="text-center mt-8 text-sm text-slate-500">
@@ -992,6 +790,387 @@
         let createdQuizId = null;
         let keySequence = '';
         let keyTimeout = null;
+
+        // 快速模式状态
+        let quickCurrentStep = 1;
+        let quickStationIndex = 0;
+        let quickTotalStations = 10;
+        let quickStations = [];
+        let quickDropdownIndex = -1;
+        let isMobile = window.innerWidth <= 640;
+
+        function initQuickMode() {
+            const isMobileDevice = window.innerWidth <= 640;
+            const savedMode = MetroCommon.loadFromLocalStorage('create_mode');
+            
+            if (savedMode) {
+                setCreateMode(savedMode);
+            } else {
+                setCreateMode(isMobileDevice ? 'quick' : 'advanced');
+            }
+
+            $('mode-quick').addEventListener('click', () => setCreateMode('quick'));
+            $('mode-advanced').addEventListener('click', () => setCreateMode('advanced'));
+
+            $('quick-theme').addEventListener('input', (e) => {
+                $('quick-theme-count').textContent = e.target.value.length;
+                $('quick-btn-next-1').disabled = !e.target.value.trim();
+            });
+
+            $('quick-btn-next-1').addEventListener('click', () => quickGoToStep(2));
+            $('quick-btn-prev-2').addEventListener('click', () => quickGoToStep(1));
+            $('quick-btn-next-2').addEventListener('click', () => quickGoToStep(3));
+            $('quick-btn-prev-3').addEventListener('click', () => quickGoToStep(2));
+            $('quick-btn-submit').addEventListener('click', quickSubmitQuiz);
+
+            $('quick-btn-prev-station').addEventListener('click', () => quickNavigateStation(-1));
+            $('quick-btn-next-station').addEventListener('click', () => quickNavigateStation(1));
+
+            $('quick-station-input').addEventListener('input', MetroCommon.debounce((e) => {
+                quickSearchStations(e.target.value);
+            }, 150));
+
+            $('quick-station-input').addEventListener('focus', (e) => {
+                if (e.target.value) {
+                    quickSearchStations(e.target.value);
+                }
+            });
+
+            $('quick-station-input').addEventListener('blur', () => {
+                setTimeout(() => quickHideDropdown(), 150);
+            });
+
+            $('quick-station-input').addEventListener('keydown', (e) => {
+                quickHandleKeydown(e);
+            });
+
+            $('quick-toggle-password').addEventListener('click', () => {
+                const pwdInput = $('quick-password');
+                const eyeOpen = $('quick-toggle-password').querySelector('.eye-open');
+                const eyeClosed = $('quick-toggle-password').querySelector('.eye-closed');
+                
+                if (pwdInput.type === 'password') {
+                    pwdInput.type = 'text';
+                    eyeOpen.classList.add('hidden');
+                    eyeClosed.classList.remove('hidden');
+                } else {
+                    pwdInput.type = 'password';
+                    eyeOpen.classList.remove('hidden');
+                    eyeClosed.classList.add('hidden');
+                }
+            });
+
+            $('quick-copy-id').addEventListener('click', () => {
+                MetroCommon.copyToClipboard($('quick-quiz-id').value);
+                MetroCommon.showToast('题组ID已复制', 'success');
+            });
+
+            $('quick-copy-link').addEventListener('click', () => {
+                MetroCommon.copyToClipboard($('quick-share-link').value);
+                MetroCommon.showToast('分享链接已复制', 'success');
+            });
+
+            $('quick-play-now').addEventListener('click', () => {
+                window.location.href = `play.html?id=${createdQuizId}`;
+            });
+
+            updateQuickStationUI();
+        }
+
+        function setCreateMode(mode) {
+            MetroCommon.saveToLocalStorage('create_mode', mode);
+            
+            const quickContainer = $('quick-create-container');
+            const advancedContainer = $('advanced-create-container');
+            const quickTab = $('mode-quick');
+            const advancedTab = $('mode-advanced');
+
+            if (mode === 'quick') {
+                quickContainer.classList.remove('hidden');
+                advancedContainer.classList.add('hidden');
+                quickTab.classList.add('active');
+                advancedTab.classList.remove('active');
+            } else {
+                quickContainer.classList.add('hidden');
+                advancedContainer.classList.remove('hidden');
+                quickTab.classList.remove('active');
+                advancedTab.classList.add('active');
+            }
+        }
+
+        function quickGoToStep(step) {
+            quickCurrentStep = step;
+            
+            $all('.step-indicator').forEach((indicator, idx) => {
+                const indicatorStep = idx + 1;
+                indicator.classList.remove('active', 'completed');
+                if (indicatorStep < step) {
+                    indicator.classList.add('completed');
+                } else if (indicatorStep === step) {
+                    indicator.classList.add('active');
+                }
+            });
+
+            $all('.quick-step').forEach((stepEl, idx) => {
+                stepEl.classList.remove('active');
+                if (idx + 1 === step) {
+                    stepEl.classList.add('active');
+                }
+            });
+
+            if (step === 2) {
+                setTimeout(() => $('quick-station-input').focus(), 100);
+            } else if (step === 3) {
+                setTimeout(() => $('quick-username').focus(), 100);
+            }
+        }
+
+        function updateQuickStationUI() {
+            $('quick-station-num').textContent = quickStationIndex + 1;
+            $('quick-current-num').textContent = quickStationIndex + 1;
+            $('quick-total-num').textContent = quickTotalStations;
+
+            const progress = (quickStationIndex / quickTotalStations) * 100;
+            $('quick-progress-fill').style.width = `${progress}%`;
+
+            const currentStation = quickStations[quickStationIndex];
+            $('quick-station-input').value = currentStation ? currentStation.station_cn : '';
+
+            $('quick-btn-prev-station').disabled = quickStationIndex === 0;
+            $('quick-btn-next-station').disabled = quickStationIndex >= quickTotalStations - 1;
+
+            const filledCount = quickStations.filter(s => s && s.station_cn).length;
+            $('quick-btn-next-2').disabled = filledCount === 0;
+
+            renderQuickStationList();
+        }
+
+        function renderQuickStationList() {
+            const container = $('quick-station-list');
+            container.innerHTML = '';
+
+            quickStations.forEach((station, idx) => {
+                if (station && station.station_cn) {
+                    const tag = document.createElement('div');
+                    tag.className = 'quick-station-tag';
+                    tag.innerHTML = `
+                        <span class="tag-num">${idx + 1}</span>
+                        <span>${escapeHtml(station.station_cn)}</span>
+                        <span class="tag-remove" data-index="${idx}">×</span>
+                    `;
+                    container.appendChild(tag);
+                }
+            });
+
+            container.querySelectorAll('.tag-remove').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const idx = parseInt(e.target.dataset.index);
+                    quickStations[idx] = null;
+                    updateQuickStationUI();
+                });
+            });
+        }
+
+        function quickNavigateStation(direction) {
+            const newIndex = quickStationIndex + direction;
+            if (newIndex >= 0 && newIndex < quickTotalStations) {
+                quickStationIndex = newIndex;
+                updateQuickStationUI();
+                $('quick-station-input').focus();
+            }
+        }
+
+        function quickSearchStations(query) {
+            if (!query || query.length < 1) {
+                quickHideDropdown();
+                return;
+            }
+
+            const results = searchStations(query, 'all', 8);
+            quickShowDropdown(results);
+        }
+
+        function quickShowDropdown(stations) {
+            const dropdown = $('quick-station-dropdown');
+            
+            if (stations.length === 0) {
+                dropdown.innerHTML = '<div class="quick-dropdown-empty">未找到匹配的站点</div>';
+            } else {
+                dropdown.innerHTML = stations.map((s, idx) => `
+                    <div class="quick-dropdown-item" data-index="${idx}"
+                         data-station-cn="${escapeHtml(s.station_cn)}"
+                         data-station-en="${escapeHtml(s.station_en)}"
+                         data-city-cn="${escapeHtml(s.city_cn)}">
+                        <div class="station-info">
+                            <span class="station-cn">${escapeHtml(s.station_cn)}</span>
+                            <span class="station-en">${escapeHtml(s.station_en)}</span>
+                        </div>
+                        <span class="city-badge">${escapeHtml(s.city_cn)}</span>
+                    </div>
+                `).join('');
+            }
+
+            dropdown.classList.add('show');
+            quickDropdownIndex = -1;
+
+            dropdown.querySelectorAll('.quick-dropdown-item').forEach(item => {
+                item.addEventListener('mousedown', (e) => {
+                    e.preventDefault();
+                    quickSelectStation(item);
+                });
+            });
+        }
+
+        function quickHideDropdown() {
+            $('quick-station-dropdown').classList.remove('show');
+            quickDropdownIndex = -1;
+        }
+
+        function quickSelectStation(item) {
+            const stationCn = item.dataset.stationCn;
+            const stationEn = item.dataset.stationEn;
+            const cityCn = item.dataset.cityCn;
+
+            quickStations[quickStationIndex] = {
+                station_cn: stationCn,
+                station_en: stationEn,
+                city_cn: cityCn
+            };
+
+            quickHideDropdown();
+
+            if (quickStationIndex < quickTotalStations - 1) {
+                quickStationIndex++;
+            }
+
+            updateQuickStationUI();
+            $('quick-station-input').focus();
+        }
+
+        function quickHandleKeydown(e) {
+            const dropdown = $('quick-station-dropdown');
+            const items = dropdown.querySelectorAll('.quick-dropdown-item');
+
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                quickDropdownIndex = Math.min(quickDropdownIndex + 1, items.length - 1);
+                quickUpdateDropdownActive(items);
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                quickDropdownIndex = Math.max(quickDropdownIndex - 1, 0);
+                quickUpdateDropdownActive(items);
+            } else if (e.key === 'Enter') {
+                e.preventDefault();
+                if (quickDropdownIndex >= 0 && items[quickDropdownIndex]) {
+                    quickSelectStation(items[quickDropdownIndex]);
+                }
+            } else if (e.key === 'Escape') {
+                quickHideDropdown();
+            } else if (e.key === 'Tab') {
+                if (e.shiftKey) {
+                    quickNavigateStation(-1);
+                    e.preventDefault();
+                } else {
+                    quickNavigateStation(1);
+                    e.preventDefault();
+                }
+            }
+        }
+
+        function quickUpdateDropdownActive(items) {
+            items.forEach((item, idx) => {
+                item.classList.toggle('active', idx === quickDropdownIndex);
+            });
+            if (items[quickDropdownIndex]) {
+                items[quickDropdownIndex].scrollIntoView({ block: 'nearest' });
+            }
+        }
+
+        async function quickSubmitQuiz() {
+            const theme = $('quick-theme').value.trim();
+            const username = $('quick-username').value.trim();
+            const password = $('quick-password').value;
+
+            if (!theme) {
+                MetroCommon.showToast('请输入题组名称', 'error');
+                quickGoToStep(1);
+                return;
+            }
+
+            const validStations = quickStations.filter(s => s && s.station_cn);
+            if (validStations.length === 0) {
+                MetroCommon.showToast('请至少添加一个站名', 'error');
+                quickGoToStep(2);
+                return;
+            }
+
+            if (!username) {
+                MetroCommon.showToast('请设置用户名', 'error');
+                $('quick-username').focus();
+                return;
+            }
+
+            if (!password) {
+                MetroCommon.showToast('请设置密码', 'error');
+                $('quick-password').focus();
+                return;
+            }
+
+            const difficultyResult = MetroCommon.calculateQuizDifficulty(validStations);
+
+            const quizData = {
+                name: theme,
+                hideTheme: false,
+                creatorName: '匿名用户',
+                isPublic: true,
+                cityScope: 'all',
+                inviteCode: '',
+                questions: validStations,
+                questionCount: validStations.length,
+                difficultyLevel: difficultyResult.level,
+                difficultyScore: difficultyResult.score,
+                managerUsername: username,
+                managerPassword: password,
+                enableRandomPick: false,
+                randomPickCount: 0
+            };
+
+            try {
+                $('quick-btn-submit').disabled = true;
+                $('quick-btn-submit').innerHTML = `
+                    <svg class="w-5 h-5 animate-spin" viewBox="0 0 24 24" fill="none">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    创建中...
+                `;
+
+                await FirebaseConfig.init();
+                const quiz = await FirebaseConfig.createQuiz(quizData);
+                createdQuizId = quiz.id;
+
+                MetroCommon.removeFromLocalStorage('quiz_draft');
+
+                const baseUrl = window.location.origin + window.location.pathname.replace('/quiz/create.html', '');
+                const shareLink = `${baseUrl}/quiz/play.html?id=${quiz.id}`;
+
+                $('quick-quiz-id').value = quiz.id;
+                $('quick-share-link').value = shareLink;
+
+                quickGoToStep(4);
+                MetroCommon.showToast('题组创建成功！', 'success');
+            } catch (e) {
+                console.error('Failed to create quiz:', e);
+                MetroCommon.showToast('创建失败: ' + e.message, 'error');
+                $('quick-btn-submit').disabled = false;
+                $('quick-btn-submit').innerHTML = `
+                    <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                    创建题组
+                `;
+            }
+        }
         
         const CITIES = [
             '北京', '上海', '广州', '深圳', '成都', '杭州', '南京', '武汉', 
@@ -1819,6 +1998,7 @@
             loadStationData();
             setupEventListeners();
             loadDraft();
+            initQuickMode();
             
             if (currentQuestions.length === 0) {
                 renderQuestionItems(parseInt($('question-count').value) || 10);

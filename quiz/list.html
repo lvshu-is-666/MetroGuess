@@ -15,73 +15,10 @@
     <link rel="stylesheet" href="../styles.css">
     <link rel="stylesheet" href="../shared-styles.css">
     <link rel="stylesheet" href="../shared-nav.css">
+    <link rel="stylesheet" href="../shared-inline.css">
     <script src="../common.js"></script>
     <script src="../shared-nav.js"></script>
     <script src="../firebase-config.js"></script>
-    <style>
-        /* 导航按钮响应式文字 */
-        .nav-short { display: inline; }
-        .nav-full { display: none; }
-        
-        @media (min-width: 768px) {
-            .nav-short { display: none; }
-            .nav-full { display: inline; }
-        }
-        
-        /* 题组卡片样式 */
-        .quiz-card-new {
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .quiz-card-new::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 4px;
-            background: linear-gradient(90deg, #4F46E5, #818CF8, #A78BFA);
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-        
-        .quiz-card-new:hover::before {
-            opacity: 1;
-        }
-        
-        .quiz-card-new.locked::after {
-            content: '';
-            position: absolute;
-            top: 12px;
-            right: 12px;
-            width: 8px;
-            height: 8px;
-            background: #A78BFA;
-            border-radius: 50%;
-            box-shadow: 0 0 0 3px rgba(167, 139, 250, 0.3);
-        }
-        
-        .quiz-card-new.featured {
-            background: linear-gradient(145deg, rgba(255, 251, 235, 0.9) 0%, rgba(254, 243, 199, 0.8) 100%);
-            border-color: rgba(251, 191, 36, 0.3);
-        }
-        
-        .quiz-card-new.featured:hover {
-            border-color: rgba(251, 191, 36, 0.5);
-            box-shadow: 0 8px 24px rgba(251, 191, 36, 0.15);
-        }
-        
-        .quiz-card-new.featured::before {
-            background: linear-gradient(90deg, #F59E0B, #FBBF24, #FCD34D);
-            opacity: 1;
-        }
-        
-        .dark .quiz-card-new.featured {
-            background: linear-gradient(145deg, rgba(120, 53, 15, 0.3) 0%, rgba(146, 64, 14, 0.2) 100%);
-            border-color: rgba(251, 191, 36, 0.2);
-        }
-    </style>
 </head>
 <body class="bg-gradient-to-br from-indigo-50 via-purple-50 to-blue-100 min-h-screen text-slate-800 transition-colors duration-300">
     <a href="#main-content" class="skip-nav-link">跳转到主要内容</a>
