@@ -1,0 +1,264 @@
+.container {
+  min-height: 100vh;
+  padding: 32rpx;
+  padding-bottom: calc(32rpx + env(safe-area-inset-bottom));
+}
+
+.header {
+  margin-bottom: 24rpx;
+}
+
+.login-section {
+  animation: fadeInUp 0.5s ease-out;
+}
+
+.section-title {
+  font-size: 32rpx;
+  font-weight: 700;
+  color: var(--text-color);
+  margin-bottom: 12rpx;
+  display: block;
+}
+
+.section-desc {
+  font-size: 26rpx;
+  color: #64748b;
+  margin-bottom: 24rpx;
+  display: block;
+}
+
+.form-group {
+  margin-bottom: 24rpx;
+}
+
+.form-label {
+  display: block;
+  font-size: 28rpx;
+  font-weight: 600;
+  color: var(--text-color);
+  margin-bottom: 12rpx;
+}
+
+.textarea {
+  min-height: 160rpx;
+  padding-top: 20rpx;
+  padding-bottom: 20rpx;
+}
+
+.login-btn {
+  width: 100%;
+  margin-top: 16rpx;
+}
+
+.manage-section {
+  animation: fadeInUp 0.5s ease-out;
+}
+
+.quiz-info-card {
+  margin-bottom: 24rpx;
+}
+
+.quiz-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 16rpx;
+}
+
+.quiz-name {
+  font-size: 36rpx;
+  font-weight: 700;
+  color: var(--text-color);
+}
+
+.quiz-id {
+  font-size: 24rpx;
+  color: #64748b;
+  font-family: monospace;
+}
+
+.quiz-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12rpx;
+  margin-bottom: 16rpx;
+}
+
+.quiz-stats {
+  display: flex;
+  gap: 32rpx;
+  padding-top: 16rpx;
+  border-top: 2rpx solid rgba(129, 140, 248, 0.2);
+}
+
+.stat-item {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+}
+
+.stat-icon {
+  font-size: 28rpx;
+}
+
+.stat-text {
+  font-size: 26rpx;
+  color: #64748b;
+}
+
+.checkbox-row {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+}
+
+.checkbox {
+  width: 44rpx;
+  height: 44rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: white;
+  border: 4rpx solid rgba(129, 140, 248, 0.3);
+  border-radius: 12rpx;
+}
+
+.checkbox.checked {
+  background: var(--primary-color);
+  border-color: var(--primary-color);
+}
+
+.check-icon {
+  font-size: 28rpx;
+  color: white;
+  font-weight: 700;
+}
+
+.checkbox-label {
+  font-size: 28rpx;
+  color: var(--text-color);
+}
+
+.save-btn {
+  width: 100%;
+  margin-top: 16rpx;
+}
+
+.share-section {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16rpx;
+  padding: 20rpx 24rpx;
+  background: rgba(129, 140, 248, 0.1);
+  border-radius: 16rpx;
+}
+
+.share-info {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+}
+
+.share-label {
+  font-size: 26rpx;
+  color: #64748b;
+}
+
+.share-value {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: var(--primary-color);
+  font-family: monospace;
+}
+
+.copy-btn {
+  padding: 12rpx 24rpx;
+  font-size: 26rpx;
+}
+
+.share-btn {
+  width: 100%;
+}
+
+.danger-card {
+  background: linear-gradient(145deg, rgba(254, 226, 226, 0.95) 0%, rgba(254, 202, 202, 0.9) 100%);
+  border-color: rgba(239, 68, 68, 0.3);
+}
+
+.danger-title {
+  color: var(--error-color);
+}
+
+.btn-danger {
+  background: linear-gradient(135deg, #ef4444 0%, #f87171 100%);
+  color: white;
+  border-radius: 24rpx;
+  padding: 24rpx 48rpx;
+  font-size: 32rpx;
+  font-weight: 600;
+  text-align: center;
+  box-shadow: 0 8rpx 24rpx rgba(239, 68, 68, 0.3);
+  border: none;
+  width: 100%;
+}
+
+.danger-hint {
+  display: block;
+  font-size: 24rpx;
+  color: #991b1b;
+  margin-top: 12rpx;
+  text-align: center;
+}
+
+.logout-btn {
+  width: 100%;
+  margin-top: 24rpx;
+}
+
+.dark .quiz-name {
+  color: #f1f5f9;
+}
+
+.dark .quiz-stats {
+  border-top-color: rgba(71, 85, 105, 0.4);
+}
+
+.dark .stat-text {
+  color: #94a3b8;
+}
+
+.dark .checkbox {
+  background: #1e293b;
+  border-color: rgba(71, 85, 105, 0.5);
+}
+
+.dark .checkbox.checked {
+  background: var(--primary-color);
+  border-color: var(--primary-color);
+}
+
+.dark .checkbox-label {
+  color: #e2e8f0;
+}
+
+.dark .share-section {
+  background: rgba(79, 70, 229, 0.2);
+}
+
+.dark .share-label {
+  color: #94a3b8;
+}
+
+.dark .share-value {
+  color: #a5b4fc;
+}
+
+.dark .danger-card {
+  background: linear-gradient(145deg, rgba(127, 29, 29, 0.3) 0%, rgba(185, 28, 28, 0.2) 100%);
+  border-color: rgba(239, 68, 68, 0.3);
+}
+
+.dark .danger-hint {
+  color: #fca5a5;
+}

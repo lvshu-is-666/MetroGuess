@@ -1,0 +1,11 @@
+<view class="container {{theme}}">
+  <view class="error-content">
+    <text class="error-code">404</text>
+    <text class="error-title">页面未找到</text>
+    <text class="error-desc">抱歉，您访问的页面不存在或已被移除</text>
+    <view class="error-actions">
+      <button class="btn-primary" bindtap="goHome">返回首页</button>
+      <button class="btn-secondary" bindtap="goBack">返回上页</button>
+    </view>
+  </view>
+</view>

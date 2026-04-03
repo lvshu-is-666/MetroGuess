@@ -1,0 +1,180 @@
+<view class="container {{theme}}">
+  <view wx:if="{{loading}}" class="loading-section">
+    <view class="loading-spinner"></view>
+    <text class="loading-text">加载中...</text>
+  </view>
+
+  <view wx:elif="{{error}}" class="error-section">
+    <text class="error-icon">😕</text>
+    <text class="error-title">{{error}}</text>
+    <button class="btn-primary" bindtap="goBack">返回</button>
+  </view>
+
+  <view wx:elif="{{needInviteCode}}" class="invite-section">
+    <view class="clay-card">
+      <text class="section-title">需要邀请码</text>
+      <text class="section-desc">该题组需要邀请码才能访问</text>
+      <input 
+        class="clay-input" 
+        type="text" 
+        placeholder="请输入邀请码" 
+        value="{{inputInviteCode}}"
+        bindinput="onInviteCodeInput"
+      />
+      <button class="btn-primary" bindtap="submitInviteCode">确认</button>
+    </view>
+  </view>
+
+  <view wx:elif="{{!gameStarted && quiz}}" class="welcome-section">
+    <view class="clay-card">
+      <text class="quiz-title">{{quiz.hideTheme ? '神秘题组' : quiz.name}}</text>
+      <view class="quiz-meta">
+        <text class="quiz-tag {{'quiz-tag-difficulty-' + quiz.difficultyLevel}}">
+          {{getDifficultyLabel(quiz.difficultyLevel)}}
+        </text>
+        <text class="quiz-tag quiz-tag-count">{{quiz.questions.length}}题</text>
+        <text class="quiz-tag quiz-tag-city">{{quiz.cityScope || '全国'}}</text>
+      </view>
+      <view wx:if="{{quiz.description}}" class="quiz-description">
+        <text class="description-text">{{quiz.description}}</text>
+      </view>
+      <view class="quiz-stats">
+        <view class="stat-item">
+          <text class="stat-icon">🎮</text>
+          <text class="stat-text">{{quiz.playCount || 0}}次游玩</text>
+        </view>
+      </view>
+
+      <text class="section-title mt-4">选择难度</text>
+      <view class="difficulty-buttons">
+        <view 
+          class="difficulty-btn {{difficulty === 'easy' ? 'active' : ''}}" 
+          bindtap="selectDifficulty" 
+          data-difficulty="easy">
+          简单
+        </view>
+        <view 
+          class="difficulty-btn {{difficulty === 'normal' ? 'active' : ''}}" 
+          bindtap="selectDifficulty" 
+          data-difficulty="normal">
+          普通
+        </view>
+        <view 
+          class="difficulty-btn {{difficulty === 'hard' ? 'active' : ''}}" 
+          bindtap="selectDifficulty" 
+          data-difficulty="hard">
+          困难
+        </view>
+      </view>
+
+      <view class="difficulty-info">
+        <text class="info-text">站点数: {{difficultySettings.stationCount}}</text>
+        <text class="info-text">提示次数: {{difficultySettings.hints}}</text>
+      </view>
+
+      <button class="btn-primary start-btn" bindtap="startGame">开始游戏</button>
+    </view>
+  </view>
+
+  <view wx:if="{{gameStarted && !gameWon}}" class="game-section">
+    <view class="stats-row">
+      <view class="stat-box">
+        <text class="stat-value">{{score}}</text>
+        <text class="stat-label">分数</text>
+      </view>
+      <view class="stat-box">
+        <text class="stat-value">{{formatTime(elapsedTime)}}</text>
+        <text class="stat-label">时间</text>
+      </view>
+      <view class="stat-box">
+        <text class="stat-value">{{solvedCount}}/{{stations.length}}</text>
+        <text class="stat-label">进度</text>
+      </view>
+      <view class="stat-box">
+        <text class="stat-value">{{hintsLeft}}</text>
+        <text class="stat-label">提示</text>
+      </view>
+    </view>
+
+    <view class="progress-container">
+      <view class="progress-fill" style="width: {{progress}}%;"></view>
+    </view>
+
+    <view class="stations-container">
+      <view 
+        wx:for="{{stations}}" 
+        wx:key="index" 
+        class="game-card {{item.solved ? 'solved' : ''}}">
+        <view class="station-header">
+          <text class="station-number">#{{item.index + 1}}</text>
+          <text wx:if="{{item.solved}}" class="solved-badge">✓ 已解决</text>
+        </view>
+        <view class="station-display">
+          <text class="letter-display">
+            <text wx:for="{{item.displayText}}" wx:key="index" wx:for-item="char" class="{{char.revealed ? 'letter-reveal' : ''}} {{char.solved ? 'letter-solved' : ''}}">{{char.char}}</text>
+          </text>
+        </view>
+        <view wx:if="{{item.solved}}" class="station-info">
+          <text class="station-cn">{{item.station_cn}}</text>
+          <text class="station-en">{{item.station_en}}</text>
+        </view>
+      </view>
+    </view>
+
+    <view class="keyboard-section">
+      <view class="keyboard-row" wx:for="{{keyboardRows}}" wx:key="index">
+        <view 
+          wx:for="{{item}}" 
+          wx:key="*this" 
+          class="letter-key {{usedLetters.indexOf(item.toLowerCase()) > -1 ? (foundLetters.indexOf(item.toLowerCase()) > -1 ? 'found' : 'not-found') : ''}} {{usedLetters.indexOf(item.toLowerCase()) > -1 ? 'used' : ''}}"
+          bindtap="revealLetter"
+          data-letter="{{item}}">
+          {{item}}
+        </view>
+      </view>
+    </view>
+
+    <view class="action-buttons">
+      <button class="btn-hint" bindtap="useHint" disabled="{{hintsLeft <= 0}}">
+        使用提示 ({{hintsLeft}})
+      </button>
+    </view>
+
+    <view class="guess-section">
+      <input 
+        class="clay-input guess-input" 
+        type="text" 
+        placeholder="输入站名猜测..." 
+        value="{{guessInput}}"
+        bindinput="onGuessInput"
+        confirm-type="done"
+        bindconfirm="submitGuess"
+      />
+      <button class="btn-secondary guess-btn" bindtap="submitGuess">猜测</button>
+    </view>
+  </view>
+
+  <view wx:if="{{gameWon}}" class="result-section">
+    <view class="clay-card result-card">
+      <text class="result-title">🎉 恭喜通关！</text>
+      <view class="result-stats">
+        <view class="result-stat">
+          <text class="result-value">{{finalScore}}</text>
+          <text class="result-label">最终得分</text>
+        </view>
+        <view class="result-stat">
+          <text class="result-value">{{formatTime(elapsedTime)}}</text>
+          <text class="result-label">用时</text>
+        </view>
+        <view class="result-stat">
+          <text class="result-value">{{guessCount}}</text>
+          <text class="result-label">猜测次数</text>
+        </view>
+      </view>
+      <view class="result-buttons">
+        <button class="btn-primary" bindtap="restartGame">再玩一次</button>
+        <button class="btn-secondary" bindtap="goBack">返回列表</button>
+      </view>
+    </view>
+  </view>
+</view>

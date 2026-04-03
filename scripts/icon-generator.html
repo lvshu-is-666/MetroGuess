@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>微信小程序图标生成器</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #EEF2FF 0%, #E0E7FF 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        h1 {
+            text-align: center;
+            color: #1E1B4B;
+            margin-bottom: 40px;
+            font-size: 32px;
+        }
+        .description {
+            text-align: center;
+            color: #64748B;
+            margin-bottom: 40px;
+            font-size: 16px;
+        }
+        .icons-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+            margin-bottom: 40px;
+        }
+        .icon-card {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 4px 20px rgba(79, 70, 229, 0.1);
+        }
+        .icon-card h3 {
+            color: #1E1B4B;
+            margin-bottom: 16px;
+            font-size: 18px;
+        }
+        .icon-preview {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+            align-items: center;
+            justify-content: center;
+        }
+        .icon-box {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+        .icon-box span {
+            font-size: 12px;
+            color: #64748B;
+        }
+        .icon-display {
+            width: 81px;
+            height: 81px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #F8FAFC;
+            border-radius: 8px;
+            border: 2px solid #E2E8F0;
+        }
+        .icon-display svg {
+            width: 48px;
+            height: 48px;
+        }
+        .icon-display.active {
+            background: linear-gradient(135deg, rgba(79, 70, 229, 0.1), rgba(129, 140, 248, 0.1));
+            border-color: #4F46E5;
+        }
+        .download-buttons {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+        }
+        button {
+            background: linear-gradient(135deg, #4F46E5 0%, #818CF8 100%);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+        }
+        button:active {
+            transform: translateY(0);
+        }
+        .download-all {
+            text-align: center;
+            margin-top: 40px;
+        }
+        .download-all button {
+            padding: 16px 40px;
+            font-size: 16px;
+        }
+        .instructions {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            margin-top: 40px;
+            box-shadow: 0 4px 20px rgba(79, 70, 229, 0.1);
+        }
+        .instructions h2 {
+            color: #1E1B4B;
+            margin-bottom: 16px;
+            font-size: 20px;
+        }
+        .instructions ol {
+            color: #475569;
+            line-height: 1.8;
+            padding-left: 24px;
+        }
+        .instructions code {
+            background: #F1F5F9;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 14px;
+            color: #4F46E5;
+        }
+        canvas {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎨 微信小程序图标生成器</h1>
+        <p class="description">将网站SVG图标转换为微信小程序tabBar所需的PNG图标（81x81像素）</p>
+        
+        <div class="icons-grid" id="iconsGrid"></div>
+        
+        <div class="download-all">
+            <button onclick="downloadAll()">📦 下载全部图标</button>
+        </div>
+        
+        <div class="instructions">
+            <h2>使用说明</h2>
+            <ol>
+                <li>点击上方按钮下载PNG图标文件</li>
+                <li>将下载的图标文件放入小程序项目的 <code>miniprogram/assets/icons/</code> 目录</li>
+                <li>在 <code>app.json</code> 中配置tabBar图标路径</li>
+                <li>重新编译小程序即可看到新图标</li>
+            </ol>
+        </div>
+    </div>
+    
+    <canvas id="canvas" width="81" height="81"></canvas>
+    
+    <script>
+        const icons = {
+            home: {
+                name: '主页',
+                svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+                </svg>`,
+                color: '#64748b',
+                activeColor: '#4F46E5'
+            },
+            kids: {
+                name: '儿童版',
+                svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="8" r="5"></circle>
+                    <path d="M20 21a8 8 0 1 0-16 0"></path>
+                </svg>`,
+                color: '#64748b',
+                activeColor: '#4F46E5'
+            },
+            quiz: {
+                name: '题组',
+                svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="8" y1="6" x2="21" y2="6"></line>
+                    <line x1="8" y1="12" x2="21" y2="12"></line>
+                    <line x1="8" y1="18" x2="21" y2="18"></line>
+                    <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                    <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                    <line x1="3" y1="18" x2="3.01" y2="18"></line>
+                </svg>`,
+                color: '#64748b',
+                activeColor: '#4F46E5'
+            }
+        };
+
+        function createSvgWithColor(svgContent, color) {
+            return svgContent.replace(/stroke="currentColor"/g, `stroke="${color}"`);
+        }
+
+        function svgToPng(svgString, color, callback) {
+            const canvas = document.getElementById('canvas');
+            const ctx = canvas.getContext('2d');
+            const coloredSvg = createSvgWithColor(svgString, color);
+            
+            const img = new Image();
+            const svgBlob = new Blob([coloredSvg], { type: 'image/svg+xml;charset=utf-8' });
+            const url = URL.createObjectURL(svgBlob);
+            
+            img.onload = function() {
+                ctx.clearRect(0, 0, 81, 81);
+                ctx.drawImage(img, 0, 0, 81, 81);
+                URL.revokeObjectURL(url);
+                callback(canvas.toDataURL('image/png'));
+            };
+            
+            img.src = url;
+        }
+
+        function downloadPng(dataUrl, filename) {
+            const link = document.createElement('a');
+            link.download = filename;
+            link.href = dataUrl;
+            link.click();
+        }
+
+        function downloadIcon(name, type) {
+            const icon = icons[name];
+            const color = type === 'active' ? icon.activeColor : icon.color;
+            const filename = type === 'active' ? `${name}-active.png` : `${name}.png`;
+            
+            svgToPng(icon.svg, color, function(dataUrl) {
+                downloadPng(dataUrl, filename);
+            });
+        }
+
+        function downloadAll() {
+            Object.keys(icons).forEach((name, index) => {
+                setTimeout(() => {
+                    downloadIcon(name, 'normal');
+                }, index * 200);
+                setTimeout(() => {
+                    downloadIcon(name, 'active');
+                }, index * 200 + 100);
+            });
+        }
+
+        function renderIcons() {
+            const grid = document.getElementById('iconsGrid');
+            
+            Object.keys(icons).forEach(name => {
+                const icon = icons[name];
+                const card = document.createElement('div');
+                card.className = 'icon-card';
+                
+                const normalSvg = createSvgWithColor(icon.svg, icon.color);
+                const activeSvg = createSvgWithColor(icon.svg, icon.activeColor);
+                
+                card.innerHTML = `
+                    <h3>${icon.name}</h3>
+                    <div class="icon-preview">
+                        <div class="icon-box">
+                            <div class="icon-display">
+                                ${normalSvg}
+                            </div>
+                            <span>默认状态</span>
+                        </div>
+                        <div class="icon-box">
+                            <div class="icon-display active">
+                                ${activeSvg}
+                            </div>
+                            <span>选中状态</span>
+                        </div>
+                    </div>
+                    <div class="download-buttons">
+                        <button onclick="downloadIcon('${name}', 'normal')">下载默认</button>
+                        <button onclick="downloadIcon('${name}', 'active')">下载选中</button>
+                    </div>
+                `;
+                
+                grid.appendChild(card);
+            });
+        }
+
+        renderIcons();
+    </script>
+</body>
+</html>

@@ -1,0 +1,168 @@
+<view class="container {{theme}}">
+  <view class="header">
+    <view class="title-row">
+      <text class="page-title kids-title">🚇 儿童版</text>
+      <view class="header-btns">
+        <view class="theme-btn" bindtap="toggleTheme">
+          <text class="theme-icon">{{theme === 'dark' ? '☀️' : '🌙'}}</text>
+        </view>
+        <view class="sound-btn" bindtap="toggleSound">
+          <text class="sound-icon">{{soundEnabled ? '🔊' : '🔇'}}</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <view wx:if="{{!gameStarted}}" class="welcome-section">
+    <view class="clay-card kids-card">
+      <view class="kids-mascot">
+        <text class="mascot-emoji">🚂</text>
+      </view>
+      <text class="kids-welcome">欢迎来到地铁探险！</text>
+      <text class="kids-desc">选择一个城市，开始你的地铁探险之旅吧！</text>
+
+      <view class="city-select-section">
+        <text class="section-subtitle">选择城市</text>
+        <picker 
+          mode="selector" 
+          range="{{cities}}" 
+          value="{{selectedCityIndex}}" 
+          bindchange="onCityChange">
+          <view class="picker-value kids-picker">
+            <text class="city-emoji">🏙️</text>
+            {{cities[selectedCityIndex] || '请选择城市'}}
+            <text class="picker-arrow">▼</text>
+          </view>
+        </picker>
+      </view>
+
+      <view class="kids-info">
+        <view class="info-item">
+          <text class="info-emoji">🎯</text>
+          <text class="info-text">3个站点</text>
+        </view>
+        <view class="info-item">
+          <text class="info-emoji">💡</text>
+          <text class="info-text">5次提示</text>
+        </view>
+        <view class="info-item">
+          <text class="info-emoji">⭐</text>
+          <text class="info-text">简单模式</text>
+        </view>
+      </view>
+
+      <button class="btn-primary kids-start-btn" bindtap="startGame">
+        🎮 开始探险
+      </button>
+    </view>
+  </view>
+
+  <view wx:if="{{gameStarted && !gameWon}}" class="game-section">
+    <view class="kids-stats">
+      <view class="kids-stat-box">
+        <text class="kids-stat-icon">⭐</text>
+        <text class="kids-stat-value">{{score}}</text>
+      </view>
+      <view class="kids-stat-box">
+        <text class="kids-stat-icon">⏱️</text>
+        <text class="kids-stat-value">{{formatTime(elapsedTime)}}</text>
+      </view>
+      <view class="kids-stat-box">
+        <text class="kids-stat-icon">🏆</text>
+        <text class="kids-stat-value">{{solvedCount}}/{{stations.length}}</text>
+      </view>
+      <view class="kids-stat-box">
+        <text class="kids-stat-icon">💡</text>
+        <text class="kids-stat-value">{{hintsLeft}}</text>
+      </view>
+    </view>
+
+    <view class="progress-container kids-progress">
+      <view class="progress-fill" style="width: {{progress}}%;"></view>
+      <text class="progress-text">{{solvedCount}}/{{stations.length}} 完成</text>
+    </view>
+
+    <view class="stations-container">
+      <view 
+        wx:for="{{stations}}" 
+        wx:key="index" 
+        class="game-card kids-station-card {{item.solved ? 'solved' : ''}}">
+        <view class="station-header">
+          <text class="station-number kids-number">第{{item.index + 1}}站</text>
+          <text wx:if="{{item.solved}}" class="solved-badge kids-badge">✓ 完成</text>
+        </view>
+        <view class="station-display">
+          <text class="letter-display kids-letters">
+            <text wx:for="{{item.displayText}}" wx:key="index" wx:for-item="char" class="{{char.revealed ? 'letter-reveal' : ''}} {{char.solved ? 'letter-solved' : ''}}">{{char.char}}</text>
+          </text>
+        </view>
+        <view wx:if="{{item.solved}}" class="station-info">
+          <text class="station-cn kids-cn">{{item.station_cn}}</text>
+          <text class="station-en kids-en">{{item.station_en}}</text>
+        </view>
+      </view>
+    </view>
+
+    <view class="keyboard-section">
+      <view class="keyboard-row" wx:for="{{keyboardRows}}" wx:key="index">
+        <view 
+          wx:for="{{item}}" 
+          wx:key="*this" 
+          class="letter-key kids-key {{usedLetters.indexOf(item.toLowerCase()) > -1 ? (foundLetters.indexOf(item.toLowerCase()) > -1 ? 'found' : 'not-found') : ''}} {{usedLetters.indexOf(item.toLowerCase()) > -1 ? 'used' : ''}}"
+          bindtap="revealLetter"
+          data-letter="{{item}}">
+          {{item}}
+        </view>
+      </view>
+    </view>
+
+    <view class="action-buttons">
+      <button class="btn-hint kids-hint-btn" bindtap="useHint" disabled="{{hintsLeft <= 0}}">
+        💡 提示 ({{hintsLeft}})
+      </button>
+    </view>
+
+    <view class="guess-section">
+      <input 
+        class="clay-input guess-input kids-input" 
+        type="text" 
+        placeholder="输入站名..." 
+        value="{{guessInput}}"
+        bindinput="onGuessInput"
+        confirm-type="done"
+        bindconfirm="submitGuess"
+      />
+      <button class="btn-secondary guess-btn kids-guess-btn" bindtap="submitGuess">
+        猜一猜
+      </button>
+    </view>
+  </view>
+
+  <view wx:if="{{gameWon}}" class="result-section">
+    <view class="clay-card result-card kids-result">
+      <view class="result-celebration">
+        <text class="celebration-emoji">🎉</text>
+        <text class="celebration-emoji">⭐</text>
+        <text class="celebration-emoji">🎊</text>
+      </view>
+      <text class="result-title kids-result-title">太棒了！</text>
+      <text class="result-subtitle">你完成了所有挑战！</text>
+      <view class="result-stats">
+        <view class="result-stat">
+          <text class="result-emoji">⭐</text>
+          <text class="result-value">{{finalScore}}</text>
+          <text class="result-label">星星</text>
+        </view>
+        <view class="result-stat">
+          <text class="result-emoji">⏱️</text>
+          <text class="result-value">{{formatTime(elapsedTime)}}</text>
+          <text class="result-label">用时</text>
+        </view>
+      </view>
+      <view class="result-buttons">
+        <button class="btn-primary" bindtap="restartGame">🔄 再玩一次</button>
+        <button class="btn-secondary" bindtap="backToMenu">🏠 返回</button>
+      </view>
+    </view>
+  </view>
+</view>

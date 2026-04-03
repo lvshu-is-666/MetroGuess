@@ -1,0 +1,46 @@
+{
+  "pages": [
+    "pages/index/index",
+    "pages/kids/kids",
+    "pages/quiz-list/quiz-list",
+    "pages/quiz-create/quiz-create",
+    "pages/quiz-manage/quiz-manage",
+    "pages/quiz-play/quiz-play",
+    "pages/404/404"
+  ],
+  "window": {
+    "backgroundTextStyle": "light",
+    "navigationBarBackgroundColor": "#4F46E5",
+    "navigationBarTitleText": "地铁猜猜乐",
+    "navigationBarTextStyle": "white",
+    "backgroundColor": "#EEF2FF"
+  },
+  "tabBar": {
+    "color": "#64748b",
+    "selectedColor": "#4F46E5",
+    "backgroundColor": "#ffffff",
+    "borderStyle": "black",
+    "list": [
+      {
+        "pagePath": "pages/index/index",
+        "text": "主页",
+        "iconPath": "assets/icons/home.png",
+        "selectedIconPath": "assets/icons/home-active.png"
+      },
+      {
+        "pagePath": "pages/kids/kids",
+        "text": "儿童版",
+        "iconPath": "assets/icons/kids.png",
+        "selectedIconPath": "assets/icons/kids-active.png"
+      },
+      {
+        "pagePath": "pages/quiz-list/quiz-list",
+        "text": "题组",
+        "iconPath": "assets/icons/quiz.png",
+        "selectedIconPath": "assets/icons/quiz-active.png"
+      }
+    ]
+  },
+  "style": "v2",
+  "sitemapLocation": "sitemap.json"
+}

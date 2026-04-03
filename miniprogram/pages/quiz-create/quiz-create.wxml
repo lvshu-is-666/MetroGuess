@@ -1,0 +1,196 @@
+<view class="container {{theme}}">
+  <view class="header">
+    <text class="page-title">创建题组</text>
+  </view>
+
+  <view class="form-section">
+    <view class="clay-card">
+      <view class="form-group">
+        <text class="form-label">题组名称 *</text>
+        <input 
+          class="clay-input" 
+          type="text" 
+          placeholder="输入题组名称" 
+          value="{{name}}"
+          bindinput="onNameInput"
+          maxlength="50"
+        />
+      </view>
+
+      <view class="form-group">
+        <text class="form-label">题组描述</text>
+        <textarea 
+          class="clay-input textarea" 
+          placeholder="输入题组描述（可选）" 
+          value="{{description}}"
+          bindinput="onDescriptionInput"
+          maxlength="200"
+        />
+      </view>
+
+      <view class="form-group">
+        <text class="form-label">选择城市</text>
+        <picker 
+          mode="selector" 
+          range="{{cityOptions}}" 
+          value="{{cityIndex}}" 
+          bindchange="onCityChange">
+          <view class="picker-value">
+            {{cityOptions[cityIndex]}}
+            <text class="picker-arrow">▼</text>
+          </view>
+        </picker>
+      </view>
+
+      <view class="form-group">
+        <text class="form-label">选择站点 *</text>
+        <view class="station-select-info">
+          <text class="info-text">已选择 {{selectedStations.length}} 个站点</text>
+          <text class="info-hint">（至少需要3个站点）</text>
+        </view>
+        <button class="btn-secondary select-btn" bindtap="selectStations">
+          📍 选择站点
+        </button>
+        <view wx:if="{{selectedStations.length > 0}}" class="selected-stations">
+          <view wx:for="{{selectedStations}}" wx:key="station_en" class="selected-station-item">
+            <view class="station-info">
+              <text class="station-cn">{{item.station_cn}}</text>
+              <text class="station-en">{{item.station_en}}</text>
+            </view>
+            <view class="remove-btn" bindtap="removeStation" data-index="{{index}}">
+              <text class="remove-icon">✕</text>
+            </view>
+          </view>
+        </view>
+      </view>
+
+      <view class="form-group">
+        <text class="form-label">难度设置</text>
+        <view class="difficulty-options">
+          <view 
+            class="difficulty-btn {{difficulty === 'easy' ? 'active' : ''}}" 
+            bindtap="selectDifficulty" 
+            data-difficulty="easy">
+            简单
+          </view>
+          <view 
+            class="difficulty-btn {{difficulty === 'normal' ? 'active' : ''}}" 
+            bindtap="selectDifficulty" 
+            data-difficulty="normal">
+            普通
+          </view>
+          <view 
+            class="difficulty-btn {{difficulty === 'hard' ? 'active' : ''}}" 
+            bindtap="selectDifficulty" 
+            data-difficulty="hard">
+            困难
+          </view>
+        </view>
+        <view class="difficulty-info">
+          <text class="info-text">综合难度: {{difficultyLabel}}</text>
+        </view>
+      </view>
+
+      <view class="form-group">
+        <view class="checkbox-row" bindtap="toggleHideTheme">
+          <view class="checkbox {{hideTheme ? 'checked' : ''}}">
+            <text wx:if="{{hideTheme}}" class="check-icon">✓</text>
+          </view>
+          <text class="checkbox-label">隐藏题组名称（增加神秘感）</text>
+        </view>
+      </view>
+
+      <view class="form-group">
+        <view class="checkbox-row" bindtap="toggleIsPublic">
+          <view class="checkbox {{isPublic ? 'checked' : ''}}">
+            <text wx:if="{{isPublic}}" class="check-icon">✓</text>
+          </view>
+          <text class="checkbox-label">公开题组（其他用户可以看到）</text>
+        </view>
+      </view>
+
+      <view wx:if="{{isPublic}}" class="form-group">
+        <text class="form-label">邀请码（可选）</text>
+        <input 
+          class="clay-input" 
+          type="text" 
+          placeholder="设置邀请码，留空则无需邀请码" 
+          value="{{inviteCode}}"
+          bindinput="onInviteCodeInput"
+          maxlength="20"
+        />
+      </view>
+
+      <view class="form-group">
+        <text class="form-label">管理凭证 *</text>
+        <input 
+          class="clay-input" 
+          type="text" 
+          placeholder="设置管理用户名" 
+          value="{{managerUsername}}"
+          bindinput="onManagerUsernameInput"
+          maxlength="30"
+        />
+        <input 
+          class="clay-input mt-2" 
+          type="password" 
+          placeholder="设置管理密码" 
+          value="{{managerPassword}}"
+          bindinput="onManagerPasswordInput"
+          maxlength="30"
+        />
+        <text class="form-hint">用于后续管理题组</text>
+      </view>
+    </view>
+  </view>
+
+  <view class="action-section">
+    <button class="btn-primary create-btn" bindtap="createQuiz" disabled="{{creating}}">
+      {{creating ? '创建中...' : '创建题组'}}
+    </button>
+    <button class="btn-secondary cancel-btn" bindtap="cancel">取消</button>
+  </view>
+</view>
+
+<view class="station-modal {{showStationModal ? 'show' : ''}}" catchtouchmove="preventMove">
+  <view class="modal-mask" bindtap="closeStationModal"></view>
+  <view class="modal-content">
+    <view class="modal-header">
+      <text class="modal-title">选择站点</text>
+      <view class="modal-close" bindtap="closeStationModal">
+        <text class="close-icon">✕</text>
+      </view>
+    </view>
+    <view class="modal-search">
+      <input 
+        class="clay-input search-input" 
+        type="text" 
+        placeholder="搜索站点..." 
+        value="{{searchKeyword}}"
+        bindinput="onSearchInput"
+      />
+    </view>
+    <scroll-view scroll-y class="station-list">
+      <view 
+        wx:for="{{filteredStations}}" 
+        wx:key="station_en" 
+        class="station-item {{isStationSelected(item) ? 'selected' : ''}}"
+        bindtap="toggleStation"
+        data-station="{{item}}">
+        <view class="station-item-info">
+          <text class="station-item-cn">{{item.station_cn}}</text>
+          <text class="station-item-en">{{item.station_en}}</text>
+          <text class="station-item-city">{{item.city_cn}}</text>
+        </view>
+        <view class="station-item-check">
+          <text wx:if="{{isStationSelected(item)}}" class="check-icon">✓</text>
+        </view>
+      </view>
+    </scroll-view>
+    <view class="modal-footer">
+      <button class="btn-primary confirm-btn" bindtap="confirmStations">
+        确认选择 ({{tempSelectedStations.length}})
+      </button>
+    </view>
+  </view>
+</view>
