@@ -43,8 +43,8 @@
     "minifyWXML": true
   },
   "compileType": "miniprogram",
-  "libVersion": "2.25.0",
-  "appid": "",
+  "libVersion": "3.15.1",
+  "appid": "wx24674ef22bc7b7a4",
   "projectname": "metro-guess-miniprogram",
   "condition": {},
   "editorSetting": {

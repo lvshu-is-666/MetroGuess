@@ -34,6 +34,7 @@ Page({
     guessCount: 0,
     progress: 0,
     finalScore: 0,
+    combo: 0,
 
     timer: null,
     gameState: null,
@@ -118,7 +119,7 @@ Page({
       ...s,
       index: i,
       solved: false,
-      displayText: MetroCommon.getDisplayText(s.station_en, [], false)
+      displayText: this.getDisplayTextArray(s.station_en, [], false)
     }))
 
     this.setData({
@@ -135,6 +136,7 @@ Page({
       guessHistory: [],
       guessCount: 0,
       progress: 0,
+      combo: 0,
       gameState
     })
 
@@ -148,6 +150,31 @@ Page({
       })
     }, 1000)
     this.setData({ timer })
+  },
+
+  getDisplayTextArray(stationEn, revealedLetters, isSolved, revealedSpecialChars = []) {
+    if (isSolved) {
+      return stationEn.split('').map(char => {
+        const lowerChar = char.toLowerCase()
+        if (/[a-z]/.test(lowerChar)) {
+          return { char, revealed: true, solved: true }
+        }
+        return { char, revealed: false, solved: true }
+      })
+    }
+
+    return stationEn.split('').map(char => {
+      const lowerChar = char.toLowerCase()
+      if (/[a-z]/.test(lowerChar)) {
+        if (revealedLetters && revealedLetters.includes(lowerChar)) {
+          return { char, revealed: true, solved: false }
+        }
+        return { char: '*', revealed: false, solved: false }
+      } else if ([' ', "'", '(', ')', '.', '-', '/'].includes(char)) {
+        return { char, revealed: true, solved: false }
+      }
+      return { char, revealed: false, solved: false }
+    })
   },
 
   revealLetter(e) {
@@ -191,11 +218,10 @@ Page({
     const updatedStations = stations.map((s, i) => {
       const isSolved = gameState.solvedStations.includes(i)
       const revealedLetters = gameState.revealedLetters[i] || []
-      const displayText = MetroCommon.getDisplayText(
+      const displayText = this.getDisplayTextArray(
         s.station_en,
         revealedLetters,
-        isSolved,
-        gameState.revealedSpecialChars
+        isSolved
       )
       return {
         ...s,
@@ -261,10 +287,40 @@ Page({
       return
     }
 
-    const result = MetroGameLogic.guessStation(gameState, guessInput.trim())
+    const guess = guessInput.trim()
+    
+    if (guess.length === 1 && /[a-zA-Z]/.test(guess)) {
+      const letter = guess.toLowerCase()
+      if (!this.data.usedLetters.includes(letter)) {
+        const result = MetroGameLogic.revealLetter(gameState, letter)
+        
+        if (!result.alreadyUsed) {
+          const newUsedLetters = [...this.data.usedLetters, letter]
+          let newFoundLetters = [...this.data.foundLetters]
+          
+          if (result.found && !newFoundLetters.includes(letter)) {
+            newFoundLetters.push(letter)
+          }
+          
+          this.updateStationDisplays()
+          this.setData({
+            guessInput: '',
+            usedLetters: newUsedLetters,
+            foundLetters: newFoundLetters,
+            score: gameState.score
+          })
+          
+          this.checkAutoSolved()
+        }
+      }
+      this.setData({ guessInput: '' })
+      return
+    }
+
+    const result = MetroGameLogic.guessStation(gameState, guess)
 
     const historyItem = {
-      guess: guessInput.trim(),
+      guess: guess,
       correct: result.correct
     }
 
@@ -280,7 +336,8 @@ Page({
         guessHistory: newHistory,
         score: gameState.score,
         guessCount: gameState.guessCount,
-        solvedCount: gameState.solvedStations.length
+        solvedCount: gameState.solvedStations.length,
+        combo: result.combo
       })
 
       this.checkWinCondition()
@@ -289,7 +346,8 @@ Page({
       this.setData({
         guessInput: '',
         guessHistory: newHistory,
-        guessCount: gameState.guessCount
+        guessCount: gameState.guessCount,
+        combo: 0
       })
     }
   },
@@ -342,6 +400,7 @@ Page({
       guessCount: 0,
       progress: 0,
       finalScore: 0,
+      combo: 0,
       gameState: null
     })
   },

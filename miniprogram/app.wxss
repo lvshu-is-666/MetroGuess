@@ -11,7 +11,7 @@ page {
   --text-color: #1E1B4B;
   --transition-fast: 0.15s ease-out;
   --transition-normal: 0.25s ease-out;
-  --shadow-sm: 0 4rpx 24rpx;
+  --shadow-sm: 0 8rpx 24rpx;
   --shadow-glow: 0 0 40rpx;
   --radius-lg: 1.5rem;
   --radius-xl: 2rem;
@@ -44,11 +44,13 @@ page {
 }
 
 .container {
+  min-height: 100vh;
   padding: 32rpx;
   padding-bottom: calc(32rpx + env(safe-area-inset-bottom));
 }
 
 .page-title {
+  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
   font-size: 56rpx;
   font-weight: 700;
   text-align: center;
@@ -69,6 +71,12 @@ page {
   transition: all 0.25s ease;
 }
 
+.game-card:hover {
+  border-color: var(--primary-light);
+  box-shadow: 0 16rpx 64rpx rgba(79, 70, 229, 0.2), 0 0 40rpx rgba(129, 140, 248, 0.3);
+  transform: translateY(-4rpx);
+}
+
 .game-card.solved {
   background: linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(16, 185, 129, 0.1) 100%);
   border-color: var(--success-color);
@@ -82,6 +90,13 @@ page {
   box-shadow: var(--clay-shadow);
   padding: 32rpx;
   margin-bottom: 24rpx;
+  transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.clay-card:active {
+  transform: translateY(-2rpx) scale(1.01);
+  box-shadow: var(--clay-shadow-hover);
+  border-color: rgba(129, 140, 248, 0.4);
 }
 
 .btn-primary {
@@ -94,11 +109,12 @@ page {
   text-align: center;
   box-shadow: 0 8rpx 24rpx rgba(79, 70, 229, 0.3);
   border: none;
+  transition: all 0.15s ease-out;
 }
 
 .btn-primary:active {
-  transform: scale(0.98);
-  opacity: 0.9;
+  transform: translateY(-4rpx);
+  box-shadow: 0 12rpx 40rpx rgba(79, 70, 229, 0.4), 0 0 60rpx rgba(129, 140, 248, 0.3);
 }
 
 .btn-secondary {
@@ -111,11 +127,12 @@ page {
   text-align: center;
   box-shadow: 0 8rpx 24rpx rgba(249, 115, 22, 0.3);
   border: none;
+  transition: all 0.15s ease-out;
 }
 
 .btn-secondary:active {
-  transform: scale(0.98);
-  opacity: 0.9;
+  transform: translateY(-4rpx);
+  box-shadow: 0 12rpx 40rpx rgba(249, 115, 22, 0.4), 0 0 60rpx rgba(251, 146, 60, 0.3);
 }
 
 .btn-hint {
@@ -128,11 +145,12 @@ page {
   text-align: center;
   box-shadow: 0 8rpx 24rpx rgba(139, 92, 246, 0.3);
   border: none;
+  transition: all 0.15s ease-out;
 }
 
 .btn-hint:active {
-  transform: scale(0.98);
-  opacity: 0.9;
+  transform: translateY(-4rpx);
+  box-shadow: 0 12rpx 40rpx rgba(139, 92, 246, 0.4), 0 0 60rpx rgba(167, 139, 250, 0.3);
 }
 
 .clay-btn {
@@ -145,10 +163,11 @@ page {
   font-weight: 600;
   text-align: center;
   color: var(--text-color);
+  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .clay-btn:active {
-  transform: scale(0.98);
+  transform: translateY(2rpx);
   box-shadow: var(--btn-shadow-active);
 }
 
@@ -173,6 +192,39 @@ page {
   box-shadow: 0 6rpx 0 #dc2626, 0 12rpx 32rpx rgba(239, 68, 68, 0.35);
 }
 
+.mode-btn, .difficulty-btn {
+  background-color: rgba(255, 255, 255, 0.9);
+  border: 4rpx solid rgba(129, 140, 248, 0.3);
+  border-radius: 24rpx;
+  padding: 20rpx 32rpx;
+  font-size: 28rpx;
+  font-weight: 600;
+  color: var(--text-color);
+  box-shadow: 0 4rpx 16rpx rgba(79, 70, 229, 0.08);
+  margin: 8rpx;
+  transition: all 0.25s ease-out;
+}
+
+.mode-btn:active, .difficulty-btn:active {
+  background-color: rgba(238, 242, 255, 0.95);
+  border-color: var(--primary-light);
+  box-shadow: 0 8rpx 32rpx rgba(79, 70, 229, 0.15);
+}
+
+.mode-btn.active {
+  background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-light) 100%);
+  color: white;
+  border-color: transparent;
+  box-shadow: 0 8rpx 32rpx rgba(79, 70, 229, 0.3), 0 0 40rpx rgba(129, 140, 248, 0.2);
+}
+
+.difficulty-btn.active {
+  background: linear-gradient(135deg, #059669 0%, #10B981 100%);
+  color: white;
+  border-color: transparent;
+  box-shadow: 0 8rpx 32rpx rgba(16, 185, 129, 0.3), 0 0 40rpx rgba(16, 185, 129, 0.2);
+}
+
 .clay-input {
   background: var(--input-bg);
   border: var(--input-border);
@@ -183,6 +235,7 @@ page {
   color: var(--text-color);
   width: 100%;
   box-sizing: border-box;
+  transition: all 0.2s ease;
 }
 
 .clay-input:focus {
@@ -227,6 +280,12 @@ page {
   font-weight: 600;
   color: var(--text-color);
   margin: 6rpx;
+  transition: all 0.15s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.letter-key:active {
+  transform: translateY(-4rpx) scale(1.05);
+  box-shadow: 0 6rpx 0 rgba(129, 140, 248, 0.25), 0 12rpx 24rpx rgba(79, 70, 229, 0.15);
 }
 
 .letter-key.used {
@@ -321,44 +380,6 @@ page {
   color: #475569;
 }
 
-.mode-btn {
-  background-color: rgba(255, 255, 255, 0.9);
-  border: 4rpx solid rgba(129, 140, 248, 0.3);
-  border-radius: 24rpx;
-  padding: 20rpx 32rpx;
-  font-size: 28rpx;
-  font-weight: 600;
-  color: var(--text-color);
-  box-shadow: 0 4rpx 16rpx rgba(79, 70, 229, 0.08);
-  margin: 8rpx;
-}
-
-.mode-btn.active {
-  background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-light) 100%);
-  color: white;
-  border-color: transparent;
-  box-shadow: 0 8rpx 32rpx rgba(79, 70, 229, 0.3), 0 0 40rpx rgba(129, 140, 248, 0.2);
-}
-
-.difficulty-btn {
-  background-color: rgba(255, 255, 255, 0.9);
-  border: 4rpx solid rgba(129, 140, 248, 0.3);
-  border-radius: 24rpx;
-  padding: 20rpx 32rpx;
-  font-size: 28rpx;
-  font-weight: 600;
-  color: var(--text-color);
-  box-shadow: 0 4rpx 16rpx rgba(79, 70, 229, 0.08);
-  margin: 8rpx;
-}
-
-.difficulty-btn.active {
-  background: linear-gradient(135deg, #059669 0%, #10B981 100%);
-  color: white;
-  border-color: transparent;
-  box-shadow: 0 8rpx 32rpx rgba(16, 185, 129, 0.3), 0 0 40rpx rgba(16, 185, 129, 0.2);
-}
-
 .letter-display {
   font-family: 'Courier New', monospace;
   letter-spacing: 0.15em;
@@ -368,6 +389,7 @@ page {
 
 .letter-reveal {
   color: var(--primary-color);
+  animation: popIn 0.3s ease-out;
 }
 
 .empty-state {
@@ -425,6 +447,12 @@ page {
   40%, 80% { transform: translateX(10rpx); }
 }
 
+@keyframes pulseSuccess {
+  0% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7); }
+  70% { box-shadow: 0 0 0 30rpx rgba(34, 197, 94, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
+}
+
 .animate-fade-in-up {
   animation: fadeInUp 0.5s ease-out forwards;
 }
@@ -435,6 +463,10 @@ page {
 
 .shake {
   animation: shake 0.5s ease;
+}
+
+.pulse-success {
+  animation: pulseSuccess 0.5s ease;
 }
 
 .hidden {
@@ -626,6 +658,11 @@ page {
   border-color: #475569;
 }
 
+.dark .game-card:hover {
+  border-color: #60a5fa;
+  box-shadow: 0 8rpx 40rpx rgba(96, 165, 250, 0.2);
+}
+
 .dark .game-card.solved {
   background: linear-gradient(135deg, #14532d 0%, #166534 100%);
   border-color: var(--success-color);
@@ -652,6 +689,11 @@ page {
   color: #e2e8f0;
 }
 
+.dark .letter-key:active {
+  background-color: #475569;
+  border-color: #60a5fa;
+}
+
 .dark .letter-key.found {
   background: linear-gradient(145deg, #22c55e 0%, #4ade80 100%);
   border-color: #16a34a;
@@ -662,6 +704,11 @@ page {
   background: linear-gradient(145deg, #ef4444 0%, #f87171 100%);
   border-color: #dc2626;
   color: white;
+}
+
+.dark .progress-fill {
+  background: linear-gradient(90deg, #6366F1, #818CF8, #A78BFA);
+  box-shadow: 0 0 20rpx rgba(99, 102, 241, 0.5);
 }
 
 .dark .quiz-card {
@@ -680,6 +727,11 @@ page {
   color: #cbd5e1;
 }
 
+.dark .mode-btn:active,
+.dark .difficulty-btn:active {
+  background-color: #334155;
+}
+
 .dark .mode-btn.active {
   background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-light) 100%);
   color: white;
@@ -692,6 +744,18 @@ page {
 
 .dark .clay-input {
   background: var(--input-bg);
+  border-color: rgba(71, 85, 105, 0.5);
+  color: #e2e8f0;
+}
+
+.dark .clay-card {
+  background: var(--clay-bg);
+  border-color: rgba(71, 85, 105, 0.4);
+  box-shadow: var(--clay-shadow);
+}
+
+.dark .clay-btn {
+  background: var(--btn-bg);
   border-color: rgba(71, 85, 105, 0.5);
   color: #e2e8f0;
 }

@@ -1326,7 +1326,22 @@
                 $('quiz-title').textContent = quizData.name;
             }
 
+            saveCompletedQuiz(quizId, quizData.name);
+
             $('victory-modal').classList.remove('hidden');
+        }
+
+        function saveCompletedQuiz(quizId, quizName) {
+            try {
+                const completedQuizzes = JSON.parse(localStorage.getItem('completedQuizzes') || '{}');
+                completedQuizzes[quizId] = {
+                    name: quizName,
+                    completedAt: Date.now()
+                };
+                localStorage.setItem('completedQuizzes', JSON.stringify(completedQuizzes));
+            } catch (e) {
+                console.error('Failed to save completed quiz:', e);
+            }
         }
 
         async function saveScore() {

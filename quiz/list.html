@@ -458,6 +458,15 @@
             container.appendChild(fragment);
         }
         
+        function getCompletedQuizName(quizId) {
+            try {
+                const completedQuizzes = JSON.parse(localStorage.getItem('completedQuizzes') || '{}');
+                return completedQuizzes[quizId]?.name || null;
+            } catch (e) {
+                return null;
+            }
+        }
+        
         function createQuizCard(quiz, index) {
             const card = document.createElement('div');
             card.className = 'clay-card quiz-card-new p-5 cursor-pointer animate-fade-in-up';
@@ -473,7 +482,13 @@
             const difficultyClass = MetroCommon.getDifficultyColor(quiz.difficultyLevel);
             const difficultyLabel = MetroCommon.getDifficultyLabel(quiz.difficultyLevel);
             
-            const displayName = quiz.hideTheme ? '神秘题组' : quiz.name;
+            let displayName;
+            if (quiz.hideTheme) {
+                const completedName = getCompletedQuizName(quiz.id);
+                displayName = completedName || '神秘题组';
+            } else {
+                displayName = quiz.name;
+            }
             const creatorName = quiz.creatorName || '匿名用户';
             
             card.innerHTML = `
