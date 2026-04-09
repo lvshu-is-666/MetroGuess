@@ -19,6 +19,455 @@
     <script src="../firebase-config.js"></script>
     <script src="../station-utils.js"></script>
     <script src="../encrypted_data.js"></script>
+    <style>
+        /* ========== 高级模式 - 题目卡片警告样式 ========== */
+        .question-card.validation-warning {
+            background: linear-gradient(145deg, rgba(255, 251, 235, 0.95) 0%, rgba(254, 243, 199, 0.85) 100%);
+            border: 2px solid rgba(245, 158, 11, 0.6);
+            box-shadow: 
+                inset 0 2px 4px rgba(251, 191, 36, 0.1),
+                0 4px 16px rgba(245, 158, 11, 0.15),
+                0 0 0 3px rgba(245, 158, 11, 0.08);
+            position: relative;
+        }
+        .question-card.validation-warning::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 4px;
+            height: 60%;
+            background: linear-gradient(180deg, #F59E0B 0%, #FBBF24 100%);
+            border-radius: 0 2px 2px 0;
+        }
+        .question-card.validation-warning:hover {
+            border-color: rgba(245, 158, 11, 0.8);
+            box-shadow: 
+                inset 0 2px 4px rgba(251, 191, 36, 0.15),
+                0 6px 20px rgba(245, 158, 11, 0.2),
+                0 0 0 3px rgba(245, 158, 11, 0.12);
+        }
+        .dark .question-card.validation-warning {
+            background: linear-gradient(145deg, rgba(120, 53, 15, 0.5) 0%, rgba(113, 63, 18, 0.35) 100%);
+            border-color: rgba(245, 158, 11, 0.5);
+            box-shadow: 
+                inset 0 2px 4px rgba(251, 191, 36, 0.05),
+                0 4px 16px rgba(245, 158, 11, 0.2),
+                0 0 0 3px rgba(245, 158, 11, 0.1);
+        }
+        .dark .question-card.validation-warning::before {
+            background: linear-gradient(180deg, #D97706 0%, #F59E0B 100%);
+        }
+
+        /* ========== 快速模式 - 站名标签警告样式 ========== */
+        .quick-station-tag.validation-warning {
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.2) 0%, rgba(251, 191, 36, 0.12) 100%);
+            border: 1.5px solid rgba(245, 158, 11, 0.5);
+            color: #92400E;
+            box-shadow: 
+                0 2px 8px rgba(245, 158, 11, 0.15),
+                inset 0 1px 2px rgba(255, 255, 255, 0.3);
+            position: relative;
+            padding-left: 14px;
+        }
+        .quick-station-tag.validation-warning::before {
+            content: '!';
+            position: absolute;
+            left: 4px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 6px;
+            height: 6px;
+            background: #F59E0B;
+            border-radius: 50%;
+            font-size: 0;
+            box-shadow: 0 0 4px rgba(245, 158, 11, 0.6);
+        }
+        .quick-station-tag.validation-warning .tag-num {
+            background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
+            box-shadow: 0 1px 3px rgba(245, 158, 11, 0.3);
+        }
+        .quick-station-tag.validation-warning .tag-remove {
+            background: rgba(245, 158, 11, 0.25);
+            color: #92400E;
+        }
+        .quick-station-tag.validation-warning .tag-remove:hover {
+            background: #F59E0B;
+            color: white;
+        }
+        .dark .quick-station-tag.validation-warning {
+            background: linear-gradient(135deg, rgba(120, 53, 15, 0.4) 0%, rgba(113, 63, 18, 0.25) 100%);
+            border-color: rgba(245, 158, 11, 0.4);
+            color: #FBBF24;
+            box-shadow: 
+                0 2px 8px rgba(245, 158, 11, 0.2),
+                inset 0 1px 2px rgba(255, 255, 255, 0.05);
+        }
+        .dark .quick-station-tag.validation-warning::before {
+            background: #FBBF24;
+            box-shadow: 0 0 4px rgba(251, 191, 36, 0.5);
+        }
+        .dark .quick-station-tag.validation-warning .tag-num {
+            background: linear-gradient(135deg, #D97706 0%, #F59E0B 100%);
+        }
+        .dark .quick-station-tag.validation-warning .tag-remove {
+            background: rgba(245, 158, 11, 0.3);
+            color: #FBBF24;
+        }
+
+        /* ========== 校验横幅 - Claymorphism 风格 ========== */
+        .validation-banner {
+            background: linear-gradient(145deg, rgba(255, 251, 235, 0.95) 0%, rgba(254, 243, 199, 0.9) 100%);
+            border: 2px solid rgba(245, 158, 11, 0.4);
+            border-radius: 14px;
+            padding: 14px 18px;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            box-shadow: 
+                0 4px 16px rgba(245, 158, 11, 0.12),
+                0 1px 3px rgba(0, 0, 0, 0.05),
+                inset 0 1px 1px rgba(255, 255, 255, 0.6);
+            animation: fadeSlideIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+            position: relative;
+            overflow: hidden;
+        }
+        .validation-banner::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #F59E0B 0%, #FBBF24 50%, #F59E0B 100%);
+            opacity: 0.6;
+        }
+        .dark .validation-banner {
+            background: linear-gradient(145deg, rgba(120, 53, 15, 0.4) 0%, rgba(113, 63, 18, 0.25) 100%);
+            border-color: rgba(245, 158, 11, 0.35);
+            box-shadow: 
+                0 4px 16px rgba(245, 158, 11, 0.15),
+                0 1px 3px rgba(0, 0, 0, 0.2),
+                inset 0 1px 1px rgba(255, 255, 255, 0.05);
+        }
+        .dark .validation-banner::after {
+            background: linear-gradient(90deg, #D97706 0%, #F59E0B 50%, #D97706 100%);
+            opacity: 0.5;
+        }
+        .validation-banner-icon {
+            flex-shrink: 0;
+            width: 32px;
+            height: 32px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #F59E0B 0%, #FBBF24 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-top: 0;
+            box-shadow: 
+                0 2px 8px rgba(245, 158, 11, 0.35),
+                inset 0 1px 1px rgba(255, 255, 255, 0.3);
+        }
+        .validation-banner-icon svg {
+            width: 16px;
+            height: 16px;
+            color: white;
+            filter: drop-shadow(0 1px 1px rgba(0,0,0,0.1));
+        }
+        .validation-banner-content {
+            flex: 1;
+            min-width: 0;
+            padding-top: 2px;
+        }
+        .validation-banner-title {
+            font-size: 0.9375rem;
+            font-weight: 700;
+            color: #92400E;
+            margin-bottom: 4px;
+            letter-spacing: -0.01em;
+        }
+        .dark .validation-banner-title {
+            color: #FBBF24;
+        }
+        .validation-banner-detail {
+            font-size: 0.8125rem;
+            color: #A16207;
+            line-height: 1.6;
+        }
+        .dark .validation-banner-detail {
+            color: #D4A017;
+        }
+        .validation-banner-stats {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            margin-top: 6px;
+            padding: 4px 10px;
+            background: rgba(245, 158, 11, 0.12);
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #B45309;
+        }
+        .dark .validation-banner-stats {
+            background: rgba(245, 158, 11, 0.15);
+            color: #FBBF24;
+        }
+
+        /* ========== 确认弹窗 - 精致 Claymorphism ========== */
+        .validation-confirm-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(8px);
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            animation: fadeIn 0.25s ease;
+        }
+        .validation-confirm-dialog {
+            background: linear-gradient(145deg, #ffffff 0%, #f8fafc 100%);
+            border-radius: 24px;
+            padding: 32px 28px;
+            max-width: 440px;
+            width: 100%;
+            box-shadow: 
+                0 25px 50px -12px rgba(0, 0, 0, 0.25),
+                0 0 0 1px rgba(255, 255, 255, 0.5) inset;
+            animation: dialogPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            position: relative;
+        }
+        .validation-confirm-dialog::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60%;
+            height: 4px;
+            background: linear-gradient(90deg, transparent 0%, #F59E0B 50%, transparent 100%);
+            border-radius: 0 0 4px 4px;
+            opacity: 0.5;
+        }
+        .dark .validation-confirm-dialog {
+            background: linear-gradient(145deg, #1e293b 0%, #0f172a 100%);
+            box-shadow: 
+                0 25px 50px -12px rgba(0, 0, 0, 0.5),
+                0 0 0 1px rgba(255, 255, 255, 0.05) inset;
+        }
+        .validation-confirm-icon {
+            width: 64px;
+            height: 64px;
+            border-radius: 18px;
+            background: linear-gradient(135deg, #F59E0B 0%, #FBBF24 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            box-shadow: 
+                0 8px 24px rgba(245, 158, 11, 0.35),
+                0 2px 4px rgba(245, 158, 11, 0.2),
+                inset 0 1px 1px rgba(255, 255, 255, 0.3);
+            animation: iconPulse 2s ease-in-out infinite;
+        }
+        @keyframes iconPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.03); }
+        }
+        .validation-confirm-icon svg {
+            width: 32px;
+            height: 32px;
+            color: white;
+            filter: drop-shadow(0 1px 2px rgba(0,0,0,0.1));
+        }
+        .validation-confirm-title {
+            text-align: center;
+            font-size: 1.25rem;
+            font-weight: 800;
+            color: #1e293b;
+            margin-bottom: 10px;
+            letter-spacing: -0.02em;
+        }
+        .dark .validation-confirm-title {
+            color: #f1f5f9;
+        }
+        .validation-confirm-desc {
+            text-align: center;
+            font-size: 0.875rem;
+            color: #64748b;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+        .dark .validation-confirm-desc {
+            color: #94a3b8;
+        }
+
+        /* ========== 问题列表 ========== */
+        .validation-confirm-list {
+            max-height: 220px;
+            overflow-y: auto;
+            margin-bottom: 24px;
+            border-radius: 14px;
+            border: 1.5px solid rgba(245, 158, 11, 0.2);
+            background: linear-gradient(145deg, rgba(254, 243, 199, 0.4) 0%, rgba(255, 251, 235, 0.3) 100%);
+            padding: 6px;
+            box-shadow: inset 0 2px 4px rgba(245, 158, 11, 0.05);
+        }
+        .dark .validation-confirm-list {
+            background: linear-gradient(145deg, rgba(120, 53, 15, 0.3) 0%, rgba(113, 63, 18, 0.2) 100%);
+            border-color: rgba(245, 158, 11, 0.15);
+        }
+        .validation-confirm-list-item {
+            padding: 10px 14px;
+            font-size: 0.875rem;
+            color: #78350F;
+            border-bottom: 1px solid rgba(245, 158, 11, 0.1);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-radius: 10px;
+            margin-bottom: 4px;
+            background: rgba(255, 255, 255, 0.5);
+            transition: all 0.2s ease;
+        }
+        .validation-confirm-list-item:hover {
+            background: rgba(255, 255, 255, 0.8);
+            transform: translateX(2px);
+        }
+        .validation-confirm-list-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+        }
+        .dark .validation-confirm-list-item {
+            color: #FCD34D;
+            background: rgba(0, 0, 0, 0.15);
+        }
+        .dark .validation-confirm-list-item:hover {
+            background: rgba(0, 0, 0, 0.25);
+        }
+        .validation-confirm-list-item .item-num {
+            width: 24px;
+            height: 24px;
+            border-radius: 8px;
+            background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
+            color: white;
+            font-size: 0.75rem;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            box-shadow: 0 2px 6px rgba(245, 158, 11, 0.3);
+        }
+        .validation-confirm-list-item .item-content {
+            flex: 1;
+            min-width: 0;
+        }
+        .validation-confirm-list-item .item-name {
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+        .validation-confirm-list-item .item-reason {
+            color: #B45309;
+            font-size: 0.75rem;
+            opacity: 0.85;
+        }
+        .dark .validation-confirm-list-item .item-reason {
+            color: #FBBF24;
+        }
+
+        /* ========== 按钮样式 ========== */
+        .validation-confirm-buttons {
+            display: flex;
+            gap: 12px;
+        }
+        .validation-confirm-buttons button {
+            flex: 1;
+            padding: 12px 20px;
+            border-radius: 14px;
+            font-size: 0.9375rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+            border: none;
+            position: relative;
+            overflow: hidden;
+        }
+        .validation-confirm-buttons button::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(180deg, rgba(255,255,255,0.2) 0%, transparent 100%);
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+        .validation-confirm-buttons button:hover::before {
+            opacity: 1;
+        }
+        .btn-validation-back {
+            background: linear-gradient(145deg, #f1f5f9 0%, #e2e8f0 100%);
+            color: #475569;
+            box-shadow: 
+                0 2px 8px rgba(0, 0, 0, 0.08),
+                0 1px 2px rgba(0, 0, 0, 0.05);
+        }
+        .btn-validation-back:hover {
+            background: linear-gradient(145deg, #e2e8f0 0%, #cbd5e1 100%);
+            transform: translateY(-2px);
+            box-shadow: 
+                0 4px 12px rgba(0, 0, 0, 0.12),
+                0 1px 2px rgba(0, 0, 0, 0.05);
+        }
+        .btn-validation-back:active {
+            transform: translateY(0);
+        }
+        .dark .btn-validation-back {
+            background: linear-gradient(145deg, #334155 0%, #1e293b 100%);
+            color: #cbd5e1;
+            box-shadow: 
+                0 2px 8px rgba(0, 0, 0, 0.3),
+                0 1px 2px rgba(0, 0, 0, 0.2);
+        }
+        .dark .btn-validation-back:hover {
+            background: linear-gradient(145deg, #475569 0%, #334155 100%);
+        }
+        .btn-validation-confirm {
+            background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
+            color: white;
+            box-shadow: 
+                0 4px 14px rgba(245, 158, 11, 0.4),
+                0 1px 2px rgba(245, 158, 11, 0.2),
+                inset 0 1px 1px rgba(255, 255, 255, 0.2);
+        }
+        .btn-validation-confirm:hover {
+            transform: translateY(-2px);
+            box-shadow: 
+                0 6px 20px rgba(245, 158, 11, 0.5),
+                0 1px 2px rgba(245, 158, 11, 0.2),
+                inset 0 1px 1px rgba(255, 255, 255, 0.25);
+        }
+        .btn-validation-confirm:active {
+            transform: translateY(0);
+        }
+
+        /* ========== 动画 ========== */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes dialogPop {
+            from { opacity: 0; transform: scale(0.9) translateY(20px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+        @keyframes fadeSlideIn {
+            from { opacity: 0; transform: translateY(-12px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
     <link rel="stylesheet" href="../shared-inline.css">
 </head>
 <body class="bg-gradient-to-br from-indigo-50 via-purple-50 to-blue-100 min-h-screen text-slate-800 transition-colors duration-300">
@@ -1038,6 +1487,7 @@
             };
 
             quickHideDropdown();
+            clearValidationWarnings();
 
             if (quickStationIndex < quickTotalStations - 1) {
                 quickStationIndex++;
@@ -1086,6 +1536,8 @@
             }
         }
 
+        let _quickValidationConfirmed = false;
+        
         async function quickSubmitQuiz() {
             const theme = $('quick-theme').value.trim();
             const username = $('quick-username').value.trim();
@@ -1115,6 +1567,23 @@
                 $('quick-password').focus();
                 return;
             }
+            
+            if (!_quickValidationConfirmed) {
+                const validationResult = validateQuestionsAgainstDatabase(validStations);
+                applyValidationWarningsToQuick(validationResult);
+                
+                if (!validationResult.allValid) {
+                    quickGoToStep(2);
+                    showValidationConfirmDialog(validationResult, () => {
+                        _quickValidationConfirmed = true;
+                        quickSubmitQuiz();
+                    });
+                    return;
+                }
+            }
+            
+            _quickValidationConfirmed = false;
+            clearValidationWarnings();
 
             const difficultyResult = MetroCommon.calculateQuizDifficulty(validStations);
 
@@ -1395,6 +1864,7 @@
         function renderQuestionItems(count) {
             const container = $('questions-container');
             container.innerHTML = '';
+            clearValidationWarnings();
 
             const cityScope = $('city-scope').value;
             const isCityLocked = cityScope !== 'all';
@@ -1463,6 +1933,7 @@
                     currentQuestions[index].station_cn = e.target.value;
                     updateQuestionCardState(index);
                     updateQuestionDifficulty(index);
+                    clearValidationWarnings();
                     saveDraft();
                 });
             });
@@ -1474,6 +1945,7 @@
                     currentQuestions[index].station_en = e.target.value;
                     updateQuestionCardState(index);
                     updateQuestionDifficulty(index);
+                    clearValidationWarnings();
                     saveDraft();
                 });
             });
@@ -1847,10 +2319,28 @@
             return true;
         }
         
+        let _validationConfirmed = false;
+        
         async function submitQuiz() {
             if (!validateForm()) return;
             
             const data = getFormData();
+            
+            if (!_validationConfirmed) {
+                const validationResult = validateQuestionsAgainstDatabase(data.questions);
+                applyValidationWarningsToAdvanced(validationResult);
+                
+                if (!validationResult.allValid) {
+                    showValidationConfirmDialog(validationResult, () => {
+                        _validationConfirmed = true;
+                        submitQuiz();
+                    });
+                    return;
+                }
+            }
+            
+            _validationConfirmed = false;
+            clearValidationWarnings();
             const difficultyResult = MetroCommon.calculateQuizDifficulty(data.questions);
             
             const quizData = {
@@ -1922,6 +2412,238 @@
             const div = document.createElement('div');
             div.textContent = text;
             return div.innerHTML;
+        }
+        
+        let _stationLookupCache = null;
+        
+        function buildStationLookup() {
+            if (_stationLookupCache) return _stationLookupCache;
+            const cnMap = new Map();
+            const enMap = new Map();
+            const cnEnSet = new Set();
+            for (const s of stationDatabase) {
+                const cnLower = s.station_cn.toLowerCase();
+                const enLower = s.station_en.toLowerCase();
+                if (!cnMap.has(cnLower)) cnMap.set(cnLower, []);
+                cnMap.get(cnLower).push(s);
+                if (!enMap.has(enLower)) enMap.set(enLower, []);
+                enMap.get(enLower).push(s);
+                cnEnSet.add(`${cnLower}|${enLower}`);
+            }
+            _stationLookupCache = { cnMap, enMap, cnEnSet };
+            return _stationLookupCache;
+        }
+        
+        function validateQuestionsAgainstDatabase(questions) {
+            if (stationDatabase.length === 0) {
+                return { allValid: true, warnings: [] };
+            }
+            const lookup = buildStationLookup();
+            const warnings = [];
+            
+            questions.forEach((q, idx) => {
+                if (!q || !q.station_cn || !q.station_en) return;
+                
+                const cnLower = q.station_cn.toLowerCase().trim();
+                const enLower = q.station_en.toLowerCase().trim();
+                const cityCn = q.city_cn ? q.city_cn.trim() : '';
+                const matchKey = `${cnLower}|${enLower}`;
+                
+                const cnExists = lookup.cnMap.has(cnLower);
+                const enExists = lookup.enMap.has(enLower);
+                const bothMatch = lookup.cnEnSet.has(matchKey);
+                
+                // 如果中英文完全匹配，再校验城市
+                if (bothMatch) {
+                    if (cityCn) {
+                        const matchedStations = lookup.cnMap.get(cnLower);
+                        const cityMatch = matchedStations.some(s => s.city_cn === cityCn);
+                        if (!cityMatch) {
+                            const actualCities = [...new Set(matchedStations.map(s => s.city_cn))];
+                            warnings.push({
+                                index: idx,
+                                station_cn: q.station_cn,
+                                station_en: q.station_en,
+                                reasons: [`城市不匹配，该站点实际位于：${actualCities.join('、')}`]
+                            });
+                        }
+                    }
+                    return;
+                }
+                
+                const reasons = [];
+                if (!cnExists && !enExists) {
+                    reasons.push('中文站名和英文站名均未在词库中找到');
+                } else if (!cnExists) {
+                    reasons.push('中文站名未在词库中找到');
+                } else if (!enExists) {
+                    reasons.push('英文站名未在词库中找到');
+                } else {
+                    reasons.push('中英文站名不匹配（属于不同站点）');
+                }
+                
+                warnings.push({
+                    index: idx,
+                    station_cn: q.station_cn,
+                    station_en: q.station_en,
+                    reasons: reasons
+                });
+            });
+            
+            return {
+                allValid: warnings.length === 0,
+                warnings: warnings,
+                validCount: questions.filter(q => q && q.station_cn && q.station_en).length - warnings.length,
+                totalCount: questions.filter(q => q && q.station_cn && q.station_en).length
+            };
+        }
+        
+        function applyValidationWarningsToAdvanced(validationResult) {
+            $all('.question-card').forEach(card => {
+                card.classList.remove('validation-warning');
+            });
+            const existingBanner = $('validation-banner-advanced');
+            if (existingBanner) existingBanner.remove();
+            
+            if (validationResult.allValid) return;
+            
+            const cards = document.querySelectorAll('.question-card');
+            for (const w of validationResult.warnings) {
+                if (cards[w.index]) {
+                    cards[w.index].classList.add('validation-warning');
+                }
+            }
+            
+            const banner = document.createElement('div');
+            banner.id = 'validation-banner-advanced';
+            banner.className = 'validation-banner';
+            banner.innerHTML = `
+                <div class="validation-banner-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4.5c-.77-.833-2.694-.833-3.464 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                    </svg>
+                </div>
+                <div class="validation-banner-content">
+                    <div class="validation-banner-title">题名校验发现 ${validationResult.warnings.length} 个问题</div>
+                    <div class="validation-banner-detail">部分题目未在词库中找到匹配，请检查是否存在拼写错误</div>
+                    <div class="validation-banner-stats">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg>
+                        ${validationResult.validCount}/${validationResult.totalCount} 题通过校验
+                    </div>
+                </div>
+            `;
+            const container = $('questions-container');
+            container.parentNode.insertBefore(banner, container);
+        }
+        
+        function applyValidationWarningsToQuick(validationResult) {
+            $all('.quick-station-tag').forEach(tag => {
+                tag.classList.remove('validation-warning');
+            });
+            const existingBanner = $('validation-banner-quick');
+            if (existingBanner) existingBanner.remove();
+            
+            if (validationResult.allValid) return;
+            
+            const warningIndices = new Set(validationResult.warnings.map(w => w.index));
+            const tags = document.querySelectorAll('.quick-station-tag');
+            tags.forEach(tag => {
+                const removeBtn = tag.querySelector('.tag-remove');
+                if (removeBtn) {
+                    const idx = parseInt(removeBtn.dataset.index);
+                    if (warningIndices.has(idx)) {
+                        tag.classList.add('validation-warning');
+                    }
+                }
+            });
+            
+            const banner = document.createElement('div');
+            banner.id = 'validation-banner-quick';
+            banner.className = 'validation-banner';
+            banner.innerHTML = `
+                <div class="validation-banner-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4.5c-.77-.833-2.694-.833-3.464 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                    </svg>
+                </div>
+                <div class="validation-banner-content">
+                    <div class="validation-banner-title">题名校验发现 ${validationResult.warnings.length} 个问题</div>
+                    <div class="validation-banner-detail">部分题目未在词库中找到匹配，请检查是否存在拼写错误</div>
+                    <div class="validation-banner-stats">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg>
+                        ${validationResult.validCount}/${validationResult.totalCount} 题通过校验
+                    </div>
+                </div>
+            `;
+            const listContainer = $('quick-station-list');
+            listContainer.parentNode.insertBefore(banner, listContainer);
+        }
+        
+        function clearValidationWarnings() {
+            $all('.question-card').forEach(card => {
+                card.classList.remove('validation-warning');
+            });
+            $all('.quick-station-tag').forEach(tag => {
+                tag.classList.remove('validation-warning');
+            });
+            const advBanner = $('validation-banner-advanced');
+            if (advBanner) advBanner.remove();
+            const quickBanner = $('validation-banner-quick');
+            if (quickBanner) quickBanner.remove();
+        }
+        
+        function showValidationConfirmDialog(validationResult, onConfirm) {
+            const overlay = document.createElement('div');
+            overlay.className = 'validation-confirm-overlay';
+            overlay.innerHTML = `
+                <div class="validation-confirm-dialog">
+                    <div class="validation-confirm-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4.5c-.77-.833-2.694-.833-3.464 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                        </svg>
+                    </div>
+                    <div class="validation-confirm-title">部分题目未通过词库校验</div>
+                    <div class="validation-confirm-desc">
+                        以下 ${validationResult.warnings.length} 道题目未在内置站名词库中找到匹配，可能存在拼写错误。如果确认题目无误（如新增站点或自定义题目），可以继续提交。
+                    </div>
+                    <div class="validation-confirm-list">
+                        ${validationResult.warnings.map(w => `
+                            <div class="validation-confirm-list-item">
+                                <span class="item-num">${w.index + 1}</span>
+                                <div class="item-content">
+                                    <div class="item-name">${escapeHtml(w.station_cn)} / ${escapeHtml(w.station_en)}</div>
+                                    <div class="item-reason">${w.reasons.join('；')}</div>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                    <div class="validation-confirm-buttons">
+                        <button class="btn-validation-back" id="validation-btn-back">返回修改</button>
+                        <button class="btn-validation-confirm" id="validation-btn-confirm">确认提交</button>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(overlay);
+            
+            overlay.querySelector('#validation-btn-back').addEventListener('click', () => {
+                overlay.remove();
+            });
+            
+            overlay.querySelector('#validation-btn-confirm').addEventListener('click', () => {
+                overlay.remove();
+                onConfirm();
+            });
+            
+            overlay.addEventListener('click', (e) => {
+                if (e.target === overlay) {
+                    overlay.remove();
+                }
+            });
         }
         
         function setupEventListeners() {
