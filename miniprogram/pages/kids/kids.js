@@ -235,6 +235,17 @@ Page({
         usedLetters: gameState.usedLetters,
         foundLetters: gameState.foundLetters
       })
+      
+      const hintMessages = {
+        first_letter: `首字母 "${result.letter.toUpperCase()}" 已揭示！`,
+        rare_letter: `稀有字母 "${result.letter.toUpperCase()}" 已揭示！`,
+        medium_letter: `关键字母 "${result.letter.toUpperCase()}" 已揭示！`,
+        common_letter: `字母 "${result.letter.toUpperCase()}" 已揭示！`
+      }
+      const message = hintMessages[result.hintType] || `字母 "${result.letter.toUpperCase()}" 已揭示！`
+      const countText = result.revealedCount > 1 ? ` (${result.revealedCount}处)` : ''
+      MetroCommon.showToast(message + countText, 'success')
+      
       this.checkAutoSolved()
     }
   },

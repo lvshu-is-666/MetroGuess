@@ -2912,35 +2912,103 @@
             
             if (unsolvedIndices.length === 0) return;
             
-            const randomIndex = unsolvedIndices[Math.floor(Math.random() * unsolvedIndices.length)];
-            const wordObj = gameState.words[randomIndex];
-            
-            if (Math.random() < 0.5) {
+            const stationScores = unsolvedIndices.map(index => {
+                const wordObj = gameState.words[index];
                 const word = wordObj.word.toLowerCase();
-                const unrevealedLetters = word
-                    .split('')
-                    .filter(char => /[a-z]/.test(char) && !gameState.revealedLetters[randomIndex].has(char));
+                const allLetters = word.split('').filter(char => /[a-z]/.test(char));
+                const revealedSet = gameState.revealedLetters[index] || new Set();
+                const unrevealedCount = allLetters.filter(l => !revealedSet.has(l)).length;
+                const revealedRatio = allLetters.length > 0 ? revealedSet.size / allLetters.length : 0;
                 
-                if (unrevealedLetters.length > 0) {
-                    const randomLetter = unrevealedLetters[Math.floor(Math.random() * unrevealedLetters.length)];
-                    gameState.revealedLetters[randomIndex].add(randomLetter);
-                    gameState.usedLetters.add(randomLetter);
-                    gameState.foundLetters.add(randomLetter);
-                    gameState.hintsLeft--;
-                    gameState.hintsUsed++;
-                    gameState.score = Math.max(0, gameState.score - 30);
-                    
-                    playSound('hint');
-                    addToHistory(`使用提示`, 'info', `揭示字母 ${randomLetter.toUpperCase()} (-30分)`);
-                    showToast(`提示：字母 ${randomLetter.toUpperCase()}`, 'info');
-                    
-                    renderWords();
-                    renderLetterKeyboard();
-                } else {
-                    showMeaningHint(randomIndex, wordObj);
+                return {
+                    index,
+                    wordObj,
+                    word,
+                    allLetters,
+                    unrevealedCount,
+                    revealedRatio,
+                    priority: unrevealedCount * 10 - revealedRatio * 5
+                };
+            });
+            
+            stationScores.sort((a, b) => b.priority - a.priority);
+            
+            let targetWord = null;
+            let targetLetter = null;
+            let hintType = null;
+            
+            for (const wordInfo of stationScores) {
+                const { index, wordObj, word, allLetters } = wordInfo;
+                const revealedSet = gameState.revealedLetters[index] || new Set();
+                
+                const unrevealedLetters = allLetters.filter(l => !revealedSet.has(l));
+                if (unrevealedLetters.length === 0) continue;
+                
+                const firstLetter = word.match(/[a-z]/);
+                if (firstLetter && !revealedSet.has(firstLetter[0])) {
+                    targetWord = wordInfo;
+                    targetLetter = firstLetter[0];
+                    hintType = 'first_letter';
+                    break;
                 }
-            } else {
-                showMeaningHint(randomIndex, wordObj);
+                
+                const rareLetters = unrevealedLetters.filter(l => ['q', 'f', 'k', 'v'].includes(l));
+                if (rareLetters.length > 0) {
+                    targetWord = wordInfo;
+                    targetLetter = rareLetters[0];
+                    hintType = 'rare_letter';
+                    break;
+                }
+                
+                const mediumLetters = unrevealedLetters.filter(l => ['y', 'j', 'x', 'z', 'p', 'm', 'w', 'b'].includes(l));
+                if (mediumLetters.length > 0) {
+                    targetWord = wordInfo;
+                    targetLetter = mediumLetters[0];
+                    hintType = 'medium_letter';
+                    break;
+                }
+                
+                targetWord = wordInfo;
+                targetLetter = unrevealedLetters[0];
+                hintType = 'common_letter';
+                break;
+            }
+            
+            if (targetWord && targetLetter) {
+                const { index, wordObj, word } = targetWord;
+                let revealedCount = 0;
+                
+                for (let i = 0; i < word.length; i++) {
+                    if (word[i] === targetLetter) {
+                        gameState.revealedLetters[index].add(targetLetter);
+                        revealedCount++;
+                    }
+                }
+                
+                gameState.usedLetters.add(targetLetter);
+                gameState.foundLetters.add(targetLetter);
+                gameState.hintsLeft--;
+                gameState.hintsUsed++;
+                gameState.score = Math.max(0, gameState.score - 30);
+                
+                playSound('hint');
+                
+                const hintMessages = {
+                    first_letter: `首字母 "${targetLetter.toUpperCase()}" 已揭示！`,
+                    rare_letter: `稀有字母 "${targetLetter.toUpperCase()}" 已揭示！`,
+                    medium_letter: `关键字母 "${targetLetter.toUpperCase()}" 已揭示！`,
+                    common_letter: `字母 "${targetLetter.toUpperCase()}" 已揭示！`
+                };
+                const message = hintMessages[hintType] || `字母 "${targetLetter.toUpperCase()}" 已揭示！`;
+                const countText = revealedCount > 1 ? ` (${revealedCount}处)` : '';
+                addToHistory(`使用提示`, 'info', `${message}${countText} (-30分)`);
+                showToast(`提示：${message}${countText}`, 'info');
+                
+                renderWords();
+                renderLetterKeyboard();
+            } else if (stationScores.length > 0) {
+                const { index, wordObj } = stationScores[0];
+                showMeaningHint(index, wordObj);
             }
             
             updateScoreDisplay();

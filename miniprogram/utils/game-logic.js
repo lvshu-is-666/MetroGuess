@@ -308,7 +308,9 @@ const MetroGameLogic = {
       scoreChange: 0,
       noHintsLeft: false,
       allSolved: false,
-      noLettersToReveal: false
+      noLettersToReveal: false,
+      revealedCount: 0,
+      hintType: null
     }
 
     if (state.hintsLeft <= 0) {
@@ -325,35 +327,99 @@ const MetroGameLogic = {
       return result
     }
 
-    const randomIndex = unsolvedIndices[Math.floor(Math.random() * unsolvedIndices.length)]
-    const station = state.stations[randomIndex]
-    const stationLower = station.station_en.toLowerCase()
+    const stationScores = unsolvedIndices.map(index => {
+      const station = state.stations[index]
+      const stationLower = station.station_en.toLowerCase()
+      const allLetters = stationLower.split('').filter(char => /[a-z]/.test(char))
+      const revealedSet = state.revealedLetters[index] || []
+      const unrevealedCount = allLetters.filter(l => !revealedSet.includes(l)).length
+      const revealedRatio = allLetters.length > 0 ? revealedSet.length / allLetters.length : 0
+      
+      return {
+        index,
+        station,
+        stationLower,
+        allLetters,
+        unrevealedCount,
+        revealedRatio,
+        priority: unrevealedCount * 10 - revealedRatio * 5
+      }
+    })
 
-    const unrevealedLetters = stationLower
-      .split('')
-      .filter(char => /[a-z]/.test(char) && !state.revealedLetters[randomIndex].includes(char))
+    stationScores.sort((a, b) => b.priority - a.priority)
 
-    if (unrevealedLetters.length === 0) {
+    let targetStation = null
+    let targetLetter = null
+    let hintType = null
+
+    for (const stationInfo of stationScores) {
+      const { index, station, stationLower, allLetters, revealedRatio } = stationInfo
+      const revealedSet = state.revealedLetters[index] || []
+      
+      const unrevealedLetters = allLetters.filter(l => !revealedSet.includes(l))
+      if (unrevealedLetters.length === 0) continue
+
+      const firstLetter = stationLower.match(/[a-z]/)
+      if (firstLetter && !revealedSet.includes(firstLetter[0])) {
+        targetStation = stationInfo
+        targetLetter = firstLetter[0]
+        hintType = 'first_letter'
+        break
+      }
+
+      const rareLetters = unrevealedLetters.filter(l => this.LETTER_FREQUENCY.rare.includes(l))
+      if (rareLetters.length > 0) {
+        targetStation = stationInfo
+        targetLetter = rareLetters[0]
+        hintType = 'rare_letter'
+        break
+      }
+
+      const mediumLetters = unrevealedLetters.filter(l => this.LETTER_FREQUENCY.medium.includes(l))
+      if (mediumLetters.length > 0) {
+        targetStation = stationInfo
+        targetLetter = mediumLetters[0]
+        hintType = 'medium_letter'
+        break
+      }
+
+      targetStation = stationInfo
+      targetLetter = unrevealedLetters[0]
+      hintType = 'common_letter'
+      break
+    }
+
+    if (!targetStation || !targetLetter) {
       result.noLettersToReveal = true
       return result
     }
 
-    const randomLetter = unrevealedLetters[Math.floor(Math.random() * unrevealedLetters.length)]
-    if (!state.revealedLetters[randomIndex].includes(randomLetter)) {
-      state.revealedLetters[randomIndex].push(randomLetter)
+    const { index: targetIndex, stationLower: targetStationLower } = targetStation
+    let revealedCount = 0
+
+    for (let i = 0; i < targetStationLower.length; i++) {
+      if (targetStationLower[i] === targetLetter) {
+        if (!state.revealedLetters[targetIndex].includes(targetLetter)) {
+          state.revealedLetters[targetIndex].push(targetLetter)
+        }
+        revealedCount++
+      }
     }
-    if (!state.usedLetters.includes(randomLetter)) {
-      state.usedLetters.push(randomLetter)
+
+    if (!state.usedLetters.includes(targetLetter)) {
+      state.usedLetters.push(targetLetter)
     }
-    if (!state.foundLetters.includes(randomLetter)) {
-      state.foundLetters.push(randomLetter)
+    if (!state.foundLetters.includes(targetLetter)) {
+      state.foundLetters.push(targetLetter)
     }
     state.hintsLeft--
     state.hintsUsed++
 
     result.success = true
-    result.letter = randomLetter
-    result.stationIndex = randomIndex
+    result.letter = targetLetter
+    result.stationIndex = targetIndex
+    result.revealedCount = revealedCount
+    result.hintType = hintType
     result.scoreChange = this.SCORE_CONFIG.HINT_PENALTY
 
     state.score = Math.max(0, state.score + result.scoreChange)

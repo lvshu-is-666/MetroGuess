@@ -217,6 +217,20 @@ Page({
       return
     }
 
+    const stationEnSet = new Set()
+    const duplicates = []
+    for (const station of selectedStations) {
+      if (stationEnSet.has(station.station_en)) {
+        duplicates.push(station.station_cn)
+      } else {
+        stationEnSet.add(station.station_en)
+      }
+    }
+    if (duplicates.length > 0) {
+      MetroCommon.showToast(`存在重复题目: ${duplicates[0]}`, 'error')
+      return
+    }
+
     if (!managerUsername.trim() || !managerPassword.trim()) {
       MetroCommon.showToast('请设置管理凭证', 'error')
       return

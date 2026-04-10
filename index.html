@@ -89,6 +89,7 @@
     <script src="game-logic.js"></script>
     <script src="common.js"></script>
     <script src="encrypted_data.js"></script>
+    <script src="firebase-config.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@300;400;500;600;700&display=swap" media="print" onload="this.media='all'">
@@ -465,6 +466,12 @@
                             <span class="text-sm font-medium text-slate-700">城市:</span>
                             <select id="city-select" class="px-2.5 py-1 rounded-lg border border-slate-200 bg-white text-slate-700 text-xs cursor-pointer">
                                 <option value="all">全部城市</option>
+                            </select>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="text-sm font-medium text-slate-700">题组:</span>
+                            <select id="quiz-select" class="px-2.5 py-1 rounded-lg border border-slate-200 bg-white text-slate-700 text-xs cursor-pointer">
+                                <option value="all">随机选题</option>
                             </select>
                         </div>
                     </div>
@@ -1039,6 +1046,7 @@
             mode: 'normal',
             difficulty: 'normal',
             selectedCity: 'all',
+            selectedQuiz: 'all',
             stations: [],
             revealedLetters: {},
             revealedSpecialChars: new Set(),
@@ -1109,6 +1117,7 @@
             hintsLeft: $('hints-left'),
             letterKeyboard: $('letter-keyboard'),
             citySelect: $('city-select'),
+            quizSelect: $('quiz-select'),
             leaderboardList: $('leaderboard-list'),
             achievementsList: $('achievements-list'),
             themeIcon: $('theme-icon'),
@@ -1458,6 +1467,31 @@
             cities.forEach(city => {
                 elements.citySelect.appendChild(createEl('option')).textContent = city;
                 elements.citySelect.lastChild.value = city;
+            });
+        }
+
+        let availableQuizzes = [];
+
+        async function loadQuizList() {
+            try {
+                if (typeof FirebaseConfig !== 'undefined') {
+                    await FirebaseConfig.init();
+                    availableQuizzes = await FirebaseConfig.getQuizList({ limit: 50 });
+                    updateQuizSelect();
+                }
+            } catch (e) {
+                console.log('Failed to load quiz list:', e);
+            }
+        }
+
+        function updateQuizSelect() {
+            elements.quizSelect.innerHTML = '<option value="all">随机选题</option>';
+            availableQuizzes.forEach(quiz => {
+                const option = createEl('option');
+                option.value = quiz.id;
+                const displayName = quiz.hideTheme ? '神秘题组' : quiz.name;
+                option.textContent = `${displayName} (${quiz.questions.length}题)`;
+                elements.quizSelect.appendChild(option);
             });
         }
 
@@ -2755,6 +2789,7 @@
             await loadCSVFromFile();
             loadStats();
             updateCitySelect();
+            loadQuizList();
             renderAchievements();
             updateStatsDisplay();
             
@@ -3299,38 +3334,54 @@
             const customCount = parseInt(document.getElementById('station-count').value) || settings.stationCount;
             const stationCount = Math.min(Math.max(customCount, 1), 20);
             
-            const classified = classifyStationsByDifficulty();
-            const targetDifficulty = settings.difficultyLevel;
+            let selected = [];
             
-            let pool = classified[targetDifficulty];
-            
-            if (gameState.selectedCity !== 'all') {
-                pool = pool.filter(s => s.city_cn === gameState.selectedCity);
+            if (gameState.selectedQuiz !== 'all') {
+                const quiz = availableQuizzes.find(q => q.id === gameState.selectedQuiz);
+                if (quiz && quiz.questions) {
+                    const shuffledQuestions = [...quiz.questions].sort(() => Math.random() - 0.5);
+                    selected = shuffledQuestions.slice(0, Math.min(stationCount, shuffledQuestions.length)).map((q, i) => ({
+                        ...q,
+                        index: i
+                    }));
+                }
             }
             
-            if (pool.length < stationCount) {
-                let allPool = gameState.selectedCity === 'all' 
-                    ? stationDatabase 
-                    : stationDatabase.filter(s => s.city_cn === gameState.selectedCity);
-                allPool = allPool.map(s => ({
+            if (selected.length === 0) {
+                const classified = classifyStationsByDifficulty();
+                const targetDifficulty = settings.difficultyLevel;
+                
+                let pool = classified[targetDifficulty];
+                
+                if (gameState.selectedCity !== 'all') {
+                    pool = pool.filter(s => s.city_cn === gameState.selectedCity);
+                }
+                
+                if (pool.length < stationCount) {
+                    let allPool = gameState.selectedCity === 'all' 
+                        ? stationDatabase 
+                        : stationDatabase.filter(s => s.city_cn === gameState.selectedCity);
+                    allPool = allPool.map(s => ({
+                        ...s,
+                        calculatedDifficulty: targetDifficulty
+                    }));
+                    pool = allPool;
+                }
+                
+                pool = pool.map(s => ({
                     ...s,
                     calculatedDifficulty: targetDifficulty
                 }));
-                pool = allPool;
+                
+                const shuffled = [...pool].sort(() => Math.random() - 0.5);
+                selected = shuffled.slice(0, stationCount);
             }
-            
-            pool = pool.map(s => ({
-                ...s,
-                calculatedDifficulty: targetDifficulty
-            }));
-            
-            const shuffled = [...pool].sort(() => Math.random() - 0.5);
-            const selected = shuffled.slice(0, stationCount);
             
             gameState = {
                 mode: gameState.mode,
                 difficulty: gameState.difficulty,
                 selectedCity: gameState.selectedCity,
+                selectedQuiz: gameState.selectedQuiz,
                 stations: selected,
                 revealedLetters: {},
                 revealedSpecialChars: new Set(),
@@ -4576,6 +4627,19 @@
                 stats.currentStreak = 0;
                 startNewGame();
                 showToast(`城市已切换到${e.target.options[e.target.selectedIndex].text}`, 'info');
+            });
+            
+            elements.quizSelect.addEventListener('change', (e) => {
+                gameState.selectedQuiz = e.target.value;
+                stats.currentStreak = 0;
+                startNewGame();
+                if (e.target.value === 'all') {
+                    showToast('已切换到随机选题模式', 'info');
+                } else {
+                    const quiz = availableQuizzes.find(q => q.id === e.target.value);
+                    const displayName = quiz ? (quiz.hideTheme ? '神秘题组' : quiz.name) : '题组';
+                    showToast(`已选择题组: ${displayName}`, 'info');
+                }
             });
             
             $('station-count').addEventListener('change', (e) => {
