@@ -384,6 +384,18 @@
                 closeSidebar();
             }
         });
+
+        // 点击侧边栏中的导航链接时自动关闭侧边栏
+        if (NavState.sidebar) {
+            const navLinks = NavState.sidebar.querySelectorAll('a.nav-item');
+            navLinks.forEach(link => {
+                link.addEventListener('click', () => {
+                    if (NavState.isOpen) {
+                        closeSidebar();
+                    }
+                });
+            });
+        }
     }
 
     /**

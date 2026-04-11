@@ -1593,9 +1593,9 @@
             const merged = [...local];
             cloud.forEach(entry => {
                 const exists = merged.find(e => 
-                    e.stationName === entry.stationName && 
-                    e.date === entry.date &&
-                    e.score === entry.score
+                    e.name === entry.name && 
+                    e.score === entry.score &&
+                    (e.timestamp === entry.timestamp || e.date === entry.date)
                 );
                 if (!exists) {
                     merged.push(entry);
@@ -1731,62 +1731,30 @@
             
             try {
                 const snapshot = await leaderboardRef.once('value');
+                const cloudData = snapshot.exists() ? snapshot.val() : {};
                 
-                if (snapshot.exists()) {
-                    const data = snapshot.val();
-                    console.log('Leaderboard raw data:', data);
+                const dedupedData = await deduplicateCloudData(cloudData);
+                
+                await syncLocalToCloud(dedupedData);
+                
+                const freshSnapshot = await leaderboardRef.once('value');
+                if (freshSnapshot.exists()) {
+                    const freshData = freshSnapshot.val();
+                    const freshDeduped = await deduplicateCloudData(freshData);
                     
-                    const dedupedData = await deduplicateCloudData(data);
-                    
-                    const cloudData = {
-                        easy: dedupedData.easy ? dedupedData.easy.sort((a, b) => b.score - a.score).slice(0, 10) : [],
-                        normal: dedupedData.normal ? dedupedData.normal.sort((a, b) => b.score - a.score).slice(0, 10) : [],
-                        hard: dedupedData.hard ? dedupedData.hard.sort((a, b) => b.score - a.score).slice(0, 10) : []
+                    stats.leaderboards = {
+                        easy: freshDeduped.easy ? freshDeduped.easy.sort((a, b) => b.score - a.score).slice(0, 10) : [],
+                        normal: freshDeduped.normal ? freshDeduped.normal.sort((a, b) => b.score - a.score).slice(0, 10) : [],
+                        hard: freshDeduped.hard ? freshDeduped.hard.sort((a, b) => b.score - a.score).slice(0, 10) : []
                     };
-                    
-                    console.log('Processed cloud data:', cloudData);
-                    
-                    await syncLocalToCloud(dedupedData);
-                    
-                    const freshSnapshot = await leaderboardRef.once('value');
-                    if (freshSnapshot.exists()) {
-                        const freshData = freshSnapshot.val();
-                        const freshDeduped = await deduplicateCloudData(freshData);
-                        
-                        stats.leaderboards = {
-                            easy: freshDeduped.easy ? freshDeduped.easy.sort((a, b) => b.score - a.score).slice(0, 10) : [],
-                            normal: freshDeduped.normal ? freshDeduped.normal.sort((a, b) => b.score - a.score).slice(0, 10) : [],
-                            hard: freshDeduped.hard ? freshDeduped.hard.sort((a, b) => b.score - a.score).slice(0, 10) : []
-                        };
-                    } else {
-                        stats.leaderboards = { easy: [], normal: [], hard: [] };
-                    }
-                    
-                    saveStats();
-                    cloudLeaderboards = { ...stats.leaderboards };
-                    
-                    console.log('Local leaderboard replaced with cloud data:', stats.leaderboards);
                 } else {
-                    console.log('No cloud data exists, syncing local to cloud');
-                    await syncLocalToCloud({});
-                    
-                    const freshSnapshot = await leaderboardRef.once('value');
-                    if (freshSnapshot.exists()) {
-                        const freshData = freshSnapshot.val();
-                        const freshDeduped = await deduplicateCloudData(freshData);
-                        
-                        stats.leaderboards = {
-                            easy: freshDeduped.easy ? freshDeduped.easy.sort((a, b) => b.score - a.score).slice(0, 10) : [],
-                            normal: freshDeduped.normal ? freshDeduped.normal.sort((a, b) => b.score - a.score).slice(0, 10) : [],
-                            hard: freshDeduped.hard ? freshDeduped.hard.sort((a, b) => b.score - a.score).slice(0, 10) : []
-                        };
-                    } else {
-                        stats.leaderboards = { easy: [], normal: [], hard: [] };
-                    }
-                    
-                    saveStats();
-                    cloudLeaderboards = { ...stats.leaderboards };
+                    stats.leaderboards = { easy: [], normal: [], hard: [] };
                 }
+                
+                saveStats();
+                cloudLeaderboards = { ...stats.leaderboards };
+                
+                console.log('Local leaderboard synced with cloud data:', stats.leaderboards);
             } catch (e) {
                 console.error('Failed to fetch leaderboard:', e);
                 leaderboardSynced = false;
@@ -1794,13 +1762,14 @@
         }
         
         async function deduplicateCloudData(cloudData) {
-            if (!db) return cloudData;
+            if (!db) return cloudData || { easy: [], normal: [], hard: [] };
             
             const difficulties = ['easy', 'normal', 'hard'];
             const result = {};
+            const allRemovePromises = [];
             
             for (const difficulty of difficulties) {
-                if (!cloudData[difficulty]) {
+                if (!cloudData || !cloudData[difficulty]) {
                     result[difficulty] = [];
                     continue;
                 }
@@ -1821,16 +1790,20 @@
                 
                 if (keysToRemove.length > 0) {
                     console.log(`Removing ${keysToRemove.length} duplicate records from cloud ${difficulty}`);
-                    for (const key of keysToRemove) {
-                        try {
-                            await db.ref(`leaderboards/${difficulty}/${key}`).remove();
-                        } catch (e) {
-                            console.error('Failed to remove duplicate:', e);
-                        }
-                    }
+                    keysToRemove.forEach(key => {
+                        allRemovePromises.push(
+                            db.ref(`leaderboards/${difficulty}/${key}`).remove().catch(e => 
+                                console.error('Failed to remove duplicate:', e)
+                            )
+                        );
+                    });
                 }
                 
                 result[difficulty] = Array.from(recordMap.values()).map(item => item.record);
+            }
+            
+            if (allRemovePromises.length > 0) {
+                await Promise.all(allRemovePromises);
             }
             
             return result;
@@ -1840,7 +1813,7 @@
             if (!db) return;
             
             const difficulties = ['easy', 'normal', 'hard'];
-            let syncedCount = 0;
+            const allSyncPromises = [];
             
             for (const difficulty of difficulties) {
                 const localRecords = stats.leaderboards[difficulty] || [];
@@ -1865,21 +1838,22 @@
                     );
                     
                     if (!existsInCloud) {
-                        try {
-                            const difficultyRef = db.ref('leaderboards/' + difficulty);
-                            const newEntryRef = difficultyRef.push();
-                            await newEntryRef.set(localRecord);
-                            syncedCount++;
-                            console.log(`Synced local record to cloud: ${difficulty}`, localRecord);
-                        } catch (e) {
-                            console.error('Failed to sync local record:', e);
-                        }
+                        const difficultyRef = db.ref('leaderboards/' + difficulty);
+                        const newEntryRef = difficultyRef.push();
+                        allSyncPromises.push(
+                            newEntryRef.set(localRecord).then(() => {
+                                console.log(`Synced local record to cloud: ${difficulty}`, localRecord);
+                            }).catch(e => {
+                                console.error('Failed to sync local record:', e);
+                            })
+                        );
                     }
                 }
             }
             
-            if (syncedCount > 0) {
-                console.log(`Synced ${syncedCount} local records to cloud`);
+            if (allSyncPromises.length > 0) {
+                await Promise.all(allSyncPromises);
+                console.log(`Synced ${allSyncPromises.length} local records to cloud`);
             }
         }
 
@@ -4328,8 +4302,12 @@
 
         function toggleSidebar() {
             if (elements.sidebar && elements.sidebarOverlay) {
-                elements.sidebar.classList.toggle('open');
+                const isOpen = elements.sidebar.classList.toggle('open');
                 elements.sidebarOverlay.classList.toggle('active');
+                if (elements.mobileNavToggle) {
+                    elements.mobileNavToggle.setAttribute('aria-expanded', isOpen);
+                }
+                document.body.style.overflow = isOpen ? 'hidden' : '';
             }
         }
 
@@ -4337,6 +4315,10 @@
             if (elements.sidebar && elements.sidebarOverlay) {
                 elements.sidebar.classList.remove('open');
                 elements.sidebarOverlay.classList.remove('active');
+                if (elements.mobileNavToggle) {
+                    elements.mobileNavToggle.setAttribute('aria-expanded', 'false');
+                }
+                document.body.style.overflow = '';
             }
         }
 
