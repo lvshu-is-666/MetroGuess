@@ -1647,17 +1647,25 @@
         let cloudLeaderboards = { easy: [], normal: [], hard: [] };
 
         function initFirebase() {
-            if (mpState.connected || typeof firebase !== 'undefined') {
-                if (typeof firebase !== 'undefined' && !firebase.apps.length) {
+            if (mpState.connected) {
+                return;
+            }
+            
+            const initCore = () => {
+                if (!firebase.apps.length) {
                     firebase.initializeApp(MULTIPLAYER_CONFIG);
-                    db = firebase.database();
-                    mpState.connected = true;
-                    mpState.playerId = localStorage.getItem('mp_player_id') || generatePlayerId();
-                    localStorage.setItem('mp_player_id', mpState.playerId);
-                    console.log('Firebase initialized successfully');
-                    loadOnlineRooms();
-                    initLeaderboardListener();
                 }
+                db = firebase.database();
+                mpState.connected = true;
+                mpState.playerId = localStorage.getItem('mp_player_id') || generatePlayerId();
+                localStorage.setItem('mp_player_id', mpState.playerId);
+                console.log('Firebase initialized successfully');
+                loadOnlineRooms();
+                initLeaderboardListener();
+            };
+            
+            if (typeof firebase !== 'undefined') {
+                initCore();
                 return;
             }
             
@@ -1676,16 +1684,7 @@
                 loadScript('https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js'),
                 loadScript('https://www.gstatic.com/firebasejs/10.7.0/firebase-database-compat.js')
             ]).then(() => {
-                if (typeof firebase !== 'undefined' && !firebase.apps.length) {
-                    firebase.initializeApp(MULTIPLAYER_CONFIG);
-                    db = firebase.database();
-                    mpState.connected = true;
-                    mpState.playerId = localStorage.getItem('mp_player_id') || generatePlayerId();
-                    localStorage.setItem('mp_player_id', mpState.playerId);
-                    console.log('Firebase initialized successfully');
-                    loadOnlineRooms();
-                    initLeaderboardListener();
-                }
+                initCore();
             }).catch(e => {
                 console.log('Firebase load failed, running in offline mode:', e);
             });
