@@ -15,6 +15,7 @@
     },
     "quizzes": {
       ".read": true,
+      ".indexOn": ["isPublic"],
       "$quizId": {
         ".write": true
       }
@@ -23,6 +24,13 @@
       "$quizId": {
         ".read": true,
         ".write": true
+      }
+    },
+    "leaderboards": {
+      ".read": true,
+      "$difficulty": {
+        ".write": true,
+        ".indexOn": ["score"]
       }
     }
   }
