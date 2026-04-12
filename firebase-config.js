@@ -32,30 +32,54 @@ const FirebaseConfig = {
     },
     
     async init() {
-        if (this.initialized) return true;
-        
-        if (typeof firebase !== 'undefined' && firebase.apps.length) {
-            this.db = firebase.database();
-            this.initialized = true;
-            return true;
-        }
+        if (this.initialized && this.db) return true;
         
         try {
             await this.loadFirebaseScripts();
             
-            if (typeof firebase !== 'undefined' && !firebase.apps.length) {
-                firebase.initializeApp(this.config);
-                this.db = firebase.database();
-                this.initialized = true;
-                console.log('Firebase initialized successfully');
-                return true;
+            if (typeof firebase === 'undefined') {
+                throw new Error('Firebase SDK 加载失败');
             }
+            
+            await this.waitForFirebaseModules();
+            
+            if (!firebase.apps.length) {
+                firebase.initializeApp(this.config);
+            }
+            
+            if (typeof firebase.database !== 'function') {
+                throw new Error('Firebase Database 模块未加载');
+            }
+            
+            this.db = firebase.database();
+            this.initialized = true;
+            console.log('Firebase initialized successfully');
+            return true;
         } catch (e) {
             console.error('Firebase initialization failed:', e);
+            this.initialized = false;
+            this.db = null;
             return false;
         }
-        
-        return false;
+    },
+    
+    waitForFirebaseModules(maxRetries = 50, interval = 100) {
+        return new Promise((resolve, reject) => {
+            let retries = 0;
+            
+            const check = () => {
+                if (typeof firebase !== 'undefined' && typeof firebase.database === 'function') {
+                    resolve();
+                } else if (retries < maxRetries) {
+                    retries++;
+                    setTimeout(check, interval);
+                } else {
+                    reject(new Error('Firebase 模块加载超时'));
+                }
+            };
+            
+            check();
+        });
     },
     
     loadFirebaseScripts() {
@@ -67,17 +91,15 @@ const FirebaseConfig = {
                 }
                 const script = document.createElement('script');
                 script.src = src;
-                script.async = true;
+                script.async = false;
                 script.onload = resolve;
-                script.onerror = reject;
+                script.onerror = () => reject(new Error(`Failed to load script: ${src}`));
                 document.head.appendChild(script);
             });
         };
         
-        return Promise.all([
-            loadScript('https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js'),
-            loadScript('https://www.gstatic.com/firebasejs/10.7.0/firebase-database-compat.js')
-        ]);
+        return loadScript('https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js')
+            .then(() => loadScript('https://www.gstatic.com/firebasejs/10.7.0/firebase-database-compat.js'));
     },
     
     async createQuiz(quizData) {
