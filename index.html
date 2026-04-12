@@ -129,6 +129,10 @@
 
     <div id="toast-container" class="fixed top-[72px] right-4 z-[99999] space-y-2" role="alert" aria-live="polite"></div>
 
+    <div id="sticky-progress-container">
+        <div id="sticky-progress-fill" class="progress-fill"></div>
+    </div>
+
     <div class="mobile-nav-bar">
         <button id="mobile-nav-toggle" class="mobile-nav-toggle" aria-label="打开导航菜单">
             <div class="hamburger-icon">
@@ -3094,6 +3098,54 @@
             }
             
             initStickyInput();
+            initStickyProgress();
+        }
+        
+        let stickyProgressState = {
+            initialized: false,
+            observer: null
+        };
+        
+        function initStickyProgress() {
+            const stickyProgressContainer = $('sticky-progress-container');
+            const progressGroup = document.querySelector('.progress-group');
+            
+            if (!stickyProgressContainer || !progressGroup) {
+                return;
+            }
+            
+            function updateStickyProgressVisibility() {
+                const progressGroupRect = progressGroup.getBoundingClientRect();
+                const isProgressGroupVisible = progressGroupRect.bottom > 0 && progressGroupRect.top < window.innerHeight;
+                
+                if (isProgressGroupVisible) {
+                    stickyProgressContainer.classList.remove('visible');
+                } else {
+                    stickyProgressContainer.classList.add('visible');
+                }
+            }
+            
+            if (!stickyProgressState.initialized) {
+                stickyProgressState.initialized = true;
+                
+                let scrollTicking = false;
+                const throttledScrollHandler = () => {
+                    if (!scrollTicking) {
+                        requestAnimationFrame(() => {
+                            updateStickyProgressVisibility();
+                            scrollTicking = false;
+                        });
+                        scrollTicking = true;
+                    }
+                };
+                
+                window.addEventListener('scroll', throttledScrollHandler, { passive: true });
+                window.addEventListener('resize', throttledScrollHandler, { passive: true });
+                
+                setTimeout(updateStickyProgressVisibility, 100);
+            }
+            
+            requestAnimationFrame(updateStickyProgressVisibility);
         }
         
         let stickyInputState = {
@@ -3688,6 +3740,9 @@
             const mobileProgressText = document.getElementById('progress-text-mobile');
             if (mobileProgressBar) mobileProgressBar.style.width = `${percent}%`;
             if (mobileProgressText) mobileProgressText.textContent = `${solved}/${total}`;
+            // Update sticky progress bar
+            const stickyProgressFill = document.getElementById('sticky-progress-fill');
+            if (stickyProgressFill) stickyProgressFill.style.width = `${percent}%`;
         }
 
         function renderStations() {

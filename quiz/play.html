@@ -481,6 +481,11 @@
         </footer>
     </main>
 
+    <!-- 固定进度条 -->
+    <div id="sticky-progress-container">
+        <div id="sticky-progress-bar" class="progress-fill" style="width: 0%"></div>
+    </div>
+
     <!-- 粘性输入框 -->
     <div id="sticky-input-container">
         <div class="sticky-input-wrapper">
@@ -592,6 +597,13 @@
         const stickyInputState = {
             initialized: false,
             isInputAreaVisible: true,
+            observer: null
+        };
+
+        // 固定进度条状态
+        const stickyProgressState = {
+            initialized: false,
+            isProgressVisible: true,
             observer: null
         };
 
@@ -793,6 +805,70 @@
             updateStickyVisibility();
         }
 
+        function initStickyProgress() {
+            const gameSettings = $('game-settings');
+            const stickyProgressContainer = $('sticky-progress-container');
+            const stickyProgressBar = $('sticky-progress-bar');
+
+            if (!gameSettings || !stickyProgressContainer) {
+                return;
+            }
+
+            function updateStickyProgressVisibility() {
+                const gameSettingsHidden = gameSettings.offsetParent === null ||
+                    gameSettings.classList.contains('hidden') ||
+                    gameState.gameWon;
+
+                if (gameSettingsHidden) {
+                    stickyProgressContainer.classList.remove('visible');
+                    return;
+                }
+
+                if (stickyProgressState.isProgressVisible) {
+                    stickyProgressContainer.classList.remove('visible');
+                } else {
+                    stickyProgressContainer.classList.add('visible');
+                }
+            }
+
+            if (!stickyProgressState.initialized) {
+                stickyProgressState.initialized = true;
+
+                if (stickyProgressState.observer) {
+                    stickyProgressState.observer.disconnect();
+                }
+                
+                stickyProgressState.observer = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        stickyProgressState.isProgressVisible = entry.isIntersecting && entry.intersectionRatio > 0.1;
+                        updateStickyProgressVisibility();
+                    });
+                }, {
+                    root: null,
+                    rootMargin: '0px',
+                    threshold: [0.1]
+                });
+
+                stickyProgressState.observer.observe(gameSettings);
+
+                let scrollTicking = false;
+                const throttledScrollHandler = () => {
+                    if (!scrollTicking) {
+                        requestAnimationFrame(() => {
+                            updateStickyProgressVisibility();
+                            scrollTicking = false;
+                        });
+                        scrollTicking = true;
+                    }
+                };
+
+                window.addEventListener('resize', throttledScrollHandler, { passive: true });
+                window.addEventListener('scroll', throttledScrollHandler, { passive: true });
+            }
+
+            updateStickyProgressVisibility();
+        }
+
         const DEV_MODE_KEY = 'metro_dev_session';
         
         function generateDevSessionKey() {
@@ -974,6 +1050,7 @@
             renderKeyboard();
             startTimer();
             initStickyInput();
+            initStickyProgress();
 
             FirebaseConfig.incrementPlayCount(quizId);
             FirebaseConfig.listenToQuizLeaderboard(quizId, updateLeaderboard);
@@ -1299,6 +1376,11 @@
 
             $('progress-text').textContent = `${solved}/${total}`;
             $('progress-bar').style.width = `${percent}%`;
+            
+            const stickyProgressBar = $('sticky-progress-bar');
+            if (stickyProgressBar) {
+                stickyProgressBar.style.width = `${percent}%`;
+            }
         }
 
         function startTimer() {
@@ -1466,6 +1548,7 @@
             updateScore();
             startTimer();
             initStickyInput();
+            initStickyProgress();
         }
 
         function escapeHtml(text) {

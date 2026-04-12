@@ -1021,3 +1021,8 @@ body {
     transform: none;
   }
 }
+
+/* Toast 容器 - 确保显示在所有元素之上 */
+#toast-container {
+  z-index: 10002 !important;
+}

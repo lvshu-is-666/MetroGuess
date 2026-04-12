@@ -373,6 +373,42 @@ h1, h2, h3, h4, h5, h6, .font-display {
     transition: width 0.35s ease-out;
 }
 
+.progress-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.progress-group-mobile {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.progress-label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.875rem;
+    color: #475569;
+    font-weight: 500;
+}
+
+.progress-bar-container {
+    background: rgba(129, 140, 248, 0.15);
+    border-radius: 9999px;
+    height: 8px;
+    overflow: hidden;
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.progress-bar-container .progress-bar {
+    height: 100%;
+    border-radius: 9999px;
+    background: linear-gradient(90deg, #10B981, #34D399);
+    box-shadow: 0 0 8px rgba(16, 185, 129, 0.4);
+}
+
 /* 猜测记录 - 统一 */
 .guess-item, .guess-history-item {
     background: linear-gradient(145deg, rgba(255, 255, 255, 0.9) 0%, rgba(248, 250, 252, 0.8) 100%);
@@ -1373,6 +1409,45 @@ h1, h2, h3, h4, h5, h6, .font-display {
     background: var(--input-bg);
     border-color: rgba(71, 85, 105, 0.5);
     color: #e2e8f0;
+}
+
+/* ========== 固定进度条 ========== */
+
+#sticky-progress-container {
+    position: fixed;
+    top: 60px;
+    left: 0;
+    right: 0;
+    height: 6px;
+    background: rgba(129, 140, 248, 0.15);
+    z-index: 89;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-100%);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 2px 8px rgba(79, 70, 229, 0.1);
+}
+
+#sticky-progress-container.visible {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+#sticky-progress-container .progress-fill {
+    height: 100%;
+    border-radius: 0;
+    box-shadow: 0 0 12px rgba(79, 70, 229, 0.5);
+}
+
+.dark #sticky-progress-container {
+    background: rgba(71, 85, 105, 0.3);
+}
+
+@media (min-width: 1024px) {
+    #sticky-progress-container {
+        top: 56px;
+    }
 }
 
 /* ========== 粘性输入框 ========== */
