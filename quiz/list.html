@@ -306,9 +306,7 @@
         <section class="clay-card p-4 sm:p-5 mb-6 animate-fade-in-up stagger-2">
             <div class="flex flex-col sm:flex-row gap-4 sm:gap-3 items-stretch sm:items-center justify-between">
                 <div class="flex flex-wrap gap-2 sm:gap-3 flex-1">
-                    <select id="filter-city" class="clay-select px-3 sm:px-4 py-2.5 text-sm flex-1 sm:flex-none sm:min-w-[120px] cursor-pointer">
-                        <option value="all">全部城市</option>
-                    </select>
+                    <div id="filter-city-container" class="flex-1 sm:flex-none sm:min-w-[120px]"></div>
                     <select id="filter-difficulty" class="clay-select px-3 sm:px-4 py-2.5 text-sm flex-1 sm:flex-none sm:min-w-[100px] cursor-pointer">
                         <option value="all">全部难度</option>
                         <option value="easy">简单</option>
@@ -382,22 +380,21 @@
         let pendingQuizId = null;
         let keySequence = '';
         let keyTimeout = null;
-        
-        const CITIES = [
-            '北京', '上海', '广州', '深圳', '成都', '杭州', '南京', '武汉', 
-            '西安', '重庆', '天津', '苏州', '郑州', '长沙', '沈阳', '青岛',
-            '大连', '宁波', '厦门', '无锡', '福州', '合肥', '昆明', '哈尔滨',
-            '济南', '佛山', '长春', '石家庄', '南宁', '贵阳', '兰州', '太原'
-        ];
+        let currentCityFilter = 'all';
         
         function initCityFilter() {
-            const select = $('filter-city');
-            CITIES.forEach(city => {
-                const option = document.createElement('option');
-                option.value = city;
-                option.textContent = city;
-                select.appendChild(option);
-            });
+            if (typeof MetroCommon !== 'undefined' && MetroCommon.initModernCitySelector) {
+                MetroCommon.initModernCitySelector('filter-city-container', {
+                    selectedValue: 'all',
+                    showAllOption: true,
+                    allText: '全部城市',
+                    size: 'compact',
+                    onChange: (value) => {
+                        currentCityFilter = value;
+                        loadQuizzes();
+                    }
+                });
+            }
         }
         
         function initTheme() {
@@ -419,7 +416,7 @@
                 await FirebaseConfig.init();
                 
                 const filters = {
-                    city: $('filter-city').value,
+                    city: currentCityFilter,
                     difficulty: $('filter-difficulty').value,
                     sortBy: $('filter-sort').value
                 };
@@ -631,7 +628,6 @@
         }
         
         function setupEventListeners() {
-            $('filter-city').addEventListener('change', loadQuizzes);
             $('filter-difficulty').addEventListener('change', loadQuizzes);
             $('filter-sort').addEventListener('change', loadQuizzes);
             

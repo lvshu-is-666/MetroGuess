@@ -10,11 +10,89 @@ const MetroCommon = {
     },
     
     CITIES: [
-        '北京', '上海', '广州', '深圳', '成都', '杭州', '南京', '武汉', 
-        '西安', '重庆', '天津', '苏州', '郑州', '长沙', '沈阳', '青岛',
-        '大连', '宁波', '厦门', '无锡', '福州', '合肥', '昆明', '哈尔滨',
-        '济南', '佛山', '长春', '石家庄', '南宁', '贵阳', '兰州', '太原'
+        '北京', '上海', '广州', '深圳',
+        '澳门', '长春', '长沙', '成都', '重庆', '常州',
+        '大连', '东莞',
+        '福州',
+        '贵阳', '高雄',
+        '杭州', '合肥', '呼和浩特', '哈尔滨',
+        '金华', '济南',
+        '昆明',
+        '兰州', '洛阳',
+        '南京', '南昌', '南宁', '宁波', '南通',
+        '青岛',
+        '沈阳', '石家庄', '苏州',
+        '台北', '天津', '太原', '台州', '台中',
+        '乌鲁木齐',
+        '无锡', '温州', '芜湖', '武汉',
+        '香港', '厦门', '西安', '徐州',
+        '郑州'
     ],
+    
+    POPULAR_CITIES: ['北京', '上海', '广州', '深圳'],
+    
+    OTHER_CITIES: [
+        '澳门', '长春', '长沙', '成都', '重庆', '常州',
+        '大连', '东莞',
+        '福州',
+        '贵阳', '高雄',
+        '杭州', '合肥', '呼和浩特', '哈尔滨',
+        '金华', '济南',
+        '昆明',
+        '兰州', '洛阳',
+        '南京', '南昌', '南宁', '宁波', '南通',
+        '青岛',
+        '沈阳', '石家庄', '苏州',
+        '台北', '天津', '太原', '台州', '台中',
+        '乌鲁木齐',
+        '无锡', '温州', '芜湖', '武汉',
+        '香港', '厦门', '西安', '徐州',
+        '郑州'
+    ],
+
+    // 城市拼音首字母映射（用于音序排序和字母索引）
+    CITY_PINYIN_MAP: {
+        '北京': 'B', '上海': 'S', '广州': 'G', '深圳': 'S',
+        '澳门': 'A', '长春': 'C', '长沙': 'C', '成都': 'C', '重庆': 'C', '常州': 'C',
+        '大连': 'D', '东莞': 'D',
+        '福州': 'F',
+        '贵阳': 'G', '高雄': 'G',
+        '杭州': 'H', '合肥': 'H', '呼和浩特': 'H', '哈尔滨': 'H',
+        '金华': 'J', '济南': 'J',
+        '昆明': 'K',
+        '兰州': 'L', '洛阳': 'L',
+        '南京': 'N', '南昌': 'N', '南宁': 'N', '宁波': 'N', '南通': 'N',
+        '青岛': 'Q',
+        '沈阳': 'S', '石家庄': 'S', '苏州': 'S',
+        '台北': 'T', '天津': 'T', '太原': 'T', '台州': 'T', '台中': 'T',
+        '乌鲁木齐': 'W',
+        '无锡': 'W', '温州': 'W', '芜湖': 'W', '武汉': 'W',
+        '香港': 'X', '厦门': 'X', '西安': 'X', '徐州': 'X',
+        '郑州': 'Z'
+    },
+
+    // 获取按拼音首字母分组的城市
+    getCitiesGroupedByPinyin() {
+        const groups = {};
+        const allCities = [...this.CITIES];
+        
+        // 按拼音首字母分组
+        allCities.forEach(city => {
+            const letter = this.CITY_PINYIN_MAP[city] || '#';
+            if (!groups[letter]) {
+                groups[letter] = [];
+            }
+            groups[letter].push(city);
+        });
+        
+        // 按字母顺序返回
+        return Object.keys(groups)
+            .sort()
+            .map(letter => ({
+                letter,
+                cities: groups[letter]
+            }));
+    },
     
     initTheme() {
         this.initDarkMode();
@@ -449,6 +527,413 @@ const MetroCommon = {
         text += `\n点击链接开始挑战：\n${quizUrl}`;
         
         return text;
+    },
+    
+    initModernCitySelector(containerId, options = {}) {
+        const container = this.$(containerId);
+        if (!container) return;
+
+        const {
+            selectedValue = 'all',
+            showAllOption = true,
+            allText = '全部城市',
+            onChange = null,
+            placeholder = '搜索城市...',
+            size = 'default'
+        } = options;
+
+        const wrapper = document.createElement('div');
+        wrapper.className = `city-selector-wrapper size-${size}`;
+        wrapper.id = `${containerId}-wrapper`;
+
+        const trigger = document.createElement('div');
+        trigger.className = 'city-selector-trigger';
+        trigger.setAttribute('role', 'button');
+        trigger.setAttribute('tabindex', '0');
+        trigger.setAttribute('aria-haspopup', 'listbox');
+        trigger.setAttribute('aria-expanded', 'false');
+        trigger.innerHTML = `
+            <span class="selected-city">${selectedValue === 'all' ? allText : selectedValue}</span>
+            <svg class="chevron-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+        `;
+
+        wrapper.appendChild(trigger);
+
+        container.innerHTML = '';
+        container.appendChild(wrapper);
+
+        let dropdown = this.$('city-selector-dropdown-portal');
+        if (!dropdown) {
+            dropdown = document.createElement('div');
+            dropdown.id = 'city-selector-dropdown-portal';
+            dropdown.className = 'city-selector-dropdown';
+            dropdown.setAttribute('role', 'listbox');
+            document.body.appendChild(dropdown);
+        }
+
+        dropdown.innerHTML = `
+            <div class="city-selector-search">
+                <input type="text" placeholder="${placeholder}" autocomplete="off">
+                <button class="search-clear-btn" type="button" aria-label="清除搜索">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+            <div class="city-selector-content">
+                <div class="city-selector-list"></div>
+                <div class="city-selector-alphabet">
+                    <div class="alphabet-nav"></div>
+                </div>
+            </div>
+            <div class="city-selector-footer">共 ${this.CITIES.length} 个城市</div>
+        `;
+
+        const list = dropdown.querySelector('.city-selector-list');
+        const alphabetNav = dropdown.querySelector('.alphabet-nav');
+        const searchInput = dropdown.querySelector('input');
+        const clearBtn = dropdown.querySelector('.search-clear-btn');
+        let highlightedIndex = -1;
+        let currentCity = selectedValue;
+        let isOpen = false;
+        
+        // 搜索清除按钮功能
+        const updateClearBtn = () => {
+            if (searchInput.value.length > 0) {
+                clearBtn.classList.add('visible');
+            } else {
+                clearBtn.classList.remove('visible');
+            }
+        };
+        
+        clearBtn.addEventListener('click', () => {
+            searchInput.value = '';
+            searchInput.focus();
+            renderCities('');
+            updateClearBtn();
+        });
+        
+        searchInput.addEventListener('input', () => {
+            updateClearBtn();
+        });
+
+        // 获取按拼音分组的城市
+        const groupedCities = this.getCitiesGroupedByPinyin();
+        const allLetters = groupedCities.map(g => g.letter);
+
+        // 渲染字母导航
+        const renderAlphabetNav = () => {
+            alphabetNav.innerHTML = '';
+            allLetters.forEach(letter => {
+                const letterEl = document.createElement('div');
+                letterEl.className = 'alphabet-letter';
+                letterEl.textContent = letter;
+                letterEl.setAttribute('data-letter', letter);
+                letterEl.addEventListener('click', () => {
+                    // 更新active状态
+                    alphabetNav.querySelectorAll('.alphabet-letter').forEach(el => {
+                        el.classList.remove('active');
+                    });
+                    letterEl.classList.add('active');
+                    
+                    const section = list.querySelector(`[data-section="${letter}"]`);
+                    if (section) {
+                        section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }
+                    
+                    // 300ms后移除active状态
+                    setTimeout(() => {
+                        letterEl.classList.remove('active');
+                    }, 300);
+                });
+                alphabetNav.appendChild(letterEl);
+            });
+        };
+        
+        // 监听滚动更新当前字母
+        const updateActiveLetterOnScroll = () => {
+            const groups = list.querySelectorAll('.city-selector-group[data-section]');
+            let currentLetter = '';
+            
+            groups.forEach(group => {
+                const rect = group.getBoundingClientRect();
+                const listRect = list.getBoundingClientRect();
+                if (rect.top <= listRect.top + 20) {
+                    currentLetter = group.getAttribute('data-section');
+                }
+            });
+            
+            if (currentLetter && currentLetter !== '热门') {
+                alphabetNav.querySelectorAll('.alphabet-letter').forEach(el => {
+                    el.classList.toggle('active', el.getAttribute('data-letter') === currentLetter);
+                });
+            }
+        };
+        
+        list.addEventListener('scroll', updateActiveLetterOnScroll, { passive: true });
+
+        // 渲染城市列表（网格布局 + 字母分组）
+        const renderCities = (filter = '') => {
+            list.innerHTML = '';
+            highlightedIndex = -1;
+
+            const filterLower = filter.toLowerCase();
+
+            // 搜索模式
+            if (filter) {
+                // 搜索时隐藏字母导航
+                alphabetNav.style.display = 'none';
+                dropdown.classList.add('search-mode');
+
+                if (showAllOption) {
+                    const allOption = document.createElement('div');
+                    allOption.className = `city-selector-all${currentCity === 'all' ? ' selected' : ''}`;
+                    allOption.setAttribute('role', 'option');
+                    allOption.setAttribute('data-value', 'all');
+                    allOption.textContent = allText;
+                    list.appendChild(allOption);
+                }
+
+                // 搜索所有城市
+                const filteredCities = this.CITIES.filter(city =>
+                    city.toLowerCase().includes(filterLower)
+                );
+
+                if (filteredCities.length > 0) {
+                    const searchGroup = document.createElement('div');
+                    searchGroup.className = 'city-selector-group';
+                    searchGroup.innerHTML = `<div class="city-selector-group-label">搜索结果</div>`;
+
+                    const grid = document.createElement('div');
+                    grid.className = 'city-selector-grid';
+
+                    filteredCities.forEach(city => {
+                        const option = document.createElement('div');
+                        option.className = `city-selector-option${currentCity === city ? ' selected' : ''}`;
+                        option.setAttribute('role', 'option');
+                        option.setAttribute('data-value', city);
+                        option.textContent = city;
+                        grid.appendChild(option);
+                    });
+
+                    searchGroup.appendChild(grid);
+                    list.appendChild(searchGroup);
+                } else {
+                    list.innerHTML = `<div class="city-selector-empty">未找到匹配的城市</div>`;
+                }
+                return;
+            }
+
+            // 非搜索模式 - 显示字母导航和分组
+            alphabetNav.style.display = 'flex';
+            dropdown.classList.remove('search-mode');
+
+            if (showAllOption) {
+                const allOption = document.createElement('div');
+                allOption.className = `city-selector-all${currentCity === 'all' ? ' selected' : ''}`;
+                allOption.setAttribute('role', 'option');
+                allOption.setAttribute('data-value', 'all');
+                allOption.textContent = allText;
+                list.appendChild(allOption);
+            }
+
+            // 常用城市
+            const filteredPopular = this.POPULAR_CITIES.filter(city =>
+                city.toLowerCase().includes(filterLower)
+            );
+
+            if (filteredPopular.length > 0) {
+                const popularGroup = document.createElement('div');
+                popularGroup.className = 'city-selector-group';
+                popularGroup.setAttribute('data-section', '热门');
+                popularGroup.innerHTML = `<div class="city-selector-group-label popular">⭐ 常用城市</div>`;
+
+                const grid = document.createElement('div');
+                grid.className = 'city-selector-grid';
+
+                filteredPopular.forEach(city => {
+                    const option = document.createElement('div');
+                    option.className = `city-selector-option${currentCity === city ? ' selected' : ''}`;
+                    option.setAttribute('role', 'option');
+                    option.setAttribute('data-value', city);
+                    option.textContent = city;
+                    grid.appendChild(option);
+                });
+
+                popularGroup.appendChild(grid);
+                list.appendChild(popularGroup);
+            }
+
+            // 按字母分组的城市
+            groupedCities.forEach(group => {
+                const groupEl = document.createElement('div');
+                groupEl.className = 'city-selector-group';
+                groupEl.setAttribute('data-section', group.letter);
+                groupEl.innerHTML = `<div class="city-selector-group-label"><span class="letter-badge">${group.letter}</span></div>`;
+
+                const grid = document.createElement('div');
+                grid.className = 'city-selector-grid';
+
+                group.cities.forEach(city => {
+                    const option = document.createElement('div');
+                    option.className = `city-selector-option${currentCity === city ? ' selected' : ''}`;
+                    option.setAttribute('role', 'option');
+                    option.setAttribute('data-value', city);
+                    option.textContent = city;
+                    grid.appendChild(option);
+                });
+
+                groupEl.appendChild(grid);
+                list.appendChild(groupEl);
+            });
+        };
+
+        const selectCity = (value) => {
+            currentCity = value;
+            const selectedCityEl = trigger.querySelector('.selected-city');
+            selectedCityEl.textContent = value === 'all' ? allText : value;
+
+            list.querySelectorAll('.city-selector-option, .city-selector-all').forEach(opt => {
+                opt.classList.toggle('selected', opt.getAttribute('data-value') === value);
+            });
+
+            closeDropdown();
+
+            if (onChange) {
+                onChange(value);
+            }
+
+            const originalSelect = this.$(containerId.replace('-modern-wrapper', ''));
+            if (originalSelect && originalSelect.tagName === 'SELECT') {
+                originalSelect.value = value;
+                originalSelect.dispatchEvent(new Event('change', { bubbles: true }));
+            }
+        };
+
+        const updatePosition = () => {
+            const rect = trigger.getBoundingClientRect();
+            dropdown.style.top = `${rect.bottom + 4}px`;
+            dropdown.style.left = `${rect.left}px`;
+            dropdown.style.minWidth = `${Math.max(320, rect.width)}px`;
+        };
+
+        const openDropdown = () => {
+            if (isOpen) return;
+            isOpen = true;
+            trigger.classList.add('active');
+            trigger.setAttribute('aria-expanded', 'true');
+            updatePosition();
+            dropdown.classList.add('open');
+            searchInput.focus();
+            renderCities();
+        };
+
+        const closeDropdown = () => {
+            if (!isOpen) return;
+            isOpen = false;
+            trigger.classList.remove('active');
+            trigger.setAttribute('aria-expanded', 'false');
+            dropdown.classList.remove('open');
+            searchInput.value = '';
+            // 重置为正常显示模式
+            renderCities();
+        };
+
+        const toggleDropdown = () => {
+            if (isOpen) {
+                closeDropdown();
+            } else {
+                openDropdown();
+            }
+        };
+
+        trigger.addEventListener('click', toggleDropdown);
+
+        trigger.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                toggleDropdown();
+            } else if (e.key === 'Escape') {
+                closeDropdown();
+            }
+        });
+
+        searchInput.addEventListener('input', (e) => {
+            renderCities(e.target.value);
+        });
+
+        searchInput.addEventListener('keydown', (e) => {
+            const options = list.querySelectorAll('.city-selector-option, .city-selector-all');
+
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                if (highlightedIndex < options.length - 1) {
+                    highlightedIndex++;
+                    updateHighlight(options);
+                }
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                if (highlightedIndex > 0) {
+                    highlightedIndex--;
+                    updateHighlight(options);
+                }
+            } else if (e.key === 'Enter' && highlightedIndex >= 0) {
+                e.preventDefault();
+                const selected = options[highlightedIndex];
+                if (selected) {
+                    selectCity(selected.getAttribute('data-value'));
+                }
+            } else if (e.key === 'Escape') {
+                closeDropdown();
+            }
+        });
+
+        const updateHighlight = (options) => {
+            options.forEach((opt, i) => {
+                opt.classList.toggle('highlighted', i === highlightedIndex);
+            });
+
+            if (highlightedIndex >= 0 && options[highlightedIndex]) {
+                options[highlightedIndex].scrollIntoView({ block: 'nearest' });
+            }
+        };
+
+        list.addEventListener('click', (e) => {
+            const option = e.target.closest('.city-selector-option, .city-selector-all');
+            if (option) {
+                selectCity(option.getAttribute('data-value'));
+            }
+        });
+
+        const handleClickOutside = (e) => {
+            if (!wrapper.contains(e.target) && !dropdown.contains(e.target)) {
+                closeDropdown();
+            }
+        };
+
+        document.addEventListener('click', handleClickOutside);
+
+        const handleScroll = () => {
+            if (isOpen) {
+                updatePosition();
+            }
+        };
+
+        window.addEventListener('scroll', handleScroll, { passive: true });
+        window.addEventListener('resize', handleScroll, { passive: true });
+
+        renderAlphabetNav();
+        renderCities();
+
+        return {
+            getValue: () => currentCity,
+            setValue: (value) => selectCity(value),
+            open: openDropdown,
+            close: closeDropdown
+        };
     }
 };
 

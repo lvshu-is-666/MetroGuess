@@ -421,18 +421,18 @@
                 <div class="actions-group">
                     <a id="btn-new-game" href="#" class="action-link text-blue-600">新游戏</a>
                     <a id="btn-hint" href="#" class="action-link text-purple-600">提示</a>
-                    <button id="toggle-settings" class="settings-btn" aria-label="展开设置">
-                        <svg id="settings-icon-expand" class="w-5 h-5 text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <button id="toggle-settings" class="settings-btn" aria-label="收起设置">
+                        <svg id="settings-icon-expand" class="w-5 h-5 text-slate-600 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
                         </svg>
-                        <svg id="settings-icon-collapse" class="w-5 h-5 text-slate-600 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <svg id="settings-icon-collapse" class="w-5 h-5 text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M5 15l7-7 7 7" />
                         </svg>
                     </button>
                 </div>
             </div>
             
-            <div id="settings-panel" class="hidden mt-3 pt-3 border-t border-slate-200/50">
+            <div id="settings-panel" class="mt-3 pt-3 border-t border-slate-200/50">
                 <div class="flex flex-col gap-3">
                     <div class="progress-group-mobile">
                         <div class="progress-label">
@@ -464,7 +464,8 @@
                         </div>
                         <div class="flex items-center gap-2">
                             <span class="text-sm font-medium text-slate-700">城市:</span>
-                            <select id="city-select" class="px-2.5 py-1 rounded-lg border border-slate-200 bg-white text-slate-700 text-xs cursor-pointer">
+                            <div id="city-select-modern"></div>
+                            <select id="city-select" class="hidden">
                                 <option value="all">全部城市</option>
                             </select>
                         </div>
@@ -1462,12 +1463,19 @@
         }
 
         function updateCitySelect() {
-            const cities = [...new Set(stationDatabase.map(s => s.city_cn))].sort();
-            elements.citySelect.innerHTML = '<option value="all">全部城市</option>';
-            cities.forEach(city => {
-                elements.citySelect.appendChild(createEl('option')).textContent = city;
-                elements.citySelect.lastChild.value = city;
-            });
+            if (typeof MetroCommon !== 'undefined' && MetroCommon.initModernCitySelector) {
+                MetroCommon.initModernCitySelector('city-select-modern', {
+                    selectedValue: 'all',
+                    showAllOption: true,
+                    allText: '全部城市',
+                    size: 'small',
+                    onChange: (value) => {
+                        gameState.selectedCity = value;
+                        stats.currentStreak = 0;
+                        startNewGame();
+                    }
+                });
+            }
         }
 
         let availableQuizzes = [];

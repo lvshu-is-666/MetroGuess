@@ -1038,7 +1038,8 @@
                         
                         <div>
                             <label class="block text-sm font-semibold text-slate-700 mb-2">题目范围</label>
-                            <select id="city-scope" class="clay-select w-full px-4 py-3 cursor-pointer">
+                            <div id="city-scope-modern"></div>
+                            <select id="city-scope" class="hidden">
                                 <option value="all">全国</option>
                             </select>
                         </div>
@@ -1642,20 +1643,37 @@
         }
         
         const CITIES = [
-            '北京', '上海', '广州', '深圳', '成都', '杭州', '南京', '武汉', 
-            '西安', '重庆', '天津', '苏州', '郑州', '长沙', '沈阳', '青岛',
-            '大连', '宁波', '厦门', '无锡', '福州', '合肥', '昆明', '哈尔滨',
-            '济南', '佛山', '长春', '石家庄', '南宁', '贵阳', '兰州', '太原'
+            '北京', '上海', '广州', '深圳',
+            '澳门', '长春', '长沙', '成都', '重庆', '常州',
+            '大连', '东莞',
+            '福州',
+            '贵阳', '高雄',
+            '杭州', '合肥', '呼和浩特', '哈尔滨',
+            '金华', '济南',
+            '昆明',
+            '兰州', '洛阳',
+            '南京', '南昌', '南宁', '宁波', '南通',
+            '青岛',
+            '沈阳', '石家庄', '苏州',
+            '台北', '天津', '太原', '台州', '台中',
+            '乌鲁木齐',
+            '无锡', '温州', '芜湖', '武汉',
+            '香港', '厦门', '西安', '徐州',
+            '郑州'
         ];
         
         function initCityScope() {
-            const select = $('city-scope');
-            CITIES.forEach(city => {
-                const option = document.createElement('option');
-                option.value = city;
-                option.textContent = city;
-                select.appendChild(option);
-            });
+            if (typeof MetroCommon !== 'undefined' && MetroCommon.initModernCitySelector) {
+                MetroCommon.initModernCitySelector('city-scope-modern', {
+                    selectedValue: 'all',
+                    showAllOption: true,
+                    allText: '全国',
+                    size: 'large',
+                    onChange: (value) => {
+                        filterQuestions();
+                    }
+                });
+            }
         }
         
         function initTheme() {
