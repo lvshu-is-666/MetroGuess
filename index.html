@@ -127,7 +127,7 @@
         document.body.scrollTop = 0;
     </script>
 
-    <div id="toast-container" class="fixed top-[72px] right-4 z-[950] space-y-2" role="alert" aria-live="polite"></div>
+    <div id="toast-container" class="fixed top-[72px] right-4 z-[99999] space-y-2" role="alert" aria-live="polite"></div>
 
     <div class="mobile-nav-bar">
         <button id="mobile-nav-toggle" class="mobile-nav-toggle" aria-label="打开导航菜单">
@@ -471,7 +471,8 @@
                         </div>
                         <div class="flex items-center gap-2">
                             <span class="text-sm font-medium text-slate-700">题组:</span>
-                            <select id="quiz-select" class="px-2.5 py-1 rounded-lg border border-slate-200 bg-white text-slate-700 text-xs cursor-pointer">
+                            <div id="quiz-select-modern"></div>
+                            <select id="quiz-select" class="hidden">
                                 <option value="all">随机选题</option>
                             </select>
                         </div>
@@ -725,16 +726,25 @@
         
         <div id="leaderboard-area" class="hidden">
             <div class="glass-panel rounded-2xl p-4 md:p-6 shadow-lg">
-                <h3 class="text-lg font-semibold text-slate-800 mb-4 flex items-center gap-2">
-                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path>
-                        <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path>
-                        <path d="M4 22h16"></path>
-                        <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"></path>
-                        <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"></path>
-                        <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"></path>
-                    </svg>
-                    排行榜
+                <h3 class="text-lg font-semibold text-slate-800 mb-4 flex items-center justify-between">
+                    <div class="flex items-center gap-2">
+                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path>
+                            <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path>
+                            <path d="M4 22h16"></path>
+                            <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"></path>
+                            <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"></path>
+                            <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"></path>
+                        </svg>
+                        排行榜
+                    </div>
+                    <button id="refresh-leaderboard" class="text-sm text-blue-500 hover:text-blue-600 flex items-center gap-1 px-2 py-1 rounded hover:bg-blue-50 transition-colors" title="刷新云端数据">
+                        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"></path>
+                            <path d="M21 3v5h-5"></path>
+                        </svg>
+                        刷新
+                    </button>
                 </h3>
                 <div class="flex gap-2 mb-4">
                     <button data-board="easy" class="leaderboard-tab px-3 py-1.5 rounded-lg text-sm font-medium border border-slate-200 bg-white text-slate-700 cursor-pointer">简单</button>
@@ -1479,6 +1489,7 @@
         }
 
         let availableQuizzes = [];
+        let quizSelectorInstance = null;
 
         async function loadQuizList() {
             try {
@@ -1501,6 +1512,21 @@
                 option.textContent = `${displayName} (${quiz.questions.length}题)`;
                 elements.quizSelect.appendChild(option);
             });
+
+            if (typeof MetroCommon !== 'undefined' && MetroCommon.initModernQuizSelector) {
+                quizSelectorInstance = MetroCommon.initModernQuizSelector('quiz-select-modern', {
+                    selectedValue: 'all',
+                    showAllOption: true,
+                    allText: '随机选题',
+                    size: 'small',
+                    quizzes: availableQuizzes,
+                    onChange: (value) => {
+                        gameState.selectedQuiz = value;
+                        stats.currentStreak = 0;
+                        startNewGame();
+                    }
+                });
+            }
         }
 
         function loadStats() {
@@ -1654,58 +1680,73 @@
         let leaderboardRef = null;
         let cloudLeaderboards = { easy: [], normal: [], hard: [] };
 
+        let firebaseInitPromise = null;
+        
         function initFirebase() {
             console.log('initFirebase called, mpState.connected:', mpState.connected);
             if (mpState.connected) {
                 console.log('Firebase already connected, skipping');
-                return;
+                return Promise.resolve(true);
             }
             
-            const initCore = () => {
-                console.log('initCore called, firebase.apps.length:', firebase.apps.length);
-                if (!firebase.apps.length) {
-                    firebase.initializeApp(MULTIPLAYER_CONFIG);
-                    console.log('Firebase app initialized');
+            if (firebaseInitPromise) {
+                console.log('Firebase initialization in progress, returning existing promise');
+                return firebaseInitPromise;
+            }
+            
+            firebaseInitPromise = new Promise((resolve) => {
+                const initCore = () => {
+                    console.log('initCore called, firebase.apps.length:', firebase.apps.length);
+                    if (!firebase.apps.length) {
+                        firebase.initializeApp(MULTIPLAYER_CONFIG);
+                        console.log('Firebase app initialized');
+                    }
+                    db = firebase.database();
+                    mpState.connected = true;
+                    mpState.playerId = localStorage.getItem('mp_player_id') || generatePlayerId();
+                    localStorage.setItem('mp_player_id', mpState.playerId);
+                    console.log('Firebase initialized successfully, db:', !!db);
+                    loadOnlineRooms();
+                    initLeaderboardListener();
+                    resolve(true);
+                };
+                
+                if (typeof firebase !== 'undefined') {
+                    console.log('Firebase already loaded, calling initCore directly');
+                    initCore();
+                    return;
                 }
-                db = firebase.database();
-                mpState.connected = true;
-                mpState.playerId = localStorage.getItem('mp_player_id') || generatePlayerId();
-                localStorage.setItem('mp_player_id', mpState.playerId);
-                console.log('Firebase initialized successfully, db:', !!db);
-                loadOnlineRooms();
-                initLeaderboardListener();
-            };
-            
-            if (typeof firebase !== 'undefined') {
-                console.log('Firebase already loaded, calling initCore directly');
-                initCore();
-                return;
-            }
-            
-            console.log('Loading Firebase scripts...');
-            const loadScript = (src) => {
-                return new Promise((resolve, reject) => {
-                    const script = document.createElement('script');
-                    script.src = src;
-                    script.async = true;
-                    script.onload = resolve;
-                    script.onerror = reject;
-                    document.head.appendChild(script);
+                
+                console.log('Loading Firebase scripts...');
+                const loadScript = (src) => {
+                    return new Promise((resolveScript, reject) => {
+                        const script = document.createElement('script');
+                        script.src = src;
+                        script.async = true;
+                        script.onload = resolveScript;
+                        script.onerror = reject;
+                        document.head.appendChild(script);
+                    });
+                };
+                
+                Promise.all([
+                    loadScript('https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js'),
+                    loadScript('https://www.gstatic.com/firebasejs/10.7.0/firebase-database-compat.js')
+                ]).then(() => {
+                    console.log('Firebase scripts loaded');
+                    initCore();
+                }).catch(e => {
+                    console.log('Firebase load failed, running in offline mode:', e);
+                    firebaseInitPromise = null;
+                    resolve(false);
                 });
-            };
-            
-            Promise.all([
-                loadScript('https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js'),
-                loadScript('https://www.gstatic.com/firebasejs/10.7.0/firebase-database-compat.js')
-            ]).then(() => {
-                console.log('Firebase scripts loaded');
-                initCore();
-            }).catch(e => {
-                console.log('Firebase load failed, running in offline mode:', e);
             });
+            
+            return firebaseInitPromise;
         }
 
         let leaderboardSynced = false;
+        let leaderboardLoading = false;
         
         function initLeaderboardListener() {
             console.log('initLeaderboardListener called, db:', !!db);
@@ -1718,10 +1759,32 @@
             console.log('Leaderboard listener set up (one-time sync on demand)');
         }
         
-        async function fetchAndSyncLeaderboard() {
-            if (!db) {
-                console.log('fetchAndSyncLeaderboard: db is null');
+        async function fetchAndSyncLeaderboard(forceRefresh = false) {
+            if (leaderboardLoading) {
+                console.log('fetchAndSyncLeaderboard: already loading, waiting...');
                 return;
+            }
+            
+            if (!db) {
+                console.log('fetchAndSyncLeaderboard: db is null, waiting for Firebase init...');
+                showLeaderboardLoading();
+                
+                const maxRetries = 3;
+                for (let i = 0; i < maxRetries; i++) {
+                    const success = await initFirebase();
+                    if (success && db) {
+                        console.log('Firebase initialized after', i + 1, 'attempts');
+                        break;
+                    }
+                    console.log('Firebase init attempt', i + 1, 'failed, retrying...');
+                    await new Promise(r => setTimeout(r, 500));
+                }
+                
+                if (!db) {
+                    console.log('fetchAndSyncLeaderboard: Firebase still not available');
+                    showLeaderboardError('网络连接失败，请刷新重试');
+                    return;
+                }
             }
             
             if (!leaderboardRef) {
@@ -1729,13 +1792,15 @@
                 leaderboardRef = db.ref('leaderboards');
             }
             
-            if (leaderboardSynced) {
+            if (leaderboardSynced && !forceRefresh) {
                 console.log('fetchAndSyncLeaderboard: already synced, skipping');
                 return;
             }
             
             console.log('Fetching leaderboard data from cloud...');
+            leaderboardLoading = true;
             leaderboardSynced = true;
+            showLeaderboardLoading();
             
             try {
                 const snapshot = await leaderboardRef.once('value');
@@ -1763,9 +1828,28 @@
                 cloudLeaderboards = { ...stats.leaderboards };
                 
                 console.log('Local leaderboard synced with cloud data:', stats.leaderboards);
+                hideLeaderboardLoading();
             } catch (e) {
                 console.error('Failed to fetch leaderboard:', e);
                 leaderboardSynced = false;
+                showLeaderboardError('获取云端数据失败，显示本地数据');
+            } finally {
+                leaderboardLoading = false;
+            }
+        }
+        
+        function showLeaderboardLoading() {
+            if (elements.leaderboardList) {
+                elements.leaderboardList.innerHTML = '<p class="text-slate-500 text-center py-4"><span class="inline-block animate-spin mr-2">⏳</span>正在加载云端数据...</p>';
+            }
+        }
+        
+        function hideLeaderboardLoading() {
+        }
+        
+        function showLeaderboardError(message) {
+            if (elements.leaderboardList) {
+                elements.leaderboardList.innerHTML = `<p class="text-amber-600 text-center py-4">⚠️ ${message}</p>`;
             }
         }
         
@@ -1883,9 +1967,8 @@
             
             if (!mpState.connected) {
                 showToast('正在连接服务器...', 'info');
-                initFirebase();
-                await new Promise(resolve => setTimeout(resolve, 1000));
-                if (!mpState.connected) {
+                const success = await initFirebase();
+                if (!success || !mpState.connected) {
                     showToast('连接失败，请检查网络', 'error');
                     return;
                 }
@@ -2965,13 +3048,11 @@
             initAudio();
             initMobileOptimizations();
             
-            initFirebase();
-            
-            setTimeout(async () => {
-                if (mpState.connected && db) {
+            initFirebase().then(async (success) => {
+                if (success && mpState.connected && db) {
                     await loadFromCloud();
                 }
-            }, 3000);
+            });
             
             handleRoute();
             
@@ -3712,7 +3793,12 @@
 
         function getDisplayText(stationName, revealedLetters, isSolved, devMode = false, revealedSpecialChars = null) {
             if (isSolved || devMode) {
-                return stationName;
+                return stationName.split('').map(char => {
+                    if (/[a-zA-Z]/.test(char)) {
+                        return `<span class="letter-reveal text-blue-600">${char}</span>`;
+                    }
+                    return char;
+                }).join('');
             }
             
             return stationName.split('').map(char => {
@@ -4509,8 +4595,7 @@
                 try {
                     if (!mpState.connected) {
                         console.log('saveScore: Firebase not connected, initializing...');
-                        initFirebase();
-                        await new Promise(resolve => setTimeout(resolve, 500));
+                        await initFirebase();
                     }
                     
                     if (db) {
@@ -4823,6 +4908,26 @@
             $all('.leaderboard-tab').forEach(tab => {
                 tab.addEventListener('click', () => renderLeaderboard(tab.dataset.board));
             });
+            
+            const refreshLeaderboardBtn = $('refresh-leaderboard');
+            if (refreshLeaderboardBtn) {
+                refreshLeaderboardBtn.addEventListener('click', async () => {
+                    const icon = refreshLeaderboardBtn.querySelector('svg');
+                    if (icon) {
+                        icon.classList.add('animate-spin');
+                    }
+                    leaderboardSynced = false;
+                    await fetchAndSyncLeaderboard(true);
+                    const currentTab = document.querySelector('.leaderboard-tab.active');
+                    if (currentTab) {
+                        renderLeaderboard(currentTab.dataset.board);
+                    }
+                    if (icon) {
+                        icon.classList.remove('animate-spin');
+                    }
+                    showToast('排行榜已刷新', 'success');
+                });
+            }
             
             const tutorialSkip = $('tutorial-skip');
             const tutorialPrev = $('tutorial-prev');

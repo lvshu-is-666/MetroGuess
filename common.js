@@ -251,7 +251,7 @@ const MetroCommon = {
     createToastContainer() {
         const container = document.createElement('div');
         container.id = 'toast-container';
-        container.className = 'fixed right-4 z-[950] space-y-2';
+        container.className = 'fixed right-4 z-[99999] space-y-2';
         container.style.top = '72px';
         container.setAttribute('role', 'alert');
         container.setAttribute('aria-live', 'polite');
@@ -933,6 +933,347 @@ const MetroCommon = {
             setValue: (value) => selectCity(value),
             open: openDropdown,
             close: closeDropdown
+        };
+    },
+    
+    initModernQuizSelector(containerId, options = {}) {
+        const container = this.$(containerId);
+        if (!container) return;
+
+        const {
+            selectedValue = 'all',
+            showAllOption = true,
+            allText = '随机选题',
+            onChange = null,
+            placeholder = '搜索题组...',
+            size = 'default',
+            quizzes = []
+        } = options;
+
+        const wrapper = document.createElement('div');
+        wrapper.className = `quiz-selector-wrapper size-${size}`;
+        wrapper.id = `${containerId}-wrapper`;
+
+        const trigger = document.createElement('div');
+        trigger.className = 'quiz-selector-trigger';
+        trigger.setAttribute('role', 'button');
+        trigger.setAttribute('tabindex', '0');
+        trigger.setAttribute('aria-haspopup', 'listbox');
+        trigger.setAttribute('aria-expanded', 'false');
+        trigger.innerHTML = `
+            <span class="selected-quiz">${selectedValue === 'all' ? allText : selectedValue}</span>
+            <svg class="chevron-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+        `;
+
+        wrapper.appendChild(trigger);
+
+        container.innerHTML = '';
+        container.appendChild(wrapper);
+
+        let dropdown = this.$('quiz-selector-dropdown-portal');
+        if (!dropdown) {
+            dropdown = document.createElement('div');
+            dropdown.id = 'quiz-selector-dropdown-portal';
+            dropdown.className = 'quiz-selector-dropdown';
+            dropdown.setAttribute('role', 'listbox');
+            document.body.appendChild(dropdown);
+        }
+
+        dropdown.innerHTML = `
+            <div class="quiz-selector-search">
+                <input type="text" placeholder="${placeholder}" autocomplete="off">
+                <button class="search-clear-btn" type="button" aria-label="清除搜索">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+            <div class="quiz-selector-content">
+                <div class="quiz-selector-list"></div>
+            </div>
+            <div class="quiz-selector-footer">共 ${quizzes.length} 个题组</div>
+        `;
+
+        const list = dropdown.querySelector('.quiz-selector-list');
+        const searchInput = dropdown.querySelector('input');
+        const clearBtn = dropdown.querySelector('.search-clear-btn');
+        let highlightedIndex = -1;
+        let currentQuiz = selectedValue;
+        let isOpen = false;
+        let allQuizzes = quizzes;
+
+        const updateClearBtn = () => {
+            if (searchInput.value.length > 0) {
+                clearBtn.classList.add('visible');
+            } else {
+                clearBtn.classList.remove('visible');
+            }
+        };
+
+        clearBtn.addEventListener('click', () => {
+            searchInput.value = '';
+            searchInput.focus();
+            renderQuizzes('');
+            updateClearBtn();
+        });
+
+        searchInput.addEventListener('input', () => {
+            updateClearBtn();
+        });
+
+        const renderQuizzes = (filter = '') => {
+            list.innerHTML = '';
+            highlightedIndex = -1;
+
+            const filterLower = filter.toLowerCase();
+
+            if (showAllOption) {
+                const allOption = document.createElement('div');
+                allOption.className = `quiz-selector-all${currentQuiz === 'all' ? ' selected' : ''}`;
+                allOption.setAttribute('role', 'option');
+                allOption.setAttribute('data-value', 'all');
+                allOption.innerHTML = `
+                    <div class="quiz-selector-all-content">
+                        <span class="quiz-selector-all-icon">🎲</span>
+                        <span class="quiz-selector-all-text">${allText}</span>
+                    </div>
+                `;
+                list.appendChild(allOption);
+            }
+
+            const featuredQuizzes = allQuizzes.filter(q => 
+                q.featured && (
+                    filter === '' || 
+                    (q.name && q.name.toLowerCase().includes(filterLower))
+                )
+            );
+
+            if (featuredQuizzes.length > 0) {
+                const featuredGroup = document.createElement('div');
+                featuredGroup.className = 'quiz-selector-group';
+                featuredGroup.setAttribute('data-section', 'featured');
+                featuredGroup.innerHTML = `<div class="quiz-selector-group-label featured">⭐ 精选题组</div>`;
+
+                featuredQuizzes.forEach(quiz => {
+                    const option = createQuizOption(quiz);
+                    featuredGroup.appendChild(option);
+                });
+
+                list.appendChild(featuredGroup);
+            }
+
+            const otherQuizzes = allQuizzes
+                .filter(q => !q.featured)
+                .filter(q => filter === '' || (q.name && q.name.toLowerCase().includes(filterLower)))
+                .sort((a, b) => (b.playCount || 0) - (a.playCount || 0));
+
+            if (otherQuizzes.length > 0) {
+                const popularGroup = document.createElement('div');
+                popularGroup.className = 'quiz-selector-group';
+                popularGroup.setAttribute('data-section', 'popular');
+                popularGroup.innerHTML = `<div class="quiz-selector-group-label popular">🔥 热门题组</div>`;
+
+                otherQuizzes.forEach(quiz => {
+                    const option = createQuizOption(quiz);
+                    popularGroup.appendChild(option);
+                });
+
+                list.appendChild(popularGroup);
+            }
+
+            if (featuredQuizzes.length === 0 && otherQuizzes.length === 0 && filter) {
+                list.innerHTML = `<div class="quiz-selector-empty">未找到匹配的题组</div>`;
+            }
+
+            const footer = dropdown.querySelector('.quiz-selector-footer');
+            const totalCount = featuredQuizzes.length + otherQuizzes.length;
+            footer.textContent = `共 ${totalCount} 个题组`;
+        };
+
+        const createQuizOption = (quiz) => {
+            const option = document.createElement('div');
+            option.className = `quiz-selector-option${currentQuiz === quiz.id ? ' selected' : ''}`;
+            option.setAttribute('role', 'option');
+            option.setAttribute('data-value', quiz.id);
+
+            const difficultyClass = this.getDifficultyColor(quiz.difficultyLevel);
+            const difficultyLabel = this.getDifficultyLabel(quiz.difficultyLevel);
+            const displayName = quiz.hideTheme ? '神秘题组' : quiz.name;
+
+            option.innerHTML = `
+                <div class="quiz-option-content">
+                    <div class="quiz-option-header">
+                        <span class="quiz-option-name">${this.escapeHtml(displayName)}</span>
+                        ${quiz.featured ? '<span class="quiz-option-badge featured">精选</span>' : ''}
+                    </div>
+                    <div class="quiz-option-meta">
+                        <span class="quiz-option-tag ${difficultyClass}">${difficultyLabel}</span>
+                        <span class="quiz-option-tag count">${quiz.questions ? quiz.questions.length : 0}题</span>
+                        ${quiz.cityScope && quiz.cityScope !== 'all' ? `<span class="quiz-option-tag city">${quiz.cityScope}</span>` : ''}
+                    </div>
+                </div>
+            `;
+
+            return option;
+        };
+
+        const selectQuiz = (value) => {
+            currentQuiz = value;
+            const selectedQuizEl = trigger.querySelector('.selected-quiz');
+            
+            if (value === 'all') {
+                selectedQuizEl.textContent = allText;
+            } else {
+                const quiz = allQuizzes.find(q => q.id === value);
+                if (quiz) {
+                    selectedQuizEl.textContent = quiz.hideTheme ? '神秘题组' : quiz.name;
+                } else {
+                    selectedQuizEl.textContent = allText;
+                }
+            }
+
+            list.querySelectorAll('.quiz-selector-option, .quiz-selector-all').forEach(opt => {
+                opt.classList.toggle('selected', opt.getAttribute('data-value') === value);
+            });
+
+            closeDropdown();
+
+            if (onChange) {
+                onChange(value);
+            }
+
+            const originalSelect = this.$(containerId.replace('-modern-wrapper', ''));
+            if (originalSelect && originalSelect.tagName === 'SELECT') {
+                originalSelect.value = value;
+                originalSelect.dispatchEvent(new Event('change', { bubbles: true }));
+            }
+        };
+
+        const updatePosition = () => {
+            const rect = trigger.getBoundingClientRect();
+            dropdown.style.top = `${rect.bottom + 4}px`;
+            dropdown.style.left = `${rect.left}px`;
+            dropdown.style.minWidth = `${Math.max(280, rect.width)}px`;
+        };
+
+        const openDropdown = () => {
+            if (isOpen) return;
+            isOpen = true;
+            trigger.classList.add('active');
+            trigger.setAttribute('aria-expanded', 'true');
+            updatePosition();
+            dropdown.classList.add('open');
+            searchInput.focus();
+            renderQuizzes();
+        };
+
+        const closeDropdown = () => {
+            if (!isOpen) return;
+            isOpen = false;
+            trigger.classList.remove('active');
+            trigger.setAttribute('aria-expanded', 'false');
+            dropdown.classList.remove('open');
+            searchInput.value = '';
+            renderQuizzes();
+        };
+
+        const toggleDropdown = () => {
+            if (isOpen) {
+                closeDropdown();
+            } else {
+                openDropdown();
+            }
+        };
+
+        trigger.addEventListener('click', toggleDropdown);
+
+        trigger.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                toggleDropdown();
+            } else if (e.key === 'Escape') {
+                closeDropdown();
+            }
+        });
+
+        searchInput.addEventListener('input', (e) => {
+            renderQuizzes(e.target.value);
+        });
+
+        searchInput.addEventListener('keydown', (e) => {
+            const options = list.querySelectorAll('.quiz-selector-option, .quiz-selector-all');
+
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                if (highlightedIndex < options.length - 1) {
+                    highlightedIndex++;
+                    updateHighlight(options);
+                }
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                if (highlightedIndex > 0) {
+                    highlightedIndex--;
+                    updateHighlight(options);
+                }
+            } else if (e.key === 'Enter' && highlightedIndex >= 0) {
+                e.preventDefault();
+                const selected = options[highlightedIndex];
+                if (selected) {
+                    selectQuiz(selected.getAttribute('data-value'));
+                }
+            } else if (e.key === 'Escape') {
+                closeDropdown();
+            }
+        });
+
+        const updateHighlight = (options) => {
+            options.forEach((opt, i) => {
+                opt.classList.toggle('highlighted', i === highlightedIndex);
+            });
+
+            if (highlightedIndex >= 0 && options[highlightedIndex]) {
+                options[highlightedIndex].scrollIntoView({ block: 'nearest' });
+            }
+        };
+
+        list.addEventListener('click', (e) => {
+            const option = e.target.closest('.quiz-selector-option, .quiz-selector-all');
+            if (option) {
+                selectQuiz(option.getAttribute('data-value'));
+            }
+        });
+
+        const handleClickOutside = (e) => {
+            if (!wrapper.contains(e.target) && !dropdown.contains(e.target)) {
+                closeDropdown();
+            }
+        };
+
+        document.addEventListener('click', handleClickOutside);
+
+        const handleScroll = () => {
+            if (isOpen) {
+                updatePosition();
+            }
+        };
+
+        window.addEventListener('scroll', handleScroll, { passive: true });
+        window.addEventListener('resize', handleScroll, { passive: true });
+
+        renderQuizzes();
+
+        return {
+            getValue: () => currentQuiz,
+            setValue: (value) => selectQuiz(value),
+            open: openDropdown,
+            close: closeDropdown,
+            updateQuizzes: (newQuizzes) => {
+                allQuizzes = newQuizzes;
+                renderQuizzes();
+            }
         };
     }
 };

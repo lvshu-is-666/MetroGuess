@@ -117,7 +117,12 @@ const MetroGameLogic = {
 
   getDisplayText(stationEn, revealedLetters, isSolved, devMode = false, revealedSpecialChars = []) {
     if (isSolved || devMode) {
-      return stationEn
+      return stationEn.split('').map(char => {
+        if (/[a-zA-Z]/.test(char)) {
+          return { char, revealed: true }
+        }
+        return { char, revealed: true }
+      })
     }
 
     return stationEn.split('').map(char => {

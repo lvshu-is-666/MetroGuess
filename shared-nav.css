@@ -41,13 +41,13 @@
 /* 移动端内容偏移 */
 @media (max-width: 1023px) {
   .main-content-offset {
-    padding-top: 72px;
+    padding-top: 12px;
   }
 }
 
 @media (min-width: 1024px) {
   .main-content-offset {
-    padding-top: 68px;
+    padding-top: 12px;
   }
 }
 
@@ -594,7 +594,7 @@ body {
 
 .nav-mode-dropdown {
   position: absolute;
-  top: calc(100% + 4px);
+  top: 100%;
   right: 0;
   background: white;
   border-radius: 0.625rem;
@@ -608,6 +608,16 @@ body {
   overflow: hidden;
   pointer-events: none;
   display: none;
+  padding-top: 4px;
+}
+
+.nav-mode-dropdown::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
 }
 
 @media (min-width: 650px) {

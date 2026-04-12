@@ -28,7 +28,7 @@
         window.scrollTo(0, 0);
     </script>
 
-    <div id="toast-container" class="fixed top-[72px] right-4 z-[950] space-y-2" role="alert" aria-live="polite"></div>
+    <div id="toast-container" class="fixed top-[72px] right-4 z-[99999] space-y-2" role="alert" aria-live="polite"></div>
     <div id="floating-scores" class="fixed inset-0 pointer-events-none z-40" aria-hidden="true"></div>
 
     <div class="mobile-nav-bar">
@@ -1023,7 +1023,7 @@
                     </div>
                     ${(isSolved || gameState.devMode) ? `
                         <div class="text-center pt-2 border-t border-slate-200/60">
-                            <p class="text-slate-800 font-bold">${escapeHtml(station.station_cn)}</p>
+                            <p class="text-slate-800 font-bold station-cn">${escapeHtml(station.station_cn)}</p>
                             <p class="text-slate-500 text-xs mt-0.5">${escapeHtml(station.city_cn || '')}</p>
                         </div>
                     ` : ''}

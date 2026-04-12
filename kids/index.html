@@ -1246,7 +1246,7 @@
 </head>
 <body class="bg-gradient-to-br from-indigo-50 via-purple-50 to-blue-100 min-h-screen text-slate-800 transition-colors duration-300">
 
-    <div id="toast-container" class="fixed top-[72px] right-4 z-[950] space-y-2" role="alert" aria-live="polite"></div>
+    <div id="toast-container" class="fixed top-[72px] right-4 z-[99999] space-y-2" role="alert" aria-live="polite"></div>
 
     <div class="mobile-nav-bar">
         <button id="mobile-nav-toggle" class="mobile-nav-toggle" aria-label="打开导航菜单" aria-expanded="false" aria-controls="sidebar">
@@ -2686,7 +2686,12 @@
 
         function getDisplayText(word, revealedLetters, isSolved) {
             if (isSolved) {
-                return word;
+                return word.split('').map(char => {
+                    if (/[a-zA-Z]/.test(char)) {
+                        return `<span class="letter-reveal text-indigo-600">${char}</span>`;
+                    }
+                    return char;
+                }).join('');
             }
             
             return word.split('').map(char => {

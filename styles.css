@@ -542,6 +542,13 @@ h1, h2, h3, h4, h5, h6, .font-display {
     letter-spacing: 0.15em;
 }
 
+.station-cn,
+.game-card .text-center.pt-2 p:first-child,
+.station-card .text-center.pt-2 p:first-child {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    letter-spacing: 0.02em;
+}
+
 /* ========== 动画 - 统一 ========== */
 
 @keyframes slideIn {
