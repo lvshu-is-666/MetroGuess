@@ -27,7 +27,7 @@
 
   <view wx:elif="{{!gameStarted && quiz}}" class="welcome-section">
     <view class="clay-card">
-      <text class="quiz-title">{{quiz.hideTheme ? '神秘题组' : quiz.name}}</text>
+      <text class="quiz-title">{{quizDisplayName}}</text>
       <view class="quiz-meta">
         <text class="quiz-tag {{'quiz-tag-difficulty-' + quiz.difficultyLevel}}">
           {{getDifficultyLabel(quiz.difficultyLevel)}}

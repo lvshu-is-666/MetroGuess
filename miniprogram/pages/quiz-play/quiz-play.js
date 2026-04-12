@@ -19,6 +19,7 @@ Page({
     inputInviteCode: '',
     quiz: null,
     quizId: '',
+    quizDisplayName: '',
 
     gameStarted: false,
     gameWon: false,
@@ -65,6 +66,16 @@ Page({
     }
   },
 
+  getCompletedQuizName(quizId) {
+    try {
+      const completedQuizzes = wx.getStorageSync('completedQuizzes') || '{}'
+      const parsed = typeof completedQuizzes === 'string' ? JSON.parse(completedQuizzes) : completedQuizzes
+      return parsed[quizId]?.name || null
+    } catch (e) {
+      return null
+    }
+  },
+
   async loadQuiz() {
     try {
       const quiz = await Firebase.getQuiz(this.data.quizId)
@@ -95,9 +106,18 @@ Page({
         return
       }
 
+      let quizDisplayName
+      if (quiz.hideTheme) {
+        const completedName = this.getCompletedQuizName(this.data.quizId)
+        quizDisplayName = completedName || '神秘题组'
+      } else {
+        quizDisplayName = quiz.name
+      }
+
       this.setData({
         loading: false,
-        quiz
+        quiz,
+        quizDisplayName
       })
     } catch (e) {
       console.error('Failed to load quiz:', e)
@@ -330,17 +350,34 @@ Page({
   },
 
   checkWinCondition() {
-    const { gameState, difficulty } = this.data
+    const { gameState, difficulty, quiz, quizId } = this.data
     const result = MetroGameLogic.checkWinCondition(gameState, difficulty)
 
     if (result.won) {
       clearInterval(this.data.timer)
       MetroCommon.vibrateLong()
 
+      this.saveCompletedQuiz(quizId, quiz.name)
+
       this.setData({
         gameWon: true,
-        finalScore: result.finalScore
+        finalScore: result.finalScore,
+        quizDisplayName: quiz.name
       })
+    }
+  },
+
+  saveCompletedQuiz(quizId, quizName) {
+    try {
+      const completedQuizzes = wx.getStorageSync('completedQuizzes') || '{}'
+      const parsed = typeof completedQuizzes === 'string' ? JSON.parse(completedQuizzes) : completedQuizzes
+      parsed[quizId] = {
+        name: quizName,
+        completedAt: Date.now()
+      }
+      wx.setStorageSync('completedQuizzes', JSON.stringify(parsed))
+    } catch (e) {
+      console.error('Failed to save completed quiz:', e)
     }
   },
 

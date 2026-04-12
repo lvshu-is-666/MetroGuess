@@ -1009,6 +1009,15 @@
             `;
         }
 
+        function getCompletedQuizName(quizId) {
+            try {
+                const completedQuizzes = JSON.parse(localStorage.getItem('completedQuizzes') || '{}');
+                return completedQuizzes[quizId]?.name || null;
+            } catch (e) {
+                return null;
+            }
+        }
+
         function initGame() {
             $('loading-section').classList.add('hidden');
             $('invite-code-section').classList.add('hidden');
@@ -1022,7 +1031,13 @@
                 questions = shuffled.slice(0, quizData.randomPickCount);
             }
 
-            const displayName = quizData.hideTheme ? '神秘题组' : quizData.name;
+            let displayName;
+            if (quizData.hideTheme) {
+                const completedName = getCompletedQuizName(quizId);
+                displayName = completedName || '神秘题组';
+            } else {
+                displayName = quizData.name;
+            }
             $('quiz-title').textContent = displayName;
             const subtitleParts = [`${questions.length}题`];
             if (quizData.enableRandomPick && quizData.randomPickCount > 0) {
@@ -1539,9 +1554,14 @@
                 $('sticky-guess-input').value = '';
             }
 
+            let displayName;
             if (quizData.hideTheme) {
-                $('quiz-title').textContent = '神秘题组';
+                const completedName = getCompletedQuizName(quizId);
+                displayName = completedName || '神秘题组';
+            } else {
+                displayName = quizData.name;
             }
+            $('quiz-title').textContent = displayName;
 
             renderStations();
             renderKeyboard();

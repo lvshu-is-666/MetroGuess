@@ -1583,9 +1583,9 @@
             }
         }
 
-        async function loadFromCloud() {
+        async function loadFromCloud(silent = false) {
             if (!mpState.connected || !db) {
-                showToast('请先连接网络', 'error');
+                if (!silent) showToast('请先连接网络', 'error');
                 return;
             }
 
@@ -1618,12 +1618,12 @@
                     updateStatsDisplay();
                     renderLeaderboard(gameState.difficulty);
                     showToast('云端数据已加载！', 'success');
-                } else {
+                } else if (!silent) {
                     showToast('云端暂无数据', 'info');
                 }
             } catch (e) {
                 console.error('Load from cloud failed:', e);
-                showToast('加载失败: ' + e.message, 'error');
+                if (!silent) showToast('加载失败: ' + e.message, 'error');
             }
         }
 
@@ -1724,6 +1724,10 @@
                 console.log('Loading Firebase scripts...');
                 const loadScript = (src) => {
                     return new Promise((resolveScript, reject) => {
+                        if (document.querySelector(`script[src="${src}"]`)) {
+                            resolveScript();
+                            return;
+                        }
                         const script = document.createElement('script');
                         script.src = src;
                         script.async = true;
@@ -3054,7 +3058,7 @@
             
             initFirebase().then(async (success) => {
                 if (success && mpState.connected && db) {
-                    await loadFromCloud();
+                    await loadFromCloud(true);
                 }
             });
             
