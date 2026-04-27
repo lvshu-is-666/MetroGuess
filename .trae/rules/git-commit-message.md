@@ -1,8 +1,7 @@
 ---
-alwaysApply: true
+alwaysApply: false
 scene: git_message
 ---
-
 **格式模板：**
 ```
 <类型>(<scope>): <修改综述>

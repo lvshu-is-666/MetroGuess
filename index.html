@@ -752,13 +752,22 @@
                         </svg>
                         排行榜
                     </div>
-                    <button id="refresh-leaderboard" class="text-sm text-blue-500 hover:text-blue-600 flex items-center gap-1 px-2 py-1 rounded hover:bg-blue-50 transition-colors" title="刷新云端数据">
-                        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"></path>
-                            <path d="M21 3v5h-5"></path>
-                        </svg>
-                        刷新
-                    </button>
+                    <div class="flex items-center gap-2">
+                        <button id="manage-leaderboard" class="text-sm text-amber-500 hover:text-amber-600 hidden items-center gap-1 px-2 py-1 rounded hover:bg-amber-50 transition-colors" title="管理排行榜记录">
+                            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M12 20h9"></path>
+                                <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+                            </svg>
+                            管理
+                        </button>
+                        <button id="refresh-leaderboard" class="text-sm text-blue-500 hover:text-blue-600 flex items-center gap-1 px-2 py-1 rounded hover:bg-blue-50 transition-colors" title="刷新云端数据">
+                            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"></path>
+                                <path d="M21 3v5h-5"></path>
+                            </svg>
+                            刷新
+                        </button>
+                    </div>
                 </h3>
                 <div class="flex gap-2 mb-4">
                     <button data-board="easy" class="leaderboard-tab px-3 py-1.5 rounded-lg text-sm font-medium border border-slate-200 bg-white text-slate-700 cursor-pointer">简单</button>
@@ -1098,7 +1107,8 @@
             foundSpecialChars: new Set(),
             combo: 0,
             lastCorrectTime: 0,
-            devMode: false
+            devMode: false,
+            leaderboardManageMode: false
         };
 
         let stationDatabase = [];
@@ -1117,6 +1127,8 @@
             achievements: new Set(),
             leaderboards: { easy: [], normal: [], hard: [] }
         };
+        
+        let deletedRecords = { easy: [], normal: [], hard: [] };
 
         const elements = {
             stationsContainer: $('stations-container'),
@@ -1577,6 +1589,65 @@
             };
             localStorage.setItem('subwayGameStats', JSON.stringify(toSave));
         }
+        
+        function saveDeletedRecords() {
+            localStorage.setItem('subwayDeletedRecords', JSON.stringify(deletedRecords));
+        }
+        
+        function loadDeletedRecords() {
+            const saved = localStorage.getItem('subwayDeletedRecords');
+            if (saved) {
+                try {
+                    deletedRecords = JSON.parse(saved);
+                    if (!deletedRecords.easy) deletedRecords.easy = [];
+                    if (!deletedRecords.normal) deletedRecords.normal = [];
+                    if (!deletedRecords.hard) deletedRecords.hard = [];
+                } catch (e) {
+                    console.error('Failed to load deleted records:', e);
+                    deletedRecords = { easy: [], normal: [], hard: [] };
+                }
+            }
+        }
+        
+        function isRecordDeleted(difficulty, record) {
+            if (!deletedRecords[difficulty]) return false;
+            return deletedRecords[difficulty].some(deleted => 
+                deleted.name === record.name &&
+                deleted.score === record.score &&
+                (deleted.timestamp === record.timestamp || deleted.date === record.date)
+            );
+        }
+        
+        function deduplicateLocalLeaderboards() {
+            const difficulties = ['easy', 'normal', 'hard'];
+            let totalRemoved = 0;
+            
+            for (const difficulty of difficulties) {
+                if (!stats.leaderboards[difficulty]) continue;
+                
+                const seen = new Map();
+                const uniqueRecords = [];
+                
+                stats.leaderboards[difficulty].forEach(record => {
+                    const key = `${record.name}_${record.score}`;
+                    if (!seen.has(key)) {
+                        seen.set(key, true);
+                        uniqueRecords.push(record);
+                    } else {
+                        totalRemoved++;
+                    }
+                });
+                
+                stats.leaderboards[difficulty] = uniqueRecords;
+            }
+            
+            if (totalRemoved > 0) {
+                saveStats();
+                console.log(`本地排行榜去重完成: 移除了 ${totalRemoved} 条重复记录`);
+            }
+            
+            return totalRemoved;
+        }
 
         async function syncToCloud() {
             if (!mpState.connected || !db) {
@@ -1650,8 +1721,7 @@
             cloud.forEach(entry => {
                 const exists = merged.find(e => 
                     e.name === entry.name && 
-                    e.score === entry.score &&
-                    (e.timestamp === entry.timestamp || e.date === entry.date)
+                    e.score === entry.score
                 );
                 if (!exists) {
                     merged.push(entry);
@@ -1842,9 +1912,9 @@
                     const freshDeduped = await deduplicateCloudData(freshData);
                     
                     stats.leaderboards = {
-                        easy: freshDeduped.easy ? freshDeduped.easy.sort((a, b) => b.score - a.score).slice(0, 10) : [],
-                        normal: freshDeduped.normal ? freshDeduped.normal.sort((a, b) => b.score - a.score).slice(0, 10) : [],
-                        hard: freshDeduped.hard ? freshDeduped.hard.sort((a, b) => b.score - a.score).slice(0, 10) : []
+                        easy: freshDeduped.easy ? freshDeduped.easy.filter(r => !isRecordDeleted('easy', r)).sort((a, b) => b.score - a.score).slice(0, 10) : [],
+                        normal: freshDeduped.normal ? freshDeduped.normal.filter(r => !isRecordDeleted('normal', r)).sort((a, b) => b.score - a.score).slice(0, 10) : [],
+                        hard: freshDeduped.hard ? freshDeduped.hard.filter(r => !isRecordDeleted('hard', r)).sort((a, b) => b.score - a.score).slice(0, 10) : []
                     };
                 } else {
                     stats.leaderboards = { easy: [], normal: [], hard: [] };
@@ -1897,7 +1967,7 @@
                 const keysToRemove = [];
                 
                 Object.entries(records).forEach(([key, record]) => {
-                    const uniqueKey = `${record.name}_${record.score}_${record.timestamp || record.date}`;
+                    const uniqueKey = `${record.name}_${record.score}`;
                     
                     if (recordMap.has(uniqueKey)) {
                         keysToRemove.push(key);
@@ -1941,6 +2011,8 @@
                 const uniqueLocalRecords = [];
                 
                 for (const record of localRecords) {
+                    if (isRecordDeleted(difficulty, record)) continue;
+                    
                     const uniqueKey = `${record.name}_${record.score}_${record.timestamp || record.date}`;
                     if (!seenLocal.has(uniqueKey)) {
                         seenLocal.set(uniqueKey, true);
@@ -3052,6 +3124,8 @@
             stationDatabase = parseCSV(csvData);
             await loadCSVFromFile();
             loadStats();
+            loadDeletedRecords();
+            deduplicateLocalLeaderboards();
             updateCitySelect();
             loadQuizList();
             renderAchievements();
@@ -3064,6 +3138,11 @@
                 gameState.devMode = true;
                 if (elements.modeReverse) {
                     elements.modeReverse.classList.remove('hidden');
+                }
+                const manageBtn = document.getElementById('manage-leaderboard');
+                if (manageBtn) {
+                    manageBtn.classList.remove('hidden');
+                    manageBtn.classList.add('flex');
                 }
             }
             
@@ -4621,10 +4700,19 @@
             
             board.slice(0, 10).forEach((entry, index) => {
                 const item = document.createElement('div');
-                item.className = 'leaderboard-item flex items-center justify-between p-3 bg-white rounded-lg border border-slate-200';
+                item.className = 'leaderboard-item flex items-center justify-between p-3 bg-white rounded-lg border border-slate-200' + (gameState.leaderboardManageMode ? ' border-amber-300' : '');
                 item.style.animationDelay = `${index * 0.1}s`;
                 
                 const medal = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `${index + 1}.`;
+                
+                const deleteBtn = gameState.leaderboardManageMode ? `
+                    <button class="delete-leaderboard-record ml-2 text-red-500 hover:text-red-600 hover:bg-red-50 p-1 rounded transition-colors" data-index="${index}" data-difficulty="${difficulty}" title="删除此记录">
+                        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="3 6 5 6 21 6"></polyline>
+                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                        </svg>
+                    </button>
+                ` : '';
                 
                 item.innerHTML = `
                     <div class="flex items-center gap-3">
@@ -4634,13 +4722,83 @@
                             <p class="text-xs text-slate-500">${entry.date}</p>
                         </div>
                     </div>
-                    <div class="text-right">
-                        <p class="font-bold text-green-600">${entry.score}</p>
-                        <p class="text-xs text-slate-500">${formatTime(entry.time)} · ${entry.guesses}次</p>
+                    <div class="flex items-center">
+                        <div class="text-right">
+                            <p class="font-bold text-green-600">${entry.score}</p>
+                            <p class="text-xs text-slate-500">${formatTime(entry.time)} · ${entry.guesses}次</p>
+                        </div>
+                        ${deleteBtn}
                     </div>
                 `;
                 elements.leaderboardList.appendChild(item);
             });
+            
+            if (gameState.leaderboardManageMode) {
+                elements.leaderboardList.querySelectorAll('.delete-leaderboard-record').forEach(btn => {
+                    btn.addEventListener('click', async (e) => {
+                        const index = parseInt(btn.dataset.index);
+                        const diff = btn.dataset.difficulty;
+                        if (confirm(`确定要删除这条记录吗？\n\n此操作将从本地和云端永久删除该记录。`)) {
+                            await deleteLeaderboardRecord(diff, index);
+                        }
+                    });
+                });
+            }
+        }
+        
+        async function deleteLeaderboardRecord(difficulty, index) {
+            const record = stats.leaderboards[difficulty][index];
+            if (!record) {
+                showToast('记录不存在', 'error');
+                return;
+            }
+            
+            console.log('Deleting record:', difficulty, index, record);
+            
+            stats.leaderboards[difficulty].splice(index, 1);
+            saveStats();
+            
+            if (!deletedRecords[difficulty]) {
+                deletedRecords[difficulty] = [];
+            }
+            deletedRecords[difficulty].push({
+                name: record.name,
+                score: record.score,
+                timestamp: record.timestamp,
+                date: record.date
+            });
+            saveDeletedRecords();
+            
+            if (db) {
+                try {
+                    const difficultyRef = db.ref('leaderboards/' + difficulty);
+                    const snapshot = await difficultyRef.once('value');
+                    
+                    if (snapshot.exists()) {
+                        const cloudRecords = [];
+                        snapshot.forEach(child => {
+                            cloudRecords.push({ key: child.key, ...child.val() });
+                        });
+                        
+                        const recordToDelete = cloudRecords.find(cloudRecord => 
+                            cloudRecord.name === record.name &&
+                            cloudRecord.score === record.score &&
+                            (cloudRecord.timestamp === record.timestamp || cloudRecord.date === record.date)
+                        );
+                        
+                        if (recordToDelete && recordToDelete.key) {
+                            await db.ref(`leaderboards/${difficulty}/${recordToDelete.key}`).remove();
+                            console.log('Deleted from cloud:', recordToDelete.key);
+                        }
+                    }
+                } catch (e) {
+                    console.error('Failed to delete from cloud:', e);
+                    showToast('云端删除失败，但本地已删除', 'error');
+                }
+            }
+            
+            renderLeaderboard(difficulty);
+            showToast('记录已删除', 'success');
         }
 
         async function saveScore() {
@@ -4662,6 +4820,19 @@
                 stats.leaderboards[gameState.difficulty] = [];
             }
             
+            const isDuplicate = stats.leaderboards[gameState.difficulty].some(
+                record => record.name === name && record.score === gameState.score
+            );
+            
+            if (isDuplicate) {
+                console.log('重复记录已跳过:', name, gameState.score);
+                showToast('该成绩已存在，无需重复提交！', 'info');
+                elements.victoryModal.classList.add('hidden');
+                switchMode('leaderboard');
+                renderLeaderboard(gameState.difficulty);
+                return;
+            }
+            
             stats.leaderboards[gameState.difficulty].push(entry);
             stats.leaderboards[gameState.difficulty].sort((a, b) => b.score - a.score);
             stats.leaderboards[gameState.difficulty] = stats.leaderboards[gameState.difficulty].slice(0, 10);
@@ -4679,6 +4850,28 @@
                         const path = 'leaderboards/' + gameState.difficulty;
                         console.log('Saving to Firebase path:', path);
                         const difficultyRef = db.ref(path);
+                        
+                        const cloudSnapshot = await difficultyRef.once('value');
+                        if (cloudSnapshot.exists()) {
+                            const cloudRecords = [];
+                            cloudSnapshot.forEach(child => {
+                                cloudRecords.push({ key: child.key, ...child.val() });
+                            });
+                            
+                            const cloudDuplicate = cloudRecords.find(
+                                record => record.name === name && record.score === gameState.score
+                            );
+                            
+                            if (cloudDuplicate) {
+                                console.log('云端已存在相同记录，跳过保存');
+                                showToast('该成绩已存在，无需重复提交！', 'info');
+                                elements.victoryModal.classList.add('hidden');
+                                switchMode('leaderboard');
+                                renderLeaderboard(gameState.difficulty);
+                                return;
+                            }
+                        }
+                        
                         const newEntryRef = difficultyRef.push();
                         await newEntryRef.set(entry);
                         console.log('Score saved to Firebase successfully');
@@ -5003,6 +5196,31 @@
                         icon.classList.remove('animate-spin');
                     }
                     showToast('排行榜已刷新', 'success');
+                });
+            }
+            
+            const manageLeaderboardBtn = $('manage-leaderboard');
+            if (manageLeaderboardBtn) {
+                manageLeaderboardBtn.addEventListener('click', () => {
+                    gameState.leaderboardManageMode = !gameState.leaderboardManageMode;
+                    if (gameState.leaderboardManageMode) {
+                        manageLeaderboardBtn.classList.add('bg-amber-100');
+                        manageLeaderboardBtn.textContent = '完成';
+                        showToast('管理模式已开启，点击记录可删除', 'info');
+                    } else {
+                        manageLeaderboardBtn.classList.remove('bg-amber-100');
+                        manageLeaderboardBtn.innerHTML = `
+                            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M12 20h9"></path>
+                                <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+                            </svg>
+                            管理
+                        `;
+                    }
+                    const currentTab = document.querySelector('.leaderboard-tab.active');
+                    if (currentTab) {
+                        renderLeaderboard(currentTab.dataset.board);
+                    }
                 });
             }
             

@@ -1462,7 +1462,7 @@
             const playerName = $('player-name').value.trim() || '匿名玩家';
 
             try {
-                await FirebaseConfig.saveQuizScore(quizId, {
+                const result = await FirebaseConfig.saveQuizScore(quizId, {
                     playerName: playerName,
                     score: gameState.score,
                     time: gameState.elapsedTime,
@@ -1470,7 +1470,11 @@
                     hintsUsed: gameState.hintsUsed
                 });
 
-                MetroCommon.showToast('成绩已保存！', 'success');
+                if (result === null) {
+                    MetroCommon.showToast('该成绩已存在，无需重复提交！', 'info');
+                } else {
+                    MetroCommon.showToast('成绩已保存！', 'success');
+                }
                 $('btn-save-score').disabled = true;
                 $('btn-save-score').textContent = '已保存';
             } catch (e) {

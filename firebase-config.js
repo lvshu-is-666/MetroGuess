@@ -236,6 +236,16 @@ const FirebaseConfig = {
             if (!success) throw new Error('Firebase初始化失败');
         }
         
+        const existingScores = await this.getQuizLeaderboard(quizId, 100);
+        const isDuplicate = existingScores.some(s => 
+            s.playerName === scoreData.playerName && s.score === scoreData.score
+        );
+        
+        if (isDuplicate) {
+            console.log('重复记录已跳过:', scoreData.playerName, scoreData.score);
+            return null;
+        }
+        
         const scoreId = Date.now().toString(36) + Math.random().toString(36).substr(2, 5);
         const score = {
             id: scoreId,
@@ -294,6 +304,41 @@ const FirebaseConfig = {
         if (this.initialized && this.db) {
             this.db.ref('quizLeaderboards/' + quizId).off();
         }
+    },
+    
+    async cleanDuplicateScores(quizId) {
+        if (!this.initialized) {
+            const success = await this.init();
+            if (!success) throw new Error('Firebase初始化失败');
+        }
+        
+        const snapshot = await this.db.ref('quizLeaderboards/' + quizId).once('value');
+        if (!snapshot.exists()) return { removed: 0, message: '没有数据需要清理' };
+        
+        const allScores = snapshot.val();
+        const scoreList = Object.entries(allScores).map(([id, data]) => ({ id, ...data }));
+        
+        const seen = new Map();
+        const duplicatesToRemove = [];
+        
+        scoreList.forEach(score => {
+            const key = `${score.playerName}_${score.score}`;
+            if (seen.has(key)) {
+                duplicatesToRemove.push(score.id);
+            } else {
+                seen.set(key, score.id);
+            }
+        });
+        
+        for (const scoreId of duplicatesToRemove) {
+            await this.db.ref('quizLeaderboards/' + quizId + '/' + scoreId).remove();
+        }
+        
+        console.log(`清理完成: 移除了 ${duplicatesToRemove.length} 条重复记录`);
+        return { 
+            removed: duplicatesToRemove.length, 
+            message: `已移除 ${duplicatesToRemove.length} 条重复记录` 
+        };
     },
     
     validateQuizAccess(quiz, inviteCode = null) {
