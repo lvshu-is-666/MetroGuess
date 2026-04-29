@@ -1442,6 +1442,11 @@
 
             saveCompletedQuiz(quizId, quizData.name);
 
+            const lastPlayerName = localStorage.getItem('quizLastPlayerName');
+            if (lastPlayerName) {
+                $('player-name').value = lastPlayerName;
+            }
+
             $('victory-modal').classList.remove('hidden');
         }
 
@@ -1460,6 +1465,8 @@
 
         async function saveScore() {
             const playerName = $('player-name').value.trim() || '匿名玩家';
+            
+            localStorage.setItem('quizLastPlayerName', playerName);
 
             try {
                 const result = await FirebaseConfig.saveQuizScore(quizId, {

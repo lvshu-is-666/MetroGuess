@@ -1125,7 +1125,8 @@
             bestStreak: 0,
             unlockedCities: new Set(['all']),
             achievements: new Set(),
-            leaderboards: { easy: [], normal: [], hard: [] }
+            leaderboards: { easy: [], normal: [], hard: [] },
+            lastPlayerName: ''
         };
         
         let deletedRecords = { easy: [], normal: [], hard: [] };
@@ -3270,9 +3271,12 @@
             }
             
             function updateStickyVisibility() {
+                const victoryModal = $('victory-modal');
+                const victoryModalVisible = victoryModal && !victoryModal.classList.contains('hidden');
                 const inputAreaHidden = inputArea.offsetParent === null || 
                                         inputArea.classList.contains('hidden') ||
-                                        !stickyInputState.isNormalMode;
+                                        !stickyInputState.isNormalMode ||
+                                        victoryModalVisible;
                 
                 if (inputAreaHidden) {
                     stickyContainer.classList.remove('visible');
@@ -4013,6 +4017,8 @@
             if (!input) return;
             
             elements.guessInput.value = '';
+            const stickyInput = $('sticky-guess-input');
+            if (stickyInput) stickyInput.value = '';
             
             const command = input.toLowerCase();
             
@@ -4338,6 +4344,15 @@
                     elements.finalGuesses.textContent = gameState.guessCount;
                     elements.finalHints.textContent = gameState.hintsUsed;
                     elements.victoryModal.classList.remove('hidden');
+                    
+                    if (stats.lastPlayerName) {
+                        elements.playerName.value = stats.lastPlayerName;
+                    }
+                    
+                    const stickyContainer = $('sticky-input-container');
+                    if (stickyContainer) {
+                        stickyContainer.classList.remove('visible');
+                    }
                 }, 500);
             }
         }
@@ -4836,6 +4851,8 @@
             stats.leaderboards[gameState.difficulty].push(entry);
             stats.leaderboards[gameState.difficulty].sort((a, b) => b.score - a.score);
             stats.leaderboards[gameState.difficulty] = stats.leaderboards[gameState.difficulty].slice(0, 10);
+            
+            stats.lastPlayerName = name;
             
             saveStats();
             
