@@ -832,48 +832,86 @@
         </footer>
     </main>
     
-    <div id="victory-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl p-6 md:p-8 max-w-md w-full shadow-2xl transform scale-100 transition-transform">
-            <div class="text-center">
-                <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-green-400 to-emerald-500 flex items-center justify-center shadow-lg">
-                    <svg class="w-8 h-8 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-                        <polyline points="22 4 12 14.01 9 11.01"></polyline>
-                    </svg>
+    <div id="victory-modal" class="victory-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="victory-title">
+        <div class="victory-confetti" id="victory-confetti"></div>
+        <div class="victory-card" id="victory-card">
+            <button id="btn-close-victory" class="victory-close-btn" aria-label="关闭">
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
+            <div class="victory-icon-wrap">
+                <div class="victory-icon-ring"></div>
+                <svg class="victory-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                    <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                </svg>
+            </div>
+            <h2 id="victory-title" class="victory-title">恭喜获胜！</h2>
+            <p class="victory-subtitle">你成功猜对了所有地铁站名！</p>
+            <div class="victory-badge-stars-row">
+                <div id="victory-difficulty-badge" class="victory-difficulty-badge">普通</div>
+                <div class="victory-stars" id="victory-stars">
+                    <span class="victory-star" data-index="0">★</span>
+                    <span class="victory-star" data-index="1">★</span>
+                    <span class="victory-star" data-index="2">★</span>
+                    <span class="victory-star" data-index="3">★</span>
+                    <span class="victory-star" data-index="4">★</span>
                 </div>
-                <h2 class="text-2xl font-bold text-slate-900 mb-2 font-display">恭喜获胜！</h2>
-                <p class="text-slate-600 mb-4">你成功猜对了所有地铁站名！</p>
-                <div class="bg-slate-100 rounded-lg p-4 mb-4">
-                    <div class="grid grid-cols-2 gap-4 text-center">
-                        <div>
-                            <div class="text-sm text-slate-500">用时</div>
-                            <div id="final-time" class="text-xl font-bold text-blue-600">00:00</div>
-                        </div>
-                        <div>
-                            <div class="text-sm text-slate-500">得分</div>
-                            <div id="final-score" class="text-xl font-bold text-green-600 score-popup">0</div>
-                        </div>
-                        <div>
-                            <div class="text-sm text-slate-500">猜测次数</div>
-                            <div id="final-guesses" class="text-xl font-bold text-orange-600">0</div>
-                        </div>
-                        <div>
-                            <div class="text-sm text-slate-500">使用提示</div>
-                            <div id="final-hints" class="text-xl font-bold text-purple-600">0</div>
-                        </div>
+            </div>
+            <div class="victory-stats-grid">
+                <div class="victory-stat">
+                    <div class="victory-stat-icon">
+                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
                     </div>
+                    <div class="victory-stat-label">用时</div>
+                    <div id="final-time" class="victory-stat-value victory-stat-time">00:00</div>
                 </div>
-                <div class="mb-4">
-                    <input type="text" id="player-name" placeholder="输入你的名字" maxlength="20" class="w-full px-4 py-2 rounded-lg border border-slate-200 bg-white text-slate-800 placeholder-slate-400 focus:outline-none focus:border-blue-500">
+                <div class="victory-stat victory-stat-highlight">
+                    <div class="victory-stat-icon">
+                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                    </div>
+                    <div class="victory-stat-label">得分</div>
+                    <div id="final-score" class="victory-stat-value victory-stat-score">0</div>
                 </div>
-                <div class="flex justify-center gap-3">
-                    <button id="btn-save-score" class="btn-primary px-6 py-2.5 rounded-lg text-white font-medium cursor-pointer">
-                        保存成绩
-                    </button>
-                    <button id="btn-play-again" class="btn-secondary px-6 py-2.5 rounded-lg text-white font-medium cursor-pointer">
-                        再玩一次
-                    </button>
+                <div class="victory-stat">
+                    <div class="victory-stat-icon">
+                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                    </div>
+                    <div class="victory-stat-label">猜测次数</div>
+                    <div id="final-guesses" class="victory-stat-value victory-stat-guesses">0</div>
                 </div>
+                <div class="victory-stat">
+                    <div class="victory-stat-icon">
+                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
+                    </div>
+                    <div class="victory-stat-label">使用提示</div>
+                    <div id="final-hints" class="victory-stat-value victory-stat-hints">0</div>
+                </div>
+            </div>
+            <div id="victory-bonus-row" class="victory-bonus-row hidden">
+                <div class="victory-bonus-item">
+                    <span class="victory-bonus-label">时间奖励</span>
+                    <span id="final-time-bonus" class="victory-bonus-value">+0</span>
+                </div>
+                <div class="victory-bonus-item">
+                    <span class="victory-bonus-label">难度加成</span>
+                    <span id="final-multiplier" class="victory-bonus-value">×1</span>
+                </div>
+            </div>
+            <div class="victory-name-input-wrap">
+                <input type="text" id="player-name" placeholder="输入你的名字" maxlength="20" class="victory-name-input">
+            </div>
+            <div class="victory-actions">
+                <button id="btn-save-score" class="victory-btn victory-btn-primary cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                    保存成绩
+                </button>
+                <button id="btn-play-again" class="victory-btn victory-btn-secondary cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+                    再玩一次
+                </button>
             </div>
         </div>
     </div>
@@ -3272,7 +3310,7 @@
             
             function updateStickyVisibility() {
                 const victoryModal = $('victory-modal');
-                const victoryModalVisible = victoryModal && !victoryModal.classList.contains('hidden');
+                const victoryModalVisible = victoryModal && victoryModal.classList.contains('active');
                 const inputAreaHidden = inputArea.offsetParent === null || 
                                         inputArea.classList.contains('hidden') ||
                                         !stickyInputState.isNormalMode ||
@@ -3799,6 +3837,7 @@
             });
             
             elements.victoryModal.classList.add('hidden');
+            elements.victoryModal.classList.remove('active');
             
             if (elements.guessHistoryContainer) {
                 elements.guessHistoryContainer.classList.remove('hidden');
@@ -4319,6 +4358,150 @@
             elements.hintsLeft.textContent = gameState.hintsLeft;
         }
 
+        function showVictoryModal(result) {
+            const modal = elements.victoryModal;
+            const confettiContainer = $('victory-confetti');
+            const difficultyBadge = $('victory-difficulty-badge');
+            const bonusRow = $('victory-bonus-row');
+
+            elements.finalTime.textContent = MetroGameLogic.formatTime(gameState.elapsedTime);
+            elements.finalGuesses.textContent = gameState.guessCount;
+            elements.finalHints.textContent = gameState.hintsUsed;
+
+            if (difficultyBadge) {
+                difficultyBadge.textContent = MetroGameLogic.getDifficultyLabel(gameState.difficulty);
+                difficultyBadge.className = 'victory-difficulty-badge ' + gameState.difficulty;
+            }
+
+            if (result && result.timeBonus !== undefined) {
+                if (bonusRow) {
+                    bonusRow.classList.remove('hidden');
+                }
+                const timeBonusEl = $('final-time-bonus');
+                const multiplierEl = $('final-multiplier');
+                if (timeBonusEl) timeBonusEl.textContent = '+' + result.timeBonus;
+                if (multiplierEl) multiplierEl.textContent = '×' + result.multiplier;
+            } else {
+                if (bonusRow) bonusRow.classList.add('hidden');
+            }
+
+            const starCount = calculateStarRating(gameState.score, gameState.difficulty);
+            const stars = document.querySelectorAll('.victory-star');
+            stars.forEach((star, i) => {
+                star.classList.remove('active');
+                star.style.animationDelay = '';
+            });
+            setTimeout(() => {
+                stars.forEach((star, i) => {
+                    if (i < starCount) {
+                        star.style.animationDelay = (i * 0.12) + 's';
+                        star.classList.add('active');
+                    }
+                });
+            }, 400);
+
+            animateNumber(elements.finalScore, 0, gameState.score, 800);
+
+            if (confettiContainer) {
+                createConfetti(confettiContainer);
+            }
+
+            modal.classList.remove('hidden');
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                    modal.classList.add('active');
+                });
+            });
+
+            if (stats.lastPlayerName) {
+                elements.playerName.value = stats.lastPlayerName;
+            }
+
+            const stickyContainer = $('sticky-input-container');
+            if (stickyContainer) {
+                stickyContainer.classList.remove('visible');
+            }
+        }
+
+        function hideVictoryModal() {
+            const modal = elements.victoryModal;
+            modal.classList.remove('active');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                const confettiContainer = $('victory-confetti');
+                if (confettiContainer) confettiContainer.innerHTML = '';
+            }, 350);
+        }
+
+        function calculateStarRating(score, difficulty) {
+            const thresholds = {
+                easy: [50, 150, 300, 500, 800],
+                normal: [100, 300, 500, 800, 1200],
+                hard: [150, 400, 700, 1100, 1600]
+            };
+            const t = thresholds[difficulty] || thresholds.normal;
+            for (let i = t.length - 1; i >= 0; i--) {
+                if (score >= t[i]) return i + 1;
+            }
+            return 1;
+        }
+
+        function animateNumber(element, start, end, duration) {
+            if (!element) return;
+            const startTime = performance.now();
+            function update(currentTime) {
+                const elapsed = currentTime - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                const eased = 1 - Math.pow(1 - progress, 3);
+                const current = Math.round(start + (end - start) * eased);
+                element.textContent = current;
+                if (progress < 1) {
+                    requestAnimationFrame(update);
+                }
+            }
+            requestAnimationFrame(update);
+        }
+
+        function createConfetti(container) {
+            container.innerHTML = '';
+            const colors = ['#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#14b8a6', '#f97316'];
+            const shapes = ['circle', 'rect', 'triangle'];
+            for (let i = 0; i < 50; i++) {
+                const piece = document.createElement('div');
+                piece.className = 'victory-confetti-piece';
+                const color = colors[Math.floor(Math.random() * colors.length)];
+                const shape = shapes[Math.floor(Math.random() * shapes.length)];
+                const left = Math.random() * 100;
+                const fallDuration = 2 + Math.random() * 2;
+                const fallDelay = Math.random() * 0.8;
+                const rotation = 360 + Math.random() * 720;
+                const size = 6 + Math.random() * 8;
+
+                piece.style.left = left + '%';
+                piece.style.setProperty('--fall-duration', fallDuration + 's');
+                piece.style.setProperty('--fall-delay', fallDelay + 's');
+                piece.style.setProperty('--rotation', rotation + 'deg');
+                piece.style.width = size + 'px';
+                piece.style.height = size + 'px';
+                piece.style.backgroundColor = color;
+
+                if (shape === 'circle') {
+                    piece.style.borderRadius = '50%';
+                } else if (shape === 'triangle') {
+                    piece.style.width = '0';
+                    piece.style.height = '0';
+                    piece.style.backgroundColor = 'transparent';
+                    piece.style.borderLeft = (size / 2) + 'px solid transparent';
+                    piece.style.borderRight = (size / 2) + 'px solid transparent';
+                    piece.style.borderBottom = size + 'px solid ' + color;
+                } else {
+                    piece.style.borderRadius = '2px';
+                }
+
+                container.appendChild(piece);
+            }
+        }
+
         function checkWinCondition() {
             if (gameState.solvedStations.size === gameState.stations.length) {
                 gameState.gameWon = true;
@@ -4339,20 +4522,7 @@
                 playSound('victory');
                 
                 setTimeout(() => {
-                    elements.finalTime.textContent = MetroGameLogic.formatTime(gameState.elapsedTime);
-                    elements.finalScore.textContent = gameState.score;
-                    elements.finalGuesses.textContent = gameState.guessCount;
-                    elements.finalHints.textContent = gameState.hintsUsed;
-                    elements.victoryModal.classList.remove('hidden');
-                    
-                    if (stats.lastPlayerName) {
-                        elements.playerName.value = stats.lastPlayerName;
-                    }
-                    
-                    const stickyContainer = $('sticky-input-container');
-                    if (stickyContainer) {
-                        stickyContainer.classList.remove('visible');
-                    }
+                    showVictoryModal(result);
                 }, 500);
             }
         }
@@ -4842,7 +5012,7 @@
             if (isDuplicate) {
                 console.log('重复记录已跳过:', name, gameState.score);
                 showToast('该成绩已存在，无需重复提交！', 'info');
-                elements.victoryModal.classList.add('hidden');
+                hideVictoryModal();
                 switchMode('leaderboard');
                 renderLeaderboard(gameState.difficulty);
                 return;
@@ -4882,7 +5052,7 @@
                             if (cloudDuplicate) {
                                 console.log('云端已存在相同记录，跳过保存');
                                 showToast('该成绩已存在，无需重复提交！', 'info');
-                                elements.victoryModal.classList.add('hidden');
+                                hideVictoryModal();
                                 switchMode('leaderboard');
                                 renderLeaderboard(gameState.difficulty);
                                 return;
@@ -4918,7 +5088,7 @@
                 showToast('成绩已保存！', 'success');
             }
             
-            elements.victoryModal.classList.add('hidden');
+            hideVictoryModal();
             switchMode('leaderboard');
             renderLeaderboard(gameState.difficulty);
         }
@@ -4962,7 +5132,7 @@
                     renderGuessHistory();
                     
                     if (gameState.gameWon) {
-                        elements.victoryModal.classList.remove('hidden');
+                        showVictoryModal(null);
                     }
                     
                     addToHistory('加载游戏', 'info', '游戏状态已加载');
@@ -5082,11 +5252,24 @@
             elements.soundToggle.addEventListener('click', toggleSound);
             
             elements.btnPlayAgain.addEventListener('click', () => {
-                elements.victoryModal.classList.add('hidden');
+                hideVictoryModal();
                 startNewGame();
             });
             
             elements.btnSaveScore.addEventListener('click', saveScore);
+            
+            const closeVictoryBtn = $('btn-close-victory');
+            if (closeVictoryBtn) {
+                closeVictoryBtn.addEventListener('click', hideVictoryModal);
+            }
+            
+            if (elements.victoryModal) {
+                elements.victoryModal.addEventListener('click', (e) => {
+                    if (e.target === elements.victoryModal) {
+                        hideVictoryModal();
+                    }
+                });
+            }
             
             if (elements.modeNormal) elements.modeNormal.addEventListener('click', () => switchMode('normal'));
             if (elements.modeReverse) elements.modeReverse.addEventListener('click', () => switchMode('reverse'));
@@ -5269,7 +5452,9 @@
             
             document.addEventListener('keydown', (e) => {
                 if (e.key === 'Escape') {
-                    elements.victoryModal.classList.add('hidden');
+                    if (elements.victoryModal.classList.contains('active')) {
+                        hideVictoryModal();
+                    }
                 }
                 
                 if (e.ctrlKey || e.metaKey || e.altKey) return;
