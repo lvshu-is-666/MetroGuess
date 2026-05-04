@@ -152,7 +152,7 @@
         </div>
         <div class="mobile-nav-modes">
             <div class="nav-mode-wrapper">
-                <a href="index.html" class="nav-mode-btn icon-only active">
+                <a href="index.html" class="nav-mode-btn icon-only active" data-mode="normal">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
                     </svg>
@@ -416,7 +416,7 @@
                         <div class="stat-label">连击</div>
                         <div id="combo" class="stat-value text-orange-600">0</div>
                     </div>
-                    <div class="stat-item">
+                    <div class="stat-item" id="hints-stat-item" style="display: none;">
                         <div class="stat-label">提示</div>
                         <div id="hints-left" class="stat-value text-purple-600">3</div>
                     </div>
@@ -452,8 +452,8 @@
                             <div id="progress-bar-mobile" class="progress-bar" style="width: 0%"></div>
                         </div>
                     </div>
-                    <div class="flex flex-wrap gap-3 items-center">
-                        <div class="flex items-center gap-2">
+                    <div class="flex flex-wrap gap-3 items-center justify-center">
+                        <div class="flex items-center gap-2 transition-all duration-300 ease-out">
                             <span class="text-sm font-medium text-slate-700">难度:</span>
                             <div class="flex gap-1.5">
                                 <button data-difficulty="easy" class="difficulty-btn px-2.5 py-1 rounded-lg text-xs font-medium text-slate-700 cursor-pointer">
@@ -467,18 +467,18 @@
                                 </button>
                             </div>
                         </div>
-                        <div class="flex items-center gap-2">
+                        <div class="flex items-center gap-2 transition-all duration-300 ease-out">
                             <span class="text-sm font-medium text-slate-700">站名数:</span>
                             <input type="number" id="station-count" min="1" max="20" value="4" class="w-14 px-2 py-1 rounded-lg border border-slate-200 bg-white text-slate-700 text-xs text-center">
                         </div>
-                        <div class="flex items-center gap-2">
+                        <div class="flex items-center gap-2 transition-all duration-300 ease-out">
                             <span class="text-sm font-medium text-slate-700">城市:</span>
                             <div id="city-select-modern"></div>
                             <select id="city-select" class="hidden">
                                 <option value="all">全部城市</option>
                             </select>
                         </div>
-                        <div class="flex items-center gap-2">
+                        <div class="flex items-center gap-2 transition-all duration-300 ease-out">
                             <span class="text-sm font-medium text-slate-700">题组:</span>
                             <div id="quiz-select-modern"></div>
                             <select id="quiz-select" class="hidden">
@@ -1098,6 +1098,69 @@
             return el;
         };
 
+        const SettingsFlipAnimation = {
+            positions: new Map(),
+            container: null,
+            items: null,
+            
+            recordPositions() {
+                this.container = document.querySelector('#settings-panel .flex.flex-wrap');
+                if (!this.container) return;
+                this.items = this.container.querySelectorAll(':scope > div');
+                this.positions.clear();
+                this.items.forEach(item => {
+                    const cityContainer = item.querySelector('#city-select-modern');
+                    const quizContainer = item.querySelector('#quiz-select-modern');
+                    if (cityContainer && !cityContainer.querySelector('.city-selector-wrapper')) {
+                        return;
+                    }
+                    if (quizContainer && !quizContainer.querySelector('.quiz-selector-wrapper')) {
+                        return;
+                    }
+                    const rect = item.getBoundingClientRect();
+                    if (rect.width > 0 && rect.height > 0) {
+                        this.positions.set(item, { left: rect.left, top: rect.top, width: rect.width, height: rect.height });
+                    }
+                });
+            },
+            
+            playAnimation(duration = 300) {
+                if (!this.items || this.items.length === 0) return;
+                this.items.forEach(item => {
+                    const first = this.positions.get(item);
+                    if (!first) {
+                        item.style.opacity = '0';
+                        item.style.transition = 'none';
+                        requestAnimationFrame(() => {
+                            item.style.transition = `opacity ${duration}ms ease-out`;
+                            item.style.opacity = '';
+                        });
+                        return;
+                    }
+                    const last = item.getBoundingClientRect();
+                    const deltaX = first.left - last.left;
+                    const deltaY = first.top - last.top;
+                    if (deltaX !== 0 || deltaY !== 0) {
+                        item.style.transform = `translate(${deltaX}px, ${deltaY}px)`;
+                        item.style.transition = 'none';
+                        requestAnimationFrame(() => {
+                            item.style.transition = `transform ${duration}ms ease-out`;
+                            item.style.transform = '';
+                        });
+                    }
+                });
+            },
+            
+            animate(duration = 300) {
+                this.recordPositions();
+                requestAnimationFrame(() => {
+                    requestAnimationFrame(() => {
+                        this.playAnimation(duration);
+                    });
+                });
+            }
+        };
+
         let _renderScheduled = false;
         let _renderFlags = {};
         function scheduleRender(flags = {}) {
@@ -1148,7 +1211,7 @@
             gameWon: false,
             score: 0,
             hintsUsed: 0,
-            hintsLeft: 3,
+            hintsLeft: Infinity,
             startTime: null,
             elapsedTime: 0,
             usedLetters: new Set(),
@@ -1563,7 +1626,9 @@
                 if (parsed.length > 0) {
                     stationDatabase = parsed;
                     console.log(`Loaded ${parsed.length} stations from encrypted data`);
+                    SettingsFlipAnimation.recordPositions();
                     updateCitySelect();
+                    requestAnimationFrame(() => SettingsFlipAnimation.playAnimation(150));
                 }
             } catch (e) {
                 console.log('Failed to decrypt data:', e);
@@ -1581,10 +1646,14 @@
                     showAllOption: true,
                     allText: '全部城市',
                     size: 'small',
+                    beforeChange: () => {
+                        SettingsFlipAnimation.recordPositions();
+                    },
                     onChange: (value) => {
                         gameState.selectedCity = value;
                         stats.currentStreak = 0;
                         startNewGame();
+                        requestAnimationFrame(() => SettingsFlipAnimation.playAnimation());
                     }
                 });
             }
@@ -1598,7 +1667,9 @@
                 if (typeof FirebaseConfig !== 'undefined') {
                     await FirebaseConfig.init();
                     availableQuizzes = await FirebaseConfig.getQuizList({ limit: 50 });
+                    SettingsFlipAnimation.recordPositions();
                     updateQuizSelect();
+                    requestAnimationFrame(() => SettingsFlipAnimation.playAnimation());
                 }
             } catch (e) {
                 console.log('Failed to load quiz list:', e);
@@ -1622,10 +1693,14 @@
                     allText: '随机选题',
                     size: 'small',
                     quizzes: availableQuizzes,
+                    beforeChange: () => {
+                        SettingsFlipAnimation.recordPositions();
+                    },
                     onChange: (value) => {
                         gameState.selectedQuiz = value;
                         stats.currentStreak = 0;
                         startNewGame();
+                        requestAnimationFrame(() => SettingsFlipAnimation.playAnimation());
                     }
                 });
             }
@@ -3195,7 +3270,6 @@
             loadStats();
             loadDeletedRecords();
             deduplicateLocalLeaderboards();
-            updateCitySelect();
             loadQuizList();
             renderAchievements();
             updateStatsDisplay();
@@ -4900,7 +4974,12 @@
             const navModeBtns = document.querySelectorAll('.nav-mode-btn');
             navModeBtns.forEach(btn => btn.classList.remove('active'));
             const activeNavModeBtn = document.querySelector(`.nav-mode-btn[data-mode="${mode}"]`);
-            if (activeNavModeBtn) activeNavModeBtn.classList.add('active');
+            if (activeNavModeBtn) {
+                activeNavModeBtn.classList.add('active');
+            } else if (mode === 'multiplayer' || mode === 'leaderboard' || mode === 'reverse') {
+                const gameModeBtn = document.querySelector('.nav-mode-btn[data-mode="normal"]');
+                if (gameModeBtn) gameModeBtn.classList.add('active');
+            }
             
             elements.normalModeArea.classList.add('hidden');
             elements.reverseModeArea.classList.add('hidden');
@@ -5435,12 +5514,14 @@
             
             document.querySelectorAll('.difficulty-btn').forEach(btn => {
                 btn.addEventListener('click', () => {
+                    SettingsFlipAnimation.recordPositions();
                     $all('.difficulty-btn').forEach(b => b.classList.remove('active'));
                     btn.classList.add('active');
                     gameState.difficulty = btn.dataset.difficulty;
                     stats.currentStreak = 0;
                     startNewGame();
                     showToast(`难度已切换到${btn.textContent}`, 'info');
+                    requestAnimationFrame(() => SettingsFlipAnimation.playAnimation());
                 });
             });
             
@@ -5467,9 +5548,11 @@
             $('station-count').addEventListener('change', (e) => {
                 const count = parseInt(e.target.value);
                 if (count >= 1 && count <= 20) {
+                    SettingsFlipAnimation.recordPositions();
                     stats.currentStreak = 0;
                     startNewGame();
                     showToast(`站名数已设置为${count}`, 'info');
+                    requestAnimationFrame(() => SettingsFlipAnimation.playAnimation());
                 }
             });
             

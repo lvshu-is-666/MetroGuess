@@ -538,6 +538,7 @@ const MetroCommon = {
             showAllOption = true,
             allText = '全部城市',
             onChange = null,
+            beforeChange = null,
             placeholder = '搜索城市...',
             size = 'default'
         } = options;
@@ -792,6 +793,9 @@ const MetroCommon = {
         };
 
         const selectCity = (value) => {
+            if (beforeChange) {
+                beforeChange(value);
+            }
             currentCity = value;
             const selectedCityEl = trigger.querySelector('.selected-city');
             selectedCityEl.textContent = value === 'all' ? allText : value;
@@ -945,6 +949,7 @@ const MetroCommon = {
             showAllOption = true,
             allText = '随机选题',
             onChange = null,
+            beforeChange = null,
             placeholder = '搜索题组...',
             size = 'default',
             quizzes = []
@@ -1121,6 +1126,9 @@ const MetroCommon = {
         };
 
         const selectQuiz = (value) => {
+            if (beforeChange) {
+                beforeChange(value);
+            }
             currentQuiz = value;
             const selectedQuizEl = trigger.querySelector('.selected-quiz');
             

@@ -1,26 +1,26 @@
 const MetroGameLogic = {
     SCORE_CONFIG: {
-        REVEAL_FOUND_BASE: -2,
-        REVEAL_NOT_FOUND_BASE: -5,
+        REVEAL_FOUND_BASE: -3,
+        REVEAL_NOT_FOUND_BASE: -8,
         REVEAL_FREE_THRESHOLD: 3,
         REVEAL_PENALTY_GROWTH: 0.5,
-        GUESS_CORRECT_BASE: 90,
+        GUESS_CORRECT_BASE: 100,
         GUESS_WRONG: -20,
-        HINT_PENALTY_LETTER: -12,
-        HINT_PENALTY_CITY: -50,
+        HINT_PENALTY_LETTER: -10,
+        HINT_PENALTY_CITY: -30,
         HINT_PENALTY_WORD: -55,
-        HINT_PENALTY_CHINESE: -90,
+        HINT_PENALTY_CHINESE: -95,
         COMBO_BONUS_PER_COMBO: 25,
-        AUTO_SOLVE_BASE: 40,
+        AUTO_SOLVE_BASE: 30,
         TIME_BONUS_MULTIPLIER: 1.5
     },
 
     COMBO_TIME_WINDOW: 5000,
 
     DIFFICULTY_SETTINGS: {
-        easy: { stationCount: 3, hints: 8, timeBonus: 180, multiplier: 1, difficultyLevel: 'easy' },
-        normal: { stationCount: 4, hints: 5, timeBonus: 300, multiplier: 1.5, difficultyLevel: 'normal' },
-        hard: { stationCount: 6, hints: 3, timeBonus: 480, multiplier: 2, difficultyLevel: 'hard' }
+        easy: { stationCount: 3, hints: Infinity, timeBonus: 180, multiplier: 1, difficultyLevel: 'easy' },
+        normal: { stationCount: 4, hints: Infinity, timeBonus: 300, multiplier: 1.5, difficultyLevel: 'normal' },
+        hard: { stationCount: 6, hints: Infinity, timeBonus: 480, multiplier: 2, difficultyLevel: 'hard' }
     },
 
     LETTER_FREQUENCY: {
