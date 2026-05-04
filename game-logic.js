@@ -117,30 +117,38 @@ const MetroGameLogic = {
 
     getDisplayText(stationEn, revealedLetters, isSolved, devMode = false, revealedSpecialChars = new Set()) {
         if (isSolved || devMode) {
-            return stationEn.split('').map(char => {
-                if (/[a-zA-Z]/.test(char)) {
-                    return `<span class="letter-reveal text-blue-600">${char}</span>`;
+            let result = '';
+            for (let i = 0; i < stationEn.length; i++) {
+                const c = stationEn.charCodeAt(i);
+                if ((c >= 65 && c <= 90) || (c >= 97 && c <= 122)) {
+                    result += '<span class="letter-reveal text-blue-600">' + stationEn[i] + '</span>';
+                } else {
+                    result += stationEn[i];
                 }
-                return char;
-            }).join('');
+            }
+            return result;
         }
 
-        return stationEn.split('').map(char => {
-            const lowerChar = char.toLowerCase();
-            if (/[a-z]/.test(lowerChar)) {
-                if (revealedLetters && revealedLetters.has(lowerChar)) {
-                    return `<span class="letter-reveal text-blue-600">${char}</span>`;
+        let result = '';
+        for (let i = 0; i < stationEn.length; i++) {
+            const char = stationEn[i];
+            const c = char.charCodeAt(0);
+            const lower = c | 32;
+            if (lower >= 97 && lower <= 122) {
+                if (revealedLetters && revealedLetters.has(char.toLowerCase())) {
+                    result += '<span class="letter-reveal text-blue-600">' + char + '</span>';
+                } else {
+                    result += '*';
                 }
-                return '*';
+            } else if (char === ' ') {
+                result += ' ';
+            } else if (revealedSpecialChars && revealedSpecialChars.has(char)) {
+                result += '<span class="letter-reveal text-blue-600">' + char + '</span>';
+            } else {
+                result += '*';
             }
-            if (char === ' ') {
-                return ' ';
-            }
-            if (revealedSpecialChars && revealedSpecialChars.has(char)) {
-                return `<span class="letter-reveal text-blue-600">${char}</span>`;
-            }
-            return '*';
-        }).join('');
+        }
+        return result;
     },
 
     normalizeStationName(name) {

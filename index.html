@@ -3920,7 +3920,7 @@
         function createStationCard(station, index) {
             const isSolved = gameState.solvedStations.has(index);
             const revealed = gameState.revealedLetters[index];
-            const displayText = getDisplayText(station.station_en, revealed, isSolved, gameState.devMode, gameState.revealedSpecialChars);
+            const displayText = MetroGameLogic.getDisplayText(station.station_en, revealed, isSolved, gameState.devMode, gameState.revealedSpecialChars);
             const difficulty = station.calculatedDifficulty || StationUtils.calculateStationDifficulty(station);
             const difficultyLabel = difficulty === 'easy' ? '简单' : difficulty === 'normal' ? '普通' : '困难';
             const difficultyColor = difficulty === 'easy' ? 'bg-green-100 text-green-700' : 
@@ -3957,12 +3957,7 @@
         function updateStationCard(card, station, index) {
             const isSolved = gameState.solvedStations.has(index);
             const revealed = gameState.revealedLetters[index];
-            const displayText = getDisplayText(station.station_en, revealed, isSolved, gameState.devMode, gameState.revealedSpecialChars);
-            const difficulty = station.calculatedDifficulty || StationUtils.calculateStationDifficulty(station);
-            const difficultyLabel = difficulty === 'easy' ? '简单' : difficulty === 'normal' ? '普通' : '困难';
-            const difficultyColor = difficulty === 'easy' ? 'bg-green-100 text-green-700' : 
-                                   difficulty === 'normal' ? 'bg-yellow-100 text-yellow-700' : 
-                                   'bg-red-100 text-red-700';
+            const displayText = MetroGameLogic.getDisplayText(station.station_en, revealed, isSolved, gameState.devMode, gameState.revealedSpecialChars);
             
             card.className = `station-card rounded-xl p-4 ${isSolved ? 'solved' : ''}`;
             
@@ -3971,12 +3966,6 @@
             
             const solvedBadge = card.querySelector('.solved-badge');
             if (solvedBadge) solvedBadge.classList.toggle('hidden', !isSolved);
-            
-            const difficultyBadge = card.querySelector('.difficulty-badge');
-            if (difficultyBadge) {
-                difficultyBadge.textContent = difficultyLabel;
-                difficultyBadge.className = `text-xs px-2 py-0.5 rounded ${difficultyColor} difficulty-badge`;
-            }
             
             const existingInfo = card.querySelector('.station-info');
             const shouldShowInfo = isSolved || gameState.devMode;
@@ -3992,34 +3981,6 @@
             } else if (!shouldShowInfo && existingInfo) {
                 existingInfo.remove();
             }
-        }
-
-        function getDisplayText(stationName, revealedLetters, isSolved, devMode = false, revealedSpecialChars = null) {
-            if (isSolved || devMode) {
-                return stationName.split('').map(char => {
-                    if (/[a-zA-Z]/.test(char)) {
-                        return `<span class="letter-reveal text-blue-600">${char}</span>`;
-                    }
-                    return char;
-                }).join('');
-            }
-            
-            return stationName.split('').map(char => {
-                const lowerChar = char.toLowerCase();
-                if (/[a-z]/.test(lowerChar)) {
-                    if (revealedLetters.has(lowerChar)) {
-                        return `<span class="letter-reveal text-blue-600">${char}</span>`;
-                    }
-                    return '*';
-                }
-                if (char === ' ') {
-                    return ' ';
-                }
-                if (revealedSpecialChars && revealedSpecialChars.has(char)) {
-                    return `<span class="letter-reveal text-blue-600">${char}</span>`;
-                }
-                return '*';
-            }).join('');
         }
 
         function renderLetterKeyboard() {
@@ -4090,8 +4051,6 @@
                 return;
             }
             
-            gameState.guessCount++;
-            
             if (command === '结束') {
                 addToHistory('结束游戏', 'info');
                 startNewGame();
@@ -4124,149 +4083,71 @@
         }
 
         function revealLetter(letter) {
-            const isSpecialChar = !/[a-z]/.test(letter);
+            const result = MetroGameLogic.revealLetter(gameState, letter);
             
-            if (isSpecialChar) {
-                if (gameState.usedSpecialChars.has(letter)) {
-                    addToHistory(`字符 ${letter} 已使用`, 'error');
-                    showToast('该字符已使用', 'error');
-                    return;
-                }
-                
-                gameState.usedSpecialChars.add(letter);
-                let found = false;
-                let matchCount = 0;
-                
-                gameState.stations.forEach((station, index) => {
-                    if (gameState.solvedStations.has(index)) return;
-                    
-                    const stationEn = station.station_en;
-                    if (stationEn.includes(letter)) {
-                        found = true;
-                        matchCount++;
-                    }
-                });
-                
-                if (found) {
-                    gameState.revealedSpecialChars.add(letter);
-                    gameState.foundSpecialChars.add(letter);
-                    gameState.score = Math.max(0, gameState.score - 5);
-                    playSound('reveal-found');
-                    addToHistory(`开 ${letter}`, 'success', `在 ${matchCount} 个站名中找到 (-5分)`);
-                } else {
-                    gameState.score = Math.max(0, gameState.score - 15);
-                    playSound('reveal-not-found');
-                    addToHistory(`开 ${letter}`, 'error', '未找到该字符 (-15分)');
-                    
-                    elements.stationsContainer.classList.add('shake');
-                    setTimeout(() => elements.stationsContainer.classList.remove('shake'), 500);
-                }
+            if (result.alreadyUsed) {
+                const isSpecialChar = !/[a-z]/.test(letter);
+                addToHistory(`${isSpecialChar ? '字符' : '字母'} ${letter.toUpperCase()} 已使用`, 'error');
+                showToast(`该${isSpecialChar ? '字符' : '字母'}已使用`, 'error');
+                return;
+            }
+            
+            if (result.found) {
+                playSound('reveal-found');
+                addToHistory(`开 ${letter.toUpperCase()}`, 'success', `在 ${result.matchCount} 个站名中找到 (${result.scoreChange}分)`);
             } else {
-                if (gameState.usedLetters.has(letter)) {
-                    addToHistory(`字母 ${letter.toUpperCase()} 已使用`, 'error');
-                    showToast('该字母已使用', 'error');
-                    return;
-                }
+                playSound('reveal-not-found');
+                addToHistory(`开 ${letter.toUpperCase()}`, 'error', `未找到该字母 (${result.scoreChange}分)`);
                 
-                gameState.usedLetters.add(letter);
-                let found = false;
-                let matchCount = 0;
-                
-                gameState.stations.forEach((station, index) => {
-                    if (gameState.solvedStations.has(index)) return;
-                    
-                    const stationLower = station.station_en.toLowerCase();
-                    if (stationLower.includes(letter)) {
-                        found = true;
-                        gameState.revealedLetters[index].add(letter);
-                        matchCount++;
-                    }
-                });
-                
-                if (found) {
-                    gameState.foundLetters.add(letter);
-                    gameState.score = Math.max(0, gameState.score - 5);
-                    playSound('reveal-found');
-                    addToHistory(`开 ${letter.toUpperCase()}`, 'success', `在 ${matchCount} 个站名中找到 (-5分)`);
-                } else {
-                    gameState.score = Math.max(0, gameState.score - 15);
-                    playSound('reveal-not-found');
-                    addToHistory(`开 ${letter.toUpperCase()}`, 'error', '未找到该字母 (-15分)');
-                    
-                    elements.stationsContainer.classList.add('shake');
-                    setTimeout(() => elements.stationsContainer.classList.remove('shake'), 500);
-                }
+                elements.stationsContainer.classList.add('shake');
+                setTimeout(() => elements.stationsContainer.classList.remove('shake'), 500);
             }
             
             renderStations();
             renderLetterKeyboard();
             updateScoreDisplay();
-            checkAutoSolved();
-        }
-
-        function checkAutoSolved() {
-            const autoSolved = MetroGameLogic.checkAutoSolved(gameState);
-
-            if (autoSolved.length === 0) return;
-
-            autoSolved.forEach(({ index, station, scoreChange, combo }) => {
-                stats.stationsSolved++;
-                playSound('correct');
-                addToHistory(`自动猜出`, 'success', `${station.city_cn} · ${station.station_cn} (+${scoreChange}分)`);
-
-                const card = document.getElementById(`station-${index}`);
-                if (card) {
-                    card.classList.add('pulse-success');
-                    const rect = card.getBoundingClientRect();
-                    showFloatingScore(scoreChange, rect.left + rect.width / 2, rect.top);
-                }
-            });
-
-            renderStations();
-            renderLetterKeyboard();
-            updateScoreDisplay();
             updateProgressBar();
-            updateComboDisplay();
-            checkWinCondition();
+            
+            const autoSolved = MetroGameLogic.checkAutoSolved(gameState);
+            if (autoSolved.length > 0) {
+                autoSolved.forEach(({ index, station, scoreChange, combo }) => {
+                    stats.stationsSolved++;
+                    playSound('correct');
+                    addToHistory(`自动猜出`, 'success', `${station.city_cn} · ${station.station_cn} (+${scoreChange}分)`);
+                    const card = document.getElementById(`station-${index}`);
+                    if (card) {
+                        card.classList.add('pulse-success');
+                        const rect = card.getBoundingClientRect();
+                        showFloatingScore(scoreChange, rect.left + rect.width / 2, rect.top);
+                    }
+                });
+                renderStations();
+                renderLetterKeyboard();
+                updateScoreDisplay();
+                updateProgressBar();
+                updateComboDisplay();
+                
+                if (gameState.solvedStations.size === gameState.stations.length) {
+                    checkWinCondition();
+                }
+            }
         }
 
         function guessStation(guess) {
-            let correct = false;
-            let matchedStation = null;
-            let matchedIndex = -1;
+            const result = MetroGameLogic.guessStation(gameState, guess);
             
-            gameState.stations.forEach((station, index) => {
-                if (gameState.solvedStations.has(index)) return;
-                
-                if (MetroGameLogic.compareStationNames(guess, station.station_en) ||
-                    MetroGameLogic.compareStationNames(guess, station.station_cn)) {
-                    correct = true;
-                    matchedIndex = index;
-                    matchedStation = station;
-                }
-            });
-            
-            if (correct && matchedIndex !== -1) {
-                gameState.solvedStations.add(matchedIndex);
-                
-                const now = Date.now();
-                if (now - gameState.lastCorrectTime < 5000) {
-                    gameState.combo++;
-                    playSound('combo');
-                } else {
-                    gameState.combo = 1;
-                }
-                gameState.lastCorrectTime = now;
-                
-                const comboBonus = gameState.combo * 5;
-                const totalPoints = 100 + comboBonus;
-                gameState.score += totalPoints;
+            if (result.correct && result.matchedIndex !== -1) {
+                const matchedStation = result.matchedStation;
+                const totalPoints = result.scoreChange;
                 stats.stationsSolved++;
                 
+                if (result.combo > 1) {
+                    playSound('combo');
+                }
                 playSound('correct');
                 addToHistory(`猜 ${guess}`, 'success', `正确！${matchedStation.city_cn} · ${matchedStation.station_cn} (+${totalPoints}分)`);
                 
-                const card = document.getElementById(`station-${matchedIndex}`);
+                const card = document.getElementById(`station-${result.matchedIndex}`);
                 if (card) {
                     card.classList.add('pulse-success');
                     const rect = card.getBoundingClientRect();
@@ -4274,10 +4155,14 @@
                 }
                 
                 renderStations();
+                renderLetterKeyboard();
                 updateScoreDisplay();
                 updateProgressBar();
                 updateComboDisplay();
-                checkWinCondition();
+                
+                if (gameState.solvedStations.size === gameState.stations.length) {
+                    checkWinCondition();
+                }
             } else {
                 gameState.combo = 0;
                 updateComboDisplay();
@@ -4337,11 +4222,31 @@
                 addToHistory(`使用提示`, 'info', `${message}${countText} (-30分)`);
                 showToast(`提示：${message}${countText}`, 'info');
 
+                const autoSolved = MetroGameLogic.checkAutoSolved(gameState);
+                if (autoSolved.length > 0) {
+                    autoSolved.forEach(({ index, station, scoreChange, combo }) => {
+                        stats.stationsSolved++;
+                        playSound('correct');
+                        addToHistory(`自动猜出`, 'success', `${station.city_cn} · ${station.station_cn} (+${scoreChange}分)`);
+                        const card = document.getElementById(`station-${index}`);
+                        if (card) {
+                            card.classList.add('pulse-success');
+                            const rect = card.getBoundingClientRect();
+                            showFloatingScore(scoreChange, rect.left + rect.width / 2, rect.top);
+                        }
+                    });
+                }
+
                 renderStations();
                 renderLetterKeyboard();
                 updateScoreDisplay();
+                updateProgressBar();
+                updateComboDisplay();
                 elements.hintsLeft.textContent = gameState.hintsLeft;
-                checkAutoSolved();
+
+                if (autoSolved.length > 0) {
+                    checkWinCondition();
+                }
             }
         }
 

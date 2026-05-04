@@ -1239,11 +1239,27 @@
                 addGuessHistory(`开字母 ${letter}`, false);
             }
 
+            const autoSolved = MetroGameLogic.checkAutoSolved(gameState);
+            if (autoSolved.length > 0) {
+                autoSolved.forEach(({ index, station, scoreChange, combo }) => {
+                    playSound('correct');
+                    showFloatingScore(`+${scoreChange}`, 'green');
+                    addGuessHistory(`自动猜出`, true, true);
+                    const card = document.getElementById(`station-${index}`);
+                    if (card) {
+                        card.classList.add('pulse-success');
+                    }
+                });
+            }
+
             renderStations();
             renderKeyboard();
             updateScore();
+            updateProgress();
 
-            checkAutoSolved();
+            if (autoSolved.length > 0 && gameState.solvedStations.size >= gameState.stations.length) {
+                gameWon();
+            }
             
             if (fromSticky) {
                 const stickyInput = $('sticky-guess-input');
@@ -1261,32 +1277,6 @@
             floatEl.style.transform = 'translate(-50%, -50%)';
             container.appendChild(floatEl);
             setTimeout(() => floatEl.remove(), 1000);
-        }
-
-        function checkAutoSolved() {
-            const autoSolved = MetroGameLogic.checkAutoSolved(gameState);
-
-            if (autoSolved.length === 0) return;
-
-            autoSolved.forEach(({ index, station, scoreChange, combo }) => {
-                playSound('correct');
-                showFloatingScore(`+${scoreChange}`, 'green');
-                addGuessHistory(`自动猜出`, true, true);
-
-                const card = document.getElementById(`station-${index}`);
-                if (card) {
-                    card.classList.add('pulse-success');
-                }
-            });
-
-            renderStations();
-            renderKeyboard();
-            updateScore();
-            updateProgress();
-
-            if (gameState.solvedStations.size >= gameState.stations.length) {
-                gameWon();
-            }
         }
 
         function handleGuess(input, fromSticky = false) {
@@ -1326,6 +1316,11 @@
                     $('sticky-guess-input').value = '';
                 }
 
+                renderStations();
+                renderKeyboard();
+                updateScore();
+                updateProgress();
+
                 if (gameState.solvedStations.size >= gameState.stations.length) {
                     gameWon();
                 }
@@ -1334,10 +1329,8 @@
                 showFloatingScore('0', 'red');
 
                 addGuessHistory(`猜站名 "${trimmed}"`, false);
+                updateScore();
             }
-
-            renderStations();
-            updateScore();
         }
 
         function useHint() {
@@ -1377,13 +1370,29 @@
                 const countText = result.revealedCount > 1 ? ` (${result.revealedCount}处)` : '';
                 addGuessHistory(`使用提示: ${message}${countText}`, true);
 
+                const autoSolved = MetroGameLogic.checkAutoSolved(gameState);
+                if (autoSolved.length > 0) {
+                    autoSolved.forEach(({ index, station, scoreChange, combo }) => {
+                        playSound('correct');
+                        showFloatingScore(`+${scoreChange}`, 'green');
+                        addGuessHistory(`自动猜出`, true, true);
+                        const card = document.getElementById(`station-${index}`);
+                        if (card) {
+                            card.classList.add('pulse-success');
+                        }
+                    });
+                }
+
                 renderStations();
                 renderKeyboard();
                 updateScore();
+                updateProgress();
 
                 MetroCommon.showToast(message + countText, 'success');
 
-                checkAutoSolved();
+                if (autoSolved.length > 0 && gameState.solvedStations.size >= gameState.stations.length) {
+                    gameWon();
+                }
             }
         }
 
