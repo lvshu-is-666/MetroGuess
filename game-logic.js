@@ -1,10 +1,15 @@
 const MetroGameLogic = {
     SCORE_CONFIG: {
-        REVEAL_FOUND: -5,
-        REVEAL_NOT_FOUND: -15,
+        REVEAL_FOUND_BASE: -5,
+        REVEAL_NOT_FOUND_BASE: -15,
+        REVEAL_FREE_THRESHOLD: 5,
+        REVEAL_PENALTY_GROWTH: 1.5,
         GUESS_CORRECT_BASE: 100,
         GUESS_WRONG: 0,
-        HINT_PENALTY: -30,
+        HINT_PENALTY_LETTER: -20,
+        HINT_PENALTY_CITY: -60,
+        HINT_PENALTY_WORD: -120,
+        HINT_PENALTY_CHINESE: -200,
         COMBO_BONUS_PER_COMBO: 5,
         AUTO_SOLVE_BASE: 50,
         TIME_BONUS_MULTIPLIER: 2
@@ -164,13 +169,25 @@ const MetroGameLogic = {
         return normalizedInput === normalizedTarget;
     },
 
+    calculateRevealPenalty(state, basePenalty) {
+        const usedCount = state.usedLetters.size + state.usedSpecialChars.size;
+        const threshold = this.SCORE_CONFIG.REVEAL_FREE_THRESHOLD;
+        if (usedCount <= threshold) {
+            return basePenalty;
+        }
+        const excess = usedCount - threshold;
+        const multiplier = 1 + excess * this.SCORE_CONFIG.REVEAL_PENALTY_GROWTH;
+        return Math.round(basePenalty * multiplier);
+    },
+
     revealLetter(state, letter) {
         const isSpecialChar = !/[a-z]/.test(letter);
         const result = {
             found: false,
             matchCount: 0,
             scoreChange: 0,
-            alreadyUsed: false
+            alreadyUsed: false,
+            penaltyMultiplier: 1
         };
 
         if (isSpecialChar) {
@@ -194,9 +211,9 @@ const MetroGameLogic = {
             if (result.found) {
                 state.revealedSpecialChars.add(letter);
                 state.foundSpecialChars.add(letter);
-                result.scoreChange = this.SCORE_CONFIG.REVEAL_FOUND;
+                result.scoreChange = this.calculateRevealPenalty(state, this.SCORE_CONFIG.REVEAL_FOUND_BASE);
             } else {
-                result.scoreChange = this.SCORE_CONFIG.REVEAL_NOT_FOUND;
+                result.scoreChange = this.calculateRevealPenalty(state, this.SCORE_CONFIG.REVEAL_NOT_FOUND_BASE);
             }
         } else {
             if (state.usedLetters.has(letter)) {
@@ -219,10 +236,16 @@ const MetroGameLogic = {
 
             if (result.found) {
                 state.foundLetters.add(letter);
-                result.scoreChange = this.SCORE_CONFIG.REVEAL_FOUND;
+                result.scoreChange = this.calculateRevealPenalty(state, this.SCORE_CONFIG.REVEAL_FOUND_BASE);
             } else {
-                result.scoreChange = this.SCORE_CONFIG.REVEAL_NOT_FOUND;
+                result.scoreChange = this.calculateRevealPenalty(state, this.SCORE_CONFIG.REVEAL_NOT_FOUND_BASE);
             }
+        }
+
+        const usedCount = state.usedLetters.size + state.usedSpecialChars.size;
+        const threshold = this.SCORE_CONFIG.REVEAL_FREE_THRESHOLD;
+        if (usedCount > threshold) {
+            result.penaltyMultiplier = 1 + (usedCount - threshold) * this.SCORE_CONFIG.REVEAL_PENALTY_GROWTH;
         }
 
         state.score = Math.max(0, state.score + result.scoreChange);
@@ -313,6 +336,83 @@ const MetroGameLogic = {
         return autoSolved;
     },
 
+    HINT_TYPES: {
+        letter: { key: 'letter', label: '揭示字母', description: '揭示一个关键字母', penaltyKey: 'HINT_PENALTY_LETTER' },
+        city: { key: 'city', label: '揭示城市', description: '显示一个站点的所属城市', penaltyKey: 'HINT_PENALTY_CITY' },
+        word: { key: 'word', label: '揭示单词', description: '揭示一个站点的一个完整单词', penaltyKey: 'HINT_PENALTY_WORD' },
+        chinese: { key: 'chinese', label: '揭示中文', description: '显示一个站点的中文名称', penaltyKey: 'HINT_PENALTY_CHINESE' }
+    },
+
+    getUnsolvedStationInfo(state) {
+        const unsolvedIndices = state.stations
+            .map((_, index) => index)
+            .filter(index => !state.solvedStations.has(index));
+
+        if (unsolvedIndices.length === 0) return null;
+
+        const stationScores = unsolvedIndices.map(index => {
+            const station = state.stations[index];
+            const stationLower = station.station_en.toLowerCase();
+            const allLetters = stationLower.split('').filter(char => /[a-z]/.test(char));
+            const revealedSet = state.revealedLetters[index] || new Set();
+            const unrevealedCount = allLetters.filter(l => !revealedSet.has(l)).length;
+            const revealedRatio = allLetters.length > 0 ? revealedSet.size / allLetters.length : 0;
+            const hasMultipleWords = station.station_en.includes(' ');
+
+            return {
+                index,
+                station,
+                stationLower,
+                allLetters,
+                unrevealedCount,
+                revealedRatio,
+                hasMultipleWords,
+                priority: unrevealedCount * 10 - revealedRatio * 5
+            };
+        });
+
+        stationScores.sort((a, b) => b.priority - a.priority);
+        return stationScores;
+    },
+
+    selectSmartHintType(state) {
+        const stationInfos = this.getUnsolvedStationInfo(state);
+        if (!stationInfos || stationInfos.length === 0) return 'letter';
+
+        let totalLetters = 0;
+        let totalRevealed = 0;
+        let hasMultiWordStation = false;
+
+        for (const info of stationInfos) {
+            totalLetters += info.allLetters.length;
+            totalRevealed += info.allLetters.filter(l => (state.revealedLetters[info.index] || new Set()).has(l)).length;
+            if (info.hasMultipleWords) hasMultiWordStation = true;
+        }
+
+        const overallRevealedRatio = totalLetters > 0 ? totalRevealed / totalLetters : 0;
+        const usedLetterCount = state.usedLetters.size;
+
+        if (overallRevealedRatio < 0.3) {
+            return 'letter';
+        }
+
+        if (overallRevealedRatio < 0.5) {
+            if (hasMultiWordStation) return 'word';
+            return 'city';
+        }
+
+        if (overallRevealedRatio < 0.75) {
+            if (hasMultiWordStation) return 'word';
+            return 'city';
+        }
+
+        if (overallRevealedRatio < 0.9) {
+            return 'chinese';
+        }
+
+        return 'chinese';
+    },
+
     useHint(state) {
         const result = {
             success: false,
@@ -322,8 +422,15 @@ const MetroGameLogic = {
             noHintsLeft: false,
             allSolved: false,
             noLettersToReveal: false,
+            noCityToReveal: false,
+            noChineseToReveal: false,
+            noWordToReveal: false,
             revealedCount: 0,
-            hintType: null
+            hintType: null,
+            cityName: null,
+            chineseName: null,
+            revealedWord: null,
+            revealedWordPosition: -1
         };
 
         if (state.hintsLeft <= 0) {
@@ -338,6 +445,142 @@ const MetroGameLogic = {
         if (unsolvedIndices.length === 0) {
             result.allSolved = true;
             return result;
+        }
+
+        const hintType = this.selectSmartHintType(state);
+        result.hintType = hintType;
+
+        const penaltyConfig = this.HINT_TYPES[hintType] || this.HINT_TYPES.letter;
+        result.scoreChange = this.SCORE_CONFIG[penaltyConfig.penaltyKey];
+
+        if (hintType === 'city') {
+            const stationInfos = this.getUnsolvedStationInfo(state);
+            if (!stationInfos || stationInfos.length === 0) {
+                result.allSolved = true;
+                return result;
+            }
+            const target = stationInfos[0];
+            const cityName = target.station.city_cn;
+            if (!cityName) {
+                result.noCityToReveal = true;
+                state.hintsLeft--;
+                state.hintsUsed++;
+                result.scoreChange = this.SCORE_CONFIG.HINT_PENALTY_LETTER;
+                return this._useLetterHint(state, result);
+            }
+            state.hintsLeft--;
+            state.hintsUsed++;
+            result.success = true;
+            result.stationIndex = target.index;
+            result.cityName = cityName;
+            state.score = Math.max(0, state.score + result.scoreChange);
+            return result;
+        }
+
+        if (hintType === 'chinese') {
+            const stationInfos = this.getUnsolvedStationInfo(state);
+            if (!stationInfos || stationInfos.length === 0) {
+                result.allSolved = true;
+                return result;
+            }
+            const target = stationInfos[0];
+            const chineseName = target.station.station_cn;
+            if (!chineseName) {
+                result.noChineseToReveal = true;
+                state.hintsLeft--;
+                state.hintsUsed++;
+                result.scoreChange = this.SCORE_CONFIG.HINT_PENALTY_LETTER;
+                return this._useLetterHint(state, result);
+            }
+            state.hintsLeft--;
+            state.hintsUsed++;
+            result.success = true;
+            result.stationIndex = target.index;
+            result.chineseName = chineseName;
+            state.score = Math.max(0, state.score + result.scoreChange);
+            return result;
+        }
+
+        if (hintType === 'word') {
+            const stationInfos = this.getUnsolvedStationInfo(state);
+            if (!stationInfos || stationInfos.length === 0) {
+                result.allSolved = true;
+                return result;
+            }
+
+            let bestTarget = null;
+            let bestWordIdx = -1;
+            let bestUnrevealedCount = 0;
+
+            for (const info of stationInfos) {
+                if (!info.hasMultipleWords) continue;
+                const words = info.station.station_en.split(/\s+/);
+                const revealedSet = state.revealedLetters[info.index] || new Set();
+
+                for (let w = 0; w < words.length; w++) {
+                    const wordLetters = words[w].toLowerCase().split('').filter(c => /[a-z]/.test(c));
+                    const unrevealed = wordLetters.filter(l => !revealedSet.has(l)).length;
+                    if (unrevealed > bestUnrevealedCount) {
+                        bestUnrevealedCount = unrevealed;
+                        bestWordIdx = w;
+                        bestTarget = info;
+                    }
+                }
+            }
+
+            if (!bestTarget || bestWordIdx === -1 || bestUnrevealedCount === 0) {
+                state.hintsLeft--;
+                state.hintsUsed++;
+                result.scoreChange = this.SCORE_CONFIG.HINT_PENALTY_LETTER;
+                return this._useLetterHint(state, result);
+            }
+
+            const words = bestTarget.station.station_en.split(/\s+/);
+            const wordToReveal = words[bestWordIdx].toLowerCase();
+            const lettersInWord = wordToReveal.split('').filter(c => /[a-z]/.test(c));
+            const uniqueLetters = [...new Set(lettersInWord)];
+
+            uniqueLetters.forEach(letter => {
+                state.stations.forEach((station, idx) => {
+                    if (state.solvedStations.has(idx)) return;
+                    const stationLower = station.station_en.toLowerCase();
+                    if (stationLower.includes(letter)) {
+                        state.revealedLetters[idx].add(letter);
+                    }
+                });
+                state.usedLetters.add(letter);
+                state.foundLetters.add(letter);
+            });
+
+            state.hintsLeft--;
+            state.hintsUsed++;
+            result.success = true;
+            result.stationIndex = bestTarget.index;
+            result.revealedWord = words[bestWordIdx];
+            result.revealedWordPosition = bestWordIdx;
+            result.revealedCount = uniqueLetters.length;
+            state.score = Math.max(0, state.score + result.scoreChange);
+            return result;
+        }
+
+        return this._useLetterHint(state, result);
+    },
+
+    _useLetterHint(state, result) {
+        const unsolvedIndices = state.stations
+            .map((_, index) => index)
+            .filter(index => !state.solvedStations.has(index));
+
+        if (unsolvedIndices.length === 0) {
+            result.allSolved = true;
+            return result;
+        }
+
+        if (result.hintType !== 'letter' && result.hintType !== 'city' && result.hintType !== 'chinese' && result.hintType !== 'word') {
+            result.hintType = 'letter';
+        }
+        if (result.scoreChange === 0) {
+            result.scoreChange = this.SCORE_CONFIG.HINT_PENALTY_LETTER;
         }
 
         const stationScores = unsolvedIndices.map(index => {
@@ -363,7 +606,7 @@ const MetroGameLogic = {
 
         let targetStation = null;
         let targetLetter = null;
-        let hintType = null;
+        let letterHintType = null;
 
         for (const stationInfo of stationScores) {
             const { index, station, stationLower, allLetters, revealedRatio } = stationInfo;
@@ -376,7 +619,7 @@ const MetroGameLogic = {
             if (firstLetter && !revealedSet.has(firstLetter[0])) {
                 targetStation = stationInfo;
                 targetLetter = firstLetter[0];
-                hintType = 'first_letter';
+                letterHintType = 'first_letter';
                 break;
             }
 
@@ -384,7 +627,7 @@ const MetroGameLogic = {
             if (rareLetters.length > 0) {
                 targetStation = stationInfo;
                 targetLetter = rareLetters[0];
-                hintType = 'rare_letter';
+                letterHintType = 'rare_letter';
                 break;
             }
 
@@ -392,13 +635,13 @@ const MetroGameLogic = {
             if (mediumLetters.length > 0) {
                 targetStation = stationInfo;
                 targetLetter = mediumLetters[0];
-                hintType = 'medium_letter';
+                letterHintType = 'medium_letter';
                 break;
             }
 
             targetStation = stationInfo;
             targetLetter = unrevealedLetters[0];
-            hintType = 'common_letter';
+            letterHintType = 'common_letter';
             break;
         }
 
@@ -426,15 +669,17 @@ const MetroGameLogic = {
 
         state.usedLetters.add(targetLetter);
         state.foundLetters.add(targetLetter);
-        state.hintsLeft--;
-        state.hintsUsed++;
+
+        if (!result.success) {
+            state.hintsLeft--;
+            state.hintsUsed++;
+        }
 
         result.success = true;
         result.letter = targetLetter;
         result.stationIndex = targetIndex;
         result.revealedCount = revealedCount;
-        result.hintType = hintType;
-        result.scoreChange = this.SCORE_CONFIG.HINT_PENALTY;
+        result.hintType = letterHintType;
 
         state.score = Math.max(0, state.score + result.scoreChange);
 

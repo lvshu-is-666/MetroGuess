@@ -1231,12 +1231,14 @@
 
             if (result.found) {
                 playSound('reveal-found');
+                const penaltyText = result.penaltyMultiplier > 1 ? ` (${result.scoreChange}分 ×${result.penaltyMultiplier.toFixed(1)})` : '';
                 showFloatingScore(`${result.scoreChange}`, 'green');
-                addGuessHistory(`开字母 ${letter}`, true);
+                addGuessHistory(`开字母 ${letter}${penaltyText}`, true);
             } else {
                 playSound('reveal-not-found');
+                const penaltyText = result.penaltyMultiplier > 1 ? ` (${result.scoreChange}分 ×${result.penaltyMultiplier.toFixed(1)})` : '';
                 showFloatingScore(`${result.scoreChange}`, 'red');
-                addGuessHistory(`开字母 ${letter}`, false);
+                addGuessHistory(`开字母 ${letter}${penaltyText}`, false);
             }
 
             const autoSolved = MetroGameLogic.checkAutoSolved(gameState);
@@ -1357,19 +1359,46 @@
                 return;
             }
 
+            if (result.noCityToReveal) {
+                MetroCommon.showToast('没有可揭示的城市信息', 'info');
+                return;
+            }
+
+            if (result.noChineseToReveal) {
+                MetroCommon.showToast('没有可揭示的中文信息', 'info');
+                return;
+            }
+
+            if (result.noWordToReveal) {
+                MetroCommon.showToast('没有可揭示的单词（单词站名或已全部揭示）', 'info');
+                return;
+            }
+
             if (result.success) {
                 playSound('hint');
                 showFloatingScore(`${result.scoreChange}`, 'purple');
-                
-                const hintMessages = {
-                    first_letter: `首字母 "${result.letter.toUpperCase()}" 已揭示！`,
-                    rare_letter: `稀有字母 "${result.letter.toUpperCase()}" 已揭示！`,
-                    medium_letter: `关键字母 "${result.letter.toUpperCase()}" 已揭示！`,
-                    common_letter: `字母 "${result.letter.toUpperCase()}" 已揭示！`
-                };
-                const message = hintMessages[result.hintType] || `字母 "${result.letter.toUpperCase()}" 已揭示！`;
-                const countText = result.revealedCount > 1 ? ` (${result.revealedCount}处)` : '';
-                addGuessHistory(`使用提示: ${message}${countText}`, true);
+
+                if (result.cityName) {
+                    addGuessHistory(`使用提示: 城市是 "${result.cityName}" (${result.scoreChange}分)`, true);
+                    MetroCommon.showToast(`提示：该站点位于 ${result.cityName} (${result.scoreChange}分)`, 'success');
+                } else if (result.chineseName) {
+                    addGuessHistory(`使用提示: 中文站名是 "${result.chineseName}" (${result.scoreChange}分)`, true);
+                    MetroCommon.showToast(`提示：中文站名是 ${result.chineseName} (${result.scoreChange}分)`, 'success');
+                } else if (result.revealedWord) {
+                    addGuessHistory(`使用提示: 单词 "${result.revealedWord}" 已揭示 (${result.scoreChange}分)`, true);
+                    MetroCommon.showToast(`提示：单词 "${result.revealedWord}" 已揭示 (${result.scoreChange}分)`, 'success');
+                } else {
+                    const hintMessages = {
+                        first_letter: `首字母 "${result.letter.toUpperCase()}" 已揭示！`,
+                        rare_letter: `稀有字母 "${result.letter.toUpperCase()}" 已揭示！`,
+                        medium_letter: `关键字母 "${result.letter.toUpperCase()}" 已揭示！`,
+                        common_letter: `字母 "${result.letter.toUpperCase()}" 已揭示！`
+                    };
+                    const message = hintMessages[result.hintType] || `字母 "${result.letter.toUpperCase()}" 已揭示！`;
+                    const countText = result.revealedCount > 1 ? ` (${result.revealedCount}处)` : '';
+                    addGuessHistory(`使用提示: ${message}${countText} (${result.scoreChange}分)`, true);
+                    MetroCommon.showToast(message + countText + ` (${result.scoreChange}分)`, 'success');
+                }
 
                 const autoSolved = MetroGameLogic.checkAutoSolved(gameState);
                 if (autoSolved.length > 0) {
@@ -1388,8 +1417,6 @@
                 renderKeyboard();
                 updateScore();
                 updateProgress();
-
-                MetroCommon.showToast(message + countText, 'success');
 
                 if (autoSolved.length > 0 && gameState.solvedStations.size >= gameState.stations.length) {
                     gameWon();
@@ -1623,6 +1650,10 @@
             gameState.devMode = savedDevMode;
 
             $('victory-modal').classList.add('hidden');
+            $('timer').textContent = '00:00';
+            $('score').textContent = '0';
+            $('combo').textContent = '0';
+            $('hints-left').textContent = gameState.hintsLeft;
             $('guess-history').innerHTML = '<p class="text-slate-400 text-sm text-center py-4">暂无记录</p>';
             $('guess-count').textContent = '0';
             $('player-name').value = '';
@@ -1631,6 +1662,13 @@
             $('guess-input').value = '';
             if ($('sticky-guess-input')) {
                 $('sticky-guess-input').value = '';
+            }
+
+            const leaderboardSection = $('leaderboard-section');
+            const gameArea = $('game-area');
+            if (!leaderboardSection.classList.contains('hidden')) {
+                leaderboardSection.classList.add('hidden');
+                gameArea.classList.remove('hidden');
             }
 
             let displayName;
@@ -1647,6 +1685,7 @@
             renderStations();
             renderKeyboard();
             updateScore();
+            updateProgress();
             startTimer();
             initStickyInput();
             initStickyProgress();

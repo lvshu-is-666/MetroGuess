@@ -3843,6 +3843,11 @@
                 elements.guessHistoryContainer.classList.remove('hidden');
             }
             
+            updateTimerDisplay();
+            updateScoreDisplay();
+            if (elements.combo) elements.combo.textContent = '0';
+            if (elements.hintsLeft) elements.hintsLeft.textContent = gameState.hintsLeft;
+            
             renderStations();
             renderLetterKeyboard();
             updateStats();
@@ -4094,10 +4099,12 @@
             
             if (result.found) {
                 playSound('reveal-found');
-                addToHistory(`开 ${letter.toUpperCase()}`, 'success', `在 ${result.matchCount} 个站名中找到 (${result.scoreChange}分)`);
+                const penaltyNote = result.penaltyMultiplier > 1 ? ` (×${result.penaltyMultiplier.toFixed(1)}递增惩罚)` : '';
+                addToHistory(`开 ${letter.toUpperCase()}`, 'success', `在 ${result.matchCount} 个站名中找到 (${result.scoreChange}分)${penaltyNote}`);
             } else {
                 playSound('reveal-not-found');
-                addToHistory(`开 ${letter.toUpperCase()}`, 'error', `未找到该字母 (${result.scoreChange}分)`);
+                const penaltyNote = result.penaltyMultiplier > 1 ? ` (×${result.penaltyMultiplier.toFixed(1)}递增惩罚)` : '';
+                addToHistory(`开 ${letter.toUpperCase()}`, 'error', `未找到该字母 (${result.scoreChange}分)${penaltyNote}`);
                 
                 elements.stationsContainer.classList.add('shake');
                 setTimeout(() => elements.stationsContainer.classList.remove('shake'), 500);
@@ -4207,16 +4214,27 @@
             if (result.success) {
                 playSound('hint');
 
-                const hintMessages = {
-                    first_letter: `首字母 "${result.letter.toUpperCase()}"`,
-                    rare_letter: `稀有字母 "${result.letter.toUpperCase()}"`,
-                    medium_letter: `关键字母 "${result.letter.toUpperCase()}"`,
-                    common_letter: `字母 "${result.letter.toUpperCase()}"`
-                };
-                const message = hintMessages[result.hintType] || `字母 "${result.letter.toUpperCase()}"`;
-                const countText = result.revealedCount > 1 ? ` (${result.revealedCount}处)` : '';
-                addToHistory(`使用提示`, 'info', `${message}${countText} (-30分)`);
-                showToast(`提示：${message}${countText}`, 'info');
+                if (result.cityName) {
+                    addToHistory(`使用提示`, 'info', `城市是 "${result.cityName}" (${result.scoreChange}分)`);
+                    showToast(`提示：该站点位于 ${result.cityName} (${result.scoreChange}分)`, 'info');
+                } else if (result.chineseName) {
+                    addToHistory(`使用提示`, 'info', `中文站名是 "${result.chineseName}" (${result.scoreChange}分)`);
+                    showToast(`提示：中文站名是 ${result.chineseName} (${result.scoreChange}分)`, 'info');
+                } else if (result.revealedWord) {
+                    addToHistory(`使用提示`, 'info', `单词 "${result.revealedWord}" 已揭示 (${result.scoreChange}分)`);
+                    showToast(`提示：单词 "${result.revealedWord}" 已揭示 (${result.scoreChange}分)`, 'info');
+                } else {
+                    const hintMessages = {
+                        first_letter: `首字母 "${result.letter.toUpperCase()}"`,
+                        rare_letter: `稀有字母 "${result.letter.toUpperCase()}"`,
+                        medium_letter: `关键字母 "${result.letter.toUpperCase()}"`,
+                        common_letter: `字母 "${result.letter.toUpperCase()}"`
+                    };
+                    const message = hintMessages[result.hintType] || `字母 "${result.letter.toUpperCase()}"`;
+                    const countText = result.revealedCount > 1 ? ` (${result.revealedCount}处)` : '';
+                    addToHistory(`使用提示`, 'info', `${message}${countText} (${result.scoreChange}分)`);
+                    showToast(`提示：${message}${countText} (${result.scoreChange}分)`, 'info');
+                }
 
                 const autoSolved = MetroGameLogic.checkAutoSolved(gameState);
                 if (autoSolved.length > 0) {
