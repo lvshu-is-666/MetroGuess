@@ -2388,8 +2388,9 @@
         function showFloatingScore(points, x, y) {
             requestAnimationFrame(() => {
                 const scoreEl = document.createElement('div');
-                scoreEl.className = 'float-score text-2xl font-bold text-green-500';
-                scoreEl.textContent = `+${points}`;
+                const isNegative = points < 0;
+                scoreEl.className = `float-score text-2xl font-bold ${isNegative ? 'text-red-500' : 'text-green-500'}`;
+                scoreEl.textContent = isNegative ? `${points}` : `+${points}`;
                 scoreEl.style.left = `${x}px`;
                 scoreEl.style.top = `${y}px`;
                 elements.floatingScores.appendChild(scoreEl);
@@ -2781,7 +2782,7 @@
             
             if (found) {
                 gameState.foundLetters.add(letter);
-                gameState.score = Math.max(0, gameState.score - 5);
+                gameState.score = gameState.score - 5;
                 playSound('reveal');
                 addToHistory(`开 ${letter.toUpperCase()}`, 'success', `在 ${matchCount} 个单词中找到 (-5分)`);
                 
@@ -2790,7 +2791,7 @@
                     createParticles(btn.getBoundingClientRect().left + 16, btn.getBoundingClientRect().top + 16, 5);
                 }
             } else {
-                gameState.score = Math.max(0, gameState.score - 15);
+                gameState.score = gameState.score - 15;
                 playSound('wrong');
                 addToHistory(`开 ${letter.toUpperCase()}`, 'error', '未找到该字母 (-15分)');
                 
@@ -2824,7 +2825,7 @@
                     }
                     gameState.lastCorrectTime = now;
                     
-                    const comboBonus = gameState.combo * 5;
+                    const comboBonus = Math.max(0, gameState.combo - 1) * 5;
                     const totalPoints = 50 + comboBonus;
                     gameState.score += totalPoints;
                     
@@ -2873,7 +2874,7 @@
                 }
                 gameState.lastCorrectTime = now;
                 
-                const comboBonus = gameState.combo * 5;
+                const comboBonus = Math.max(0, gameState.combo - 1) * 5;
                 const totalPoints = 100 + comboBonus;
                 gameState.score += totalPoints;
                 
@@ -3002,7 +3003,7 @@
                 gameState.foundLetters.add(targetLetter);
                 gameState.hintsLeft--;
                 gameState.hintsUsed++;
-                gameState.score = Math.max(0, gameState.score - 30);
+                gameState.score = gameState.score - 30;
                 
                 playSound('hint');
                 
@@ -3031,7 +3032,7 @@
         function showMeaningHint(index, wordObj) {
             gameState.hintsLeft--;
             gameState.hintsUsed++;
-            gameState.score = Math.max(0, gameState.score - 30);
+            gameState.score = gameState.score - 30;
             
             playSound('hint');
             addToHistory(`使用提示`, 'info', `#${index + 1} 的意思是：${wordObj.translation} (-30分)`);
@@ -3185,6 +3186,13 @@
 
         function updateScoreDisplay() {
             elements.score.textContent = gameState.score;
+            if (gameState.score < 0) {
+                elements.score.classList.remove('text-indigo-600');
+                elements.score.classList.add('text-red-600');
+            } else {
+                elements.score.classList.remove('text-red-600');
+                elements.score.classList.add('text-indigo-600');
+            }
         }
 
         function addToHistory(action, type, detail = '') {

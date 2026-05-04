@@ -434,10 +434,7 @@
                     <a id="btn-new-game" href="#" class="action-link text-blue-600">新游戏</a>
                     <a id="btn-hint" href="#" class="action-link text-purple-600">提示</a>
                     <button id="toggle-settings" class="settings-btn" aria-label="收起设置">
-                        <svg id="settings-icon-expand" class="w-5 h-5 text-slate-600 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <polyline points="6 9 12 15 18 9"></polyline>
-                        </svg>
-                        <svg id="settings-icon-collapse" class="w-5 h-5 text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <svg class="w-5 h-5 text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <polyline points="18 15 12 9 6 15"></polyline>
                         </svg>
                     </button>
@@ -950,18 +947,6 @@
                         <li>输入 <span class="font-mono bg-slate-100 px-1 rounded">猜 [站名]</span> 猜测站名</li>
                     </ul>
                 </div>
-                <div>
-                    <h4 class="font-medium text-slate-800 mb-2">得分规则</h4>
-                    <ul class="space-y-1 list-disc list-inside">
-                        <li>猜对站名: +100分</li>
-                        <li>开字母猜对: -5分</li>
-                        <li>开字母猜错: -15分</li>
-                        <li>连击奖励: 连击数×5分</li>
-                        <li>使用提示: -30分</li>
-                        <li>时间奖励: 剩余时间×2分</li>
-                        <li>难度加成: 简单×1, 普通×1.5, 困难×2</li>
-                    </ul>
-                </div>
             </div>
         </div>
     </div>
@@ -1113,6 +1098,31 @@
             return el;
         };
 
+        let _renderScheduled = false;
+        let _renderFlags = {};
+        function scheduleRender(flags = {}) {
+            Object.assign(_renderFlags, flags);
+            if (!_renderScheduled) {
+                _renderScheduled = true;
+                requestAnimationFrame(() => {
+                    _renderScheduled = false;
+                    const f = _renderFlags;
+                    _renderFlags = {};
+                    if (f.stations) renderStationsImmediate();
+                    if (f.keyboard) renderLetterKeyboardImmediate();
+                    if (f.score) updateScoreDisplayImmediate();
+                    if (f.progress) updateProgressBarImmediate();
+                    if (f.combo) updateComboDisplayImmediate();
+                    if (f.stats) updateStatsImmediate();
+                });
+            }
+        }
+
+        let _keyboardBtns = null;
+        let _stationCards = [];
+        let _prevScore = 0;
+        let _scoreAnimFrame = null;
+
         function classifyStationsByDifficulty() {
             const classified = { easy: [], normal: [], hard: [] };
             stationDatabase.forEach(station => {
@@ -1235,8 +1245,6 @@
             btnCloseRules: $('btn-close-rules'),
             toggleSettings: $('toggle-settings'),
             settingsPanel: $('settings-panel'),
-            settingsIconExpand: $('settings-icon-expand'),
-            settingsIconCollapse: $('settings-icon-collapse'),
             mobileNavToggle: $('mobile-nav-toggle'),
             sidebar: $('sidebar'),
             sidebarOverlay: $('sidebar-overlay'),
@@ -1470,24 +1478,43 @@
                 }`;
                 toast.textContent = message;
                 elements.toastContainer.appendChild(toast);
-                
+
                 setTimeout(() => {
                     toast.classList.add('toast-exit');
-                    setTimeout(() => toast.remove(), 250);
-                }, 1800);
+                    setTimeout(() => {
+                        if (toast.parentNode) toast.remove();
+                    }, 300);
+                }, 2000);
             });
         }
 
+        let _floatingScorePool = [];
         function showFloatingScore(points, x, y) {
             requestAnimationFrame(() => {
-                const scoreEl = document.createElement('div');
-                scoreEl.className = 'float-score text-2xl font-bold text-green-500';
-                scoreEl.textContent = `+${points}`;
+                let scoreEl = _floatingScorePool.pop();
+                const isNegative = points < 0;
+                if (!scoreEl) {
+                    scoreEl = document.createElement('div');
+                }
+                scoreEl.className = `float-score text-2xl font-bold ${isNegative ? 'text-red-500' : 'text-green-500'}`;
+                scoreEl.textContent = isNegative ? `${points}` : `+${points}`;
                 scoreEl.style.left = `${x}px`;
                 scoreEl.style.top = `${y}px`;
+                scoreEl.style.opacity = '1';
+                scoreEl.style.transform = 'translateY(0) scale(1)';
+                scoreEl.style.animation = 'none';
                 elements.floatingScores.appendChild(scoreEl);
-                
-                setTimeout(() => scoreEl.remove(), 800);
+
+                requestAnimationFrame(() => {
+                    scoreEl.style.animation = 'floatUp 1.1s cubic-bezier(0.22, 1, 0.36, 1) forwards';
+                });
+
+                setTimeout(() => {
+                    if (scoreEl.parentNode) scoreEl.remove();
+                    if (_floatingScorePool.length < 5) {
+                        _floatingScorePool.push(scoreEl);
+                    }
+                }, 1100);
             });
         }
 
@@ -2710,11 +2737,11 @@
             
             if (found) {
                 mpState.foundLetters.add(letter);
-                mpState.score = Math.max(0, mpState.score - 5);
+                mpState.score = mpState.score - 5;
                 playSound('reveal-found');
                 showToast(`开 ${letter.toUpperCase()} - 在 ${matchCount} 个站名中找到 (-5分)`, 'success');
             } else {
-                mpState.score = Math.max(0, mpState.score - 10);
+                mpState.score = mpState.score - 10;
                 playSound('reveal-not-found');
                 showToast(`开 ${letter.toUpperCase()} - 未找到 (-10分)`, 'error');
             }
@@ -2825,7 +2852,7 @@
                 mpState.lastCorrectTime = now;
                 
                 // 计算得分：基础分 + combo加成
-                const comboBonus = mpState.combo * 10;
+                const comboBonus = Math.max(0, mpState.combo - 1) * 10;
                 const totalScore = 100 + comboBonus;
                 mpState.score = (mpState.score || 0) + totalScore;
                 
@@ -2847,7 +2874,7 @@
                 renderMultiplayerGame(mpState.gameData);
             } else {
                 mpState.combo = 0;
-                mpState.score = Math.max(0, (mpState.score || 0) - 30);
+                mpState.score = (mpState.score || 0) - 30;
                 playSound('wrong');
                 showToast(`猜 ${guess} - 不正确 (-30分)`, 'error');
             }
@@ -2905,7 +2932,7 @@
             mpState.foundLetters.add(randomLetter);
             mpState.mpHintsLeft--;
             mpState.mpHintsUsed = (mpState.mpHintsUsed || 0) + 1;
-            mpState.score = Math.max(0, (mpState.score || 0) - 15);
+            mpState.score = (mpState.score || 0) - 15;
             
             // 同步到服务器
             await syncMpGameState();
@@ -3849,6 +3876,7 @@
             }
             
             updateTimerDisplay();
+            _prevScore = 0;
             updateScoreDisplay();
             if (elements.combo) elements.combo.textContent = '0';
             if (elements.hintsLeft) elements.hintsLeft.textContent = gameState.hintsLeft;
@@ -3888,43 +3916,62 @@
         }
 
         function updateProgressBar() {
+            scheduleRender({ progress: true });
+        }
+
+        function updateProgressBarImmediate() {
             const total = gameState.stations.length;
             const solved = gameState.solvedStations.size;
             const percent = total > 0 ? (solved / total) * 100 : 0;
+            const prevWidth = parseFloat(elements.progressBar.style.width) || 0;
             elements.progressBar.style.width = `${percent}%`;
             elements.progressText.textContent = `${solved}/${total}`;
-            // Update mobile progress bar
             const mobileProgressBar = document.getElementById('progress-bar-mobile');
             const mobileProgressText = document.getElementById('progress-text-mobile');
             if (mobileProgressBar) mobileProgressBar.style.width = `${percent}%`;
             if (mobileProgressText) mobileProgressText.textContent = `${solved}/${total}`;
-            // Update sticky progress bar
             const stickyProgressFill = document.getElementById('sticky-progress-fill');
             if (stickyProgressFill) stickyProgressFill.style.width = `${percent}%`;
+            if (percent > prevWidth) {
+                elements.progressBar.classList.add('progress-pulse');
+                if (mobileProgressBar) mobileProgressBar.classList.add('progress-pulse');
+                if (stickyProgressFill) stickyProgressFill.classList.add('progress-pulse');
+                setTimeout(() => {
+                    elements.progressBar.classList.remove('progress-pulse');
+                    if (mobileProgressBar) mobileProgressBar.classList.remove('progress-pulse');
+                    if (stickyProgressFill) stickyProgressFill.classList.remove('progress-pulse');
+                }, 600);
+            }
         }
 
         function renderStations() {
+            scheduleRender({ stations: true });
+        }
+
+        function renderStationsImmediate() {
             const container = elements.stationsContainer;
             const currentCards = container.children;
-            
+
             if (currentCards.length !== gameState.stations.length) {
                 const fragment = document.createDocumentFragment();
+                _stationCards = [];
                 gameState.stations.forEach((station, index) => {
                     const card = createStationCard(station, index);
+                    card.style.animationDelay = `${index * 0.08}s`;
+                    card.classList.add('station-card-entry');
+                    _stationCards.push(card);
                     fragment.appendChild(card);
                 });
                 container.innerHTML = '';
                 container.appendChild(fragment);
                 return;
             }
-            
-            requestAnimationFrame(() => {
-                for (let i = 0; i < gameState.stations.length; i++) {
-                    const station = gameState.stations[i];
-                    const card = currentCards[i];
-                    updateStationCard(card, station, i);
-                }
-            });
+
+            for (let i = 0; i < gameState.stations.length; i++) {
+                const station = gameState.stations[i];
+                const card = currentCards[i];
+                updateStationCard(card, station, i);
+            }
         }
         
         function createStationCard(station, index) {
@@ -3968,62 +4015,128 @@
             const isSolved = gameState.solvedStations.has(index);
             const revealed = gameState.revealedLetters[index];
             const displayText = MetroGameLogic.getDisplayText(station.station_en, revealed, isSolved, gameState.devMode, gameState.revealedSpecialChars);
-            
-            card.className = `station-card rounded-xl p-4 ${isSolved ? 'solved' : ''}`;
-            
+
+            if (isSolved) {
+                if (!card.classList.contains('solved')) {
+                    card.classList.add('solved');
+                    card.classList.add('card-solved-entry');
+                    card.classList.add('card-solve-glow');
+                    setTimeout(() => {
+                        card.classList.remove('card-solved-entry');
+                    }, 550);
+                    setTimeout(() => {
+                        card.classList.remove('card-solve-glow');
+                    }, 900);
+                }
+            } else {
+                if (card.classList.contains('solved')) {
+                    card.classList.remove('solved');
+                }
+            }
+
             const letterDisplay = card.querySelector('.letter-display');
-            if (letterDisplay) letterDisplay.innerHTML = displayText;
-            
+            if (letterDisplay) {
+                const prevHtml = letterDisplay.innerHTML;
+                if (prevHtml !== displayText) {
+                    letterDisplay.innerHTML = displayText;
+                    const newReveals = letterDisplay.querySelectorAll('.letter-reveal');
+                    newReveals.forEach((el, i) => {
+                        el.style.animationDelay = `${i * 0.04}s`;
+                        el.style.animationFillMode = 'both';
+                    });
+                }
+            }
+
             const solvedBadge = card.querySelector('.solved-badge');
-            if (solvedBadge) solvedBadge.classList.toggle('hidden', !isSolved);
-            
+            if (solvedBadge) {
+                if (isSolved && solvedBadge.classList.contains('hidden')) {
+                    solvedBadge.classList.remove('hidden');
+                    solvedBadge.classList.add('animate-pop-in');
+                    setTimeout(() => solvedBadge.classList.remove('animate-pop-in'), 400);
+                } else if (!isSolved && !solvedBadge.classList.contains('hidden')) {
+                    solvedBadge.classList.add('hidden');
+                }
+            }
+
             const existingInfo = card.querySelector('.station-info');
             const shouldShowInfo = isSolved || gameState.devMode;
-            
+
             if (shouldShowInfo && !existingInfo) {
                 const infoDiv = document.createElement('div');
                 infoDiv.className = 'station-info text-center text-sm';
+                infoDiv.style.opacity = '0';
+                infoDiv.style.transform = 'translateY(10px)';
                 infoDiv.innerHTML = `
                     <p class="text-slate-800 font-medium dark:text-slate-200 station-cn">${station.station_cn}</p>
                     <p class="text-slate-500 text-xs">${station.city_cn} · ${station.city_en}</p>
                 `;
                 card.appendChild(infoDiv);
+                requestAnimationFrame(() => {
+                    infoDiv.style.transition = 'opacity 0.4s cubic-bezier(0.22, 1, 0.36, 1), transform 0.4s cubic-bezier(0.22, 1, 0.36, 1)';
+                    infoDiv.style.opacity = '1';
+                    infoDiv.style.transform = 'translateY(0)';
+                });
             } else if (!shouldShowInfo && existingInfo) {
-                existingInfo.remove();
+                existingInfo.style.transition = 'opacity 0.25s cubic-bezier(0.22, 1, 0.36, 1), transform 0.25s cubic-bezier(0.22, 1, 0.36, 1)';
+                existingInfo.style.opacity = '0';
+                existingInfo.style.transform = 'translateY(-6px)';
+                setTimeout(() => existingInfo.remove(), 250);
             }
         }
 
         function renderLetterKeyboard() {
+            scheduleRender({ keyboard: true });
+        }
+
+        function renderLetterKeyboardImmediate() {
             const keyboard = elements.letterKeyboard;
-            
-            if (keyboard.children.length === 0) {
+
+            if (!_keyboardBtns) {
                 const fragment = document.createDocumentFragment();
                 const letters = 'abcdefghijklmnopqrstuvwxyz'.split('');
+                _keyboardBtns = {};
                 letters.forEach(letter => {
                     const btn = document.createElement('button');
                     btn.className = 'letter-key w-8 h-8 rounded text-sm font-medium cursor-pointer bg-slate-100 hover:bg-slate-200 text-slate-700';
                     btn.textContent = letter.toUpperCase();
                     btn.dataset.letter = letter;
-                    btn.addEventListener('click', () => revealLetter(letter));
+                    btn.addEventListener('click', () => {
+                        btn.classList.add('key-press-pop');
+                        setTimeout(() => btn.classList.remove('key-press-pop'), 200);
+                        revealLetter(letter);
+                    });
+                    _keyboardBtns[letter] = btn;
                     fragment.appendChild(btn);
                 });
                 keyboard.appendChild(fragment);
             }
-            
-            requestAnimationFrame(() => {
-                const buttons = keyboard.children;
-                for (let i = 0; i < buttons.length; i++) {
-                    const btn = buttons[i];
-                    const letter = btn.dataset.letter;
-                    const isUsed = gameState.usedLetters.has(letter);
-                    const isFound = gameState.foundLetters.has(letter);
-                    
-                    btn.className = `letter-key w-8 h-8 rounded text-sm font-medium cursor-pointer ${
-                        isFound ? 'found' : isUsed ? 'not-found used' : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
-                    }`;
-                    btn.disabled = isUsed || gameState.gameWon;
+
+            const letters = 'abcdefghijklmnopqrstuvwxyz'.split('');
+            for (let i = 0; i < letters.length; i++) {
+                const letter = letters[i];
+                const btn = _keyboardBtns[letter];
+                const isUsed = gameState.usedLetters.has(letter);
+                const isFound = gameState.foundLetters.has(letter);
+
+                if (isFound) {
+                    if (!btn.classList.contains('found')) {
+                        btn.className = 'letter-key w-8 h-8 rounded text-sm font-medium cursor-pointer found';
+                        btn.classList.add('key-state-change');
+                        setTimeout(() => btn.classList.remove('key-state-change'), 400);
+                    }
+                } else if (isUsed) {
+                    if (!btn.classList.contains('not-found')) {
+                        btn.className = 'letter-key w-8 h-8 rounded text-sm font-medium cursor-pointer not-found used';
+                        btn.classList.add('key-state-change');
+                        setTimeout(() => btn.classList.remove('key-state-change'), 400);
+                    }
+                } else {
+                    if (btn.classList.contains('found') || btn.classList.contains('not-found')) {
+                        btn.className = 'letter-key w-8 h-8 rounded text-sm font-medium cursor-pointer bg-slate-100 hover:bg-slate-200 text-slate-700';
+                    }
                 }
-            });
+                btn.disabled = isUsed || gameState.gameWon;
+            }
         }
 
         function handleGuess() {
@@ -4106,11 +4219,15 @@
                 playSound('reveal-found');
                 const penaltyNote = result.penaltyMultiplier > 1 ? ` (×${result.penaltyMultiplier.toFixed(1)}递增惩罚)` : '';
                 addToHistory(`开 ${letter.toUpperCase()}`, 'success', `在 ${result.matchCount} 个站名中找到 (${result.scoreChange}分)${penaltyNote}`);
+                showFloatingScore(result.scoreChange, elements.stationsContainer.getBoundingClientRect().left + elements.stationsContainer.offsetWidth / 2, elements.stationsContainer.getBoundingClientRect().top + 40);
             } else {
                 playSound('reveal-not-found');
                 const penaltyNote = result.penaltyMultiplier > 1 ? ` (×${result.penaltyMultiplier.toFixed(1)}递增惩罚)` : '';
                 addToHistory(`开 ${letter.toUpperCase()}`, 'error', `未找到该字母 (${result.scoreChange}分)${penaltyNote}`);
+                showFloatingScore(result.scoreChange, elements.stationsContainer.getBoundingClientRect().left + elements.stationsContainer.offsetWidth / 2, elements.stationsContainer.getBoundingClientRect().top + 40);
                 
+                elements.stationsContainer.classList.remove('shake');
+                void elements.stationsContainer.offsetWidth;
                 elements.stationsContainer.classList.add('shake');
                 setTimeout(() => elements.stationsContainer.classList.remove('shake'), 500);
             }
@@ -4177,17 +4294,32 @@
                 playSound('wrong');
                 const wrongPenalty = MetroGameLogic.SCORE_CONFIG.GUESS_WRONG;
                 addToHistory(`猜 ${guess}`, 'error', `不正确 (${wrongPenalty}分)`);
+                showFloatingScore(wrongPenalty, elements.stationsContainer.getBoundingClientRect().left + elements.stationsContainer.offsetWidth / 2, elements.stationsContainer.getBoundingClientRect().top + 40);
+                updateScoreDisplay();
                 
+                elements.stationsContainer.classList.remove('shake');
+                void elements.stationsContainer.offsetWidth;
                 elements.stationsContainer.classList.add('shake');
                 setTimeout(() => elements.stationsContainer.classList.remove('shake'), 500);
             }
         }
 
         function updateComboDisplay() {
+            scheduleRender({ combo: true });
+        }
+
+        function updateComboDisplayImmediate() {
             elements.combo.textContent = gameState.combo;
             if (gameState.combo > 1) {
-                elements.combo.classList.add('combo-display');
-                setTimeout(() => elements.combo.classList.remove('combo-display'), 300);
+                elements.combo.classList.remove('combo-display', 'combo-fire');
+                void elements.combo.offsetWidth;
+                if (gameState.combo >= 3) {
+                    elements.combo.classList.add('combo-fire');
+                    setTimeout(() => elements.combo.classList.remove('combo-fire'), 550);
+                } else {
+                    elements.combo.classList.add('combo-display');
+                    setTimeout(() => elements.combo.classList.remove('combo-display'), 450);
+                }
             }
         }
 
@@ -4219,6 +4351,7 @@
 
             if (result.success) {
                 playSound('hint');
+                showFloatingScore(result.scoreChange, elements.stationsContainer.getBoundingClientRect().left + elements.stationsContainer.offsetWidth / 2, elements.stationsContainer.getBoundingClientRect().top + 40);
 
                 if (result.cityName) {
                     addToHistory(`使用提示`, 'info', `城市是 "${result.cityName}" (${result.scoreChange}分)`);
@@ -4306,11 +4439,11 @@
             setTimeout(() => {
                 stars.forEach((star, i) => {
                     if (i < starCount) {
-                        star.style.animationDelay = (i * 0.12) + 's';
+                        star.style.animationDelay = (i * 0.15) + 's';
                         star.classList.add('active');
                     }
                 });
-            }, 400);
+            }, 450);
 
             animateNumber(elements.finalScore, 0, gameState.score, 800);
 
@@ -4342,7 +4475,7 @@
                 modal.classList.add('hidden');
                 const confettiContainer = $('victory-confetti');
                 if (confettiContainer) confettiContainer.innerHTML = '';
-            }, 350);
+            }, 450);
         }
 
         function calculateStarRating(score, difficulty) {
@@ -4506,7 +4639,56 @@
         }
 
         function updateScoreDisplay() {
-            elements.score.textContent = gameState.score;
+            scheduleRender({ score: true });
+        }
+
+        function updateScoreDisplayImmediate() {
+            const target = gameState.score;
+            if (_scoreAnimFrame) {
+                cancelAnimationFrame(_scoreAnimFrame);
+                _scoreAnimFrame = null;
+            }
+            if (_prevScore === target) {
+                elements.score.textContent = target;
+                return;
+            }
+            const start = _prevScore;
+            const diff = target - start;
+            const isPenalty = diff < 0;
+            const duration = Math.min(500, Math.abs(diff) * 15 + 180);
+            const startTime = performance.now();
+            if (isPenalty) {
+                elements.score.classList.remove('text-green-600');
+                elements.score.classList.add('text-red-600');
+            } else {
+                elements.score.classList.remove('text-red-600');
+                elements.score.classList.add('text-green-600');
+            }
+            elements.score.classList.add('score-count-pulse');
+            function tick(now) {
+                const elapsed = now - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                const eased = 1 - Math.pow(1 - progress, 3);
+                const current = Math.round(start + diff * eased);
+                elements.score.textContent = current;
+                if (progress < 1) {
+                    _scoreAnimFrame = requestAnimationFrame(tick);
+                } else {
+                    _prevScore = target;
+                    _scoreAnimFrame = null;
+                    setTimeout(() => {
+                        elements.score.classList.remove('score-count-pulse');
+                        if (target < 0) {
+                            elements.score.classList.remove('text-green-600');
+                            elements.score.classList.add('text-red-600');
+                        } else {
+                            elements.score.classList.remove('text-red-600');
+                            elements.score.classList.add('text-green-600');
+                        }
+                    }, 350);
+                }
+            }
+            _scoreAnimFrame = requestAnimationFrame(tick);
         }
 
         function handleReverseGuess() {
@@ -4643,6 +4825,10 @@
         }
 
         function updateStats() {
+            scheduleRender({ stats: true });
+        }
+
+        function updateStatsImmediate() {
             elements.guessCount.textContent = gameState.guessCount;
             elements.hintsLeft.textContent = gameState.hintsLeft;
         }
@@ -5081,15 +5267,15 @@
 
         function setupEventListeners() {
             elements.toggleSettings.addEventListener('click', () => {
-                const isHidden = elements.settingsPanel.classList.contains('hidden');
-                if (isHidden) {
-                    elements.settingsPanel.classList.remove('hidden');
-                    elements.settingsIconExpand.classList.add('hidden');
-                    elements.settingsIconCollapse.classList.remove('hidden');
+                const isCollapsed = elements.settingsPanel.classList.contains('collapsed');
+                if (isCollapsed) {
+                    elements.settingsPanel.classList.remove('collapsed');
+                    elements.toggleSettings.classList.remove('collapsed');
+                    elements.toggleSettings.setAttribute('aria-label', '收起设置');
                 } else {
-                    elements.settingsPanel.classList.add('hidden');
-                    elements.settingsIconExpand.classList.remove('hidden');
-                    elements.settingsIconCollapse.classList.add('hidden');
+                    elements.settingsPanel.classList.add('collapsed');
+                    elements.toggleSettings.classList.add('collapsed');
+                    elements.toggleSettings.setAttribute('aria-label', '展开设置');
                 }
             });
             

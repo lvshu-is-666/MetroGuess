@@ -383,6 +383,32 @@
     background: rgba(148, 163, 184, 0.2);
 }
 
+.settings-btn svg {
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.settings-btn.collapsed svg {
+    transform: rotate(180deg);
+}
+
+#settings-panel {
+    overflow: hidden;
+    max-height: 500px;
+    opacity: 1;
+    transition: max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+                opacity 0.25s ease,
+                margin-top 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+                padding-top 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#settings-panel.collapsed {
+    max-height: 0;
+    opacity: 0;
+    margin-top: 0;
+    padding-top: 0;
+    border-top-color: transparent;
+}
+
 /* ========== 题组卡片样式 ========== */
 .quiz-card-new {
     position: relative;

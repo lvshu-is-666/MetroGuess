@@ -1,26 +1,26 @@
 const MetroGameLogic = {
     SCORE_CONFIG: {
-        REVEAL_FOUND_BASE: -5,
-        REVEAL_NOT_FOUND_BASE: -10,
-        REVEAL_FREE_THRESHOLD: 5,
-        REVEAL_PENALTY_GROWTH: 0.8,
-        GUESS_CORRECT_BASE: 100,
-        GUESS_WRONG: -30,
-        HINT_PENALTY_LETTER: -15,
-        HINT_PENALTY_CITY: -40,
-        HINT_PENALTY_WORD: -80,
-        HINT_PENALTY_CHINESE: -120,
-        COMBO_BONUS_PER_COMBO: 10,
-        AUTO_SOLVE_BASE: 25,
-        TIME_BONUS_MULTIPLIER: 2
+        REVEAL_FOUND_BASE: -2,
+        REVEAL_NOT_FOUND_BASE: -5,
+        REVEAL_FREE_THRESHOLD: 3,
+        REVEAL_PENALTY_GROWTH: 0.5,
+        GUESS_CORRECT_BASE: 90,
+        GUESS_WRONG: -20,
+        HINT_PENALTY_LETTER: -12,
+        HINT_PENALTY_CITY: -50,
+        HINT_PENALTY_WORD: -55,
+        HINT_PENALTY_CHINESE: -90,
+        COMBO_BONUS_PER_COMBO: 25,
+        AUTO_SOLVE_BASE: 40,
+        TIME_BONUS_MULTIPLIER: 1.5
     },
 
     COMBO_TIME_WINDOW: 5000,
 
     DIFFICULTY_SETTINGS: {
-        easy: { stationCount: 3, hints: 5, timeBonus: 180, multiplier: 1, difficultyLevel: 'easy' },
-        normal: { stationCount: 4, hints: 3, timeBonus: 300, multiplier: 1.5, difficultyLevel: 'normal' },
-        hard: { stationCount: 6, hints: 2, timeBonus: 480, multiplier: 2, difficultyLevel: 'hard' }
+        easy: { stationCount: 3, hints: 8, timeBonus: 180, multiplier: 1, difficultyLevel: 'easy' },
+        normal: { stationCount: 4, hints: 5, timeBonus: 300, multiplier: 1.5, difficultyLevel: 'normal' },
+        hard: { stationCount: 6, hints: 3, timeBonus: 480, multiplier: 2, difficultyLevel: 'hard' }
     },
 
     LETTER_FREQUENCY: {
@@ -145,14 +145,14 @@ const MetroGameLogic = {
                 if (revealedLetters && revealedLetters.has(char.toLowerCase())) {
                     result += '<span class="letter-reveal text-blue-600">' + char + '</span>';
                 } else {
-                    result += '*';
+                    result += '<span class="letter-hidden">*</span>';
                 }
             } else if (char === ' ') {
                 result += ' ';
             } else if (revealedSpecialChars && revealedSpecialChars.has(char)) {
                 result += '<span class="letter-reveal text-blue-600">' + char + '</span>';
             } else {
-                result += '*';
+                result += '<span class="letter-hidden">*</span>';
             }
         }
         return result;
@@ -250,7 +250,7 @@ const MetroGameLogic = {
             result.penaltyMultiplier = 1 + (usedCount - threshold) * this.SCORE_CONFIG.REVEAL_PENALTY_GROWTH;
         }
 
-        state.score = Math.max(0, state.score + result.scoreChange);
+        state.score += result.scoreChange;
 
         return result;
     },
@@ -294,7 +294,7 @@ const MetroGameLogic = {
         } else {
             state.combo = 0;
             result.scoreChange = this.SCORE_CONFIG.GUESS_WRONG;
-            state.score = Math.max(0, state.score + result.scoreChange);
+            state.score += result.scoreChange;
         }
 
         state.guessCount++;
@@ -480,7 +480,7 @@ const MetroGameLogic = {
             result.success = true;
             result.stationIndex = target.index;
             result.cityName = cityName;
-            state.score = Math.max(0, state.score + result.scoreChange);
+            state.score += result.scoreChange;
             return result;
         }
 
@@ -510,7 +510,7 @@ const MetroGameLogic = {
             result.success = true;
             result.stationIndex = target.index;
             result.chineseName = chineseName;
-            state.score = Math.max(0, state.score + result.scoreChange);
+            state.score += result.scoreChange;
             return result;
         }
 
@@ -587,7 +587,7 @@ const MetroGameLogic = {
             result.revealedWord = words[bestWordIdx];
             result.revealedWordPosition = bestWordIdx;
             result.revealedCount = uniqueLetters.length;
-            state.score = Math.max(0, state.score + result.scoreChange);
+            state.score += result.scoreChange;
             return result;
         }
 
@@ -709,7 +709,7 @@ const MetroGameLogic = {
         result.revealedCount = revealedCount;
         result.hintType = letterHintType;
 
-        state.score = Math.max(0, state.score + result.scoreChange);
+        state.score += result.scoreChange;
 
         return result;
     },
