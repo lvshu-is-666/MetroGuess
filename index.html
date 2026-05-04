@@ -3855,6 +3855,10 @@
             stopTimer();
             isTimerPaused = false;
             timerInterval = setInterval(() => {
+                if (gameState.gameWon) {
+                    stopTimer();
+                    return;
+                }
                 gameState.elapsedTime = Math.floor((Date.now() - gameState.startTime) / 1000);
                 updateTimerDisplay();
             }, 1000);
@@ -4201,47 +4205,29 @@
         }
 
         function checkAutoSolved() {
-            gameState.stations.forEach((station, index) => {
-                if (gameState.solvedStations.has(index)) return;
-                
-                const stationLower = station.station_en.toLowerCase();
-                const allLetters = stationLower.split('').filter(char => /[a-z]/.test(char));
-                const revealedSet = gameState.revealedLetters[index];
-                
-                if (allLetters.length > 0 && allLetters.every(char => revealedSet.has(char))) {
-                    gameState.solvedStations.add(index);
-                    
-                    const now = Date.now();
-                    if (now - gameState.lastCorrectTime < 5000) {
-                        gameState.combo++;
-                        playSound('combo');
-                    } else {
-                        gameState.combo = 1;
-                    }
-                    gameState.lastCorrectTime = now;
-                    
-                    const comboBonus = gameState.combo * 5;
-                    const totalPoints = 50 + comboBonus;
-                    gameState.score += totalPoints;
-                    stats.stationsSolved++;
-                    
-                    playSound('correct');
-                    addToHistory(`自动猜出`, 'success', `${station.city_cn} · ${station.station_cn} (+${totalPoints}分)`);
-                    
-                    const card = document.getElementById(`station-${index}`);
-                    if (card) {
-                        card.classList.add('pulse-success');
-                        const rect = card.getBoundingClientRect();
-                        showFloatingScore(totalPoints, rect.left + rect.width / 2, rect.top);
-                    }
-                    
-                    renderStations();
-                    updateScoreDisplay();
-                    updateProgressBar();
-                    updateComboDisplay();
-                    checkWinCondition();
+            const autoSolved = MetroGameLogic.checkAutoSolved(gameState);
+
+            if (autoSolved.length === 0) return;
+
+            autoSolved.forEach(({ index, station, scoreChange, combo }) => {
+                stats.stationsSolved++;
+                playSound('correct');
+                addToHistory(`自动猜出`, 'success', `${station.city_cn} · ${station.station_cn} (+${scoreChange}分)`);
+
+                const card = document.getElementById(`station-${index}`);
+                if (card) {
+                    card.classList.add('pulse-success');
+                    const rect = card.getBoundingClientRect();
+                    showFloatingScore(scoreChange, rect.left + rect.width / 2, rect.top);
                 }
             });
+
+            renderStations();
+            renderLetterKeyboard();
+            updateScoreDisplay();
+            updateProgressBar();
+            updateComboDisplay();
+            checkWinCondition();
         }
 
         function guessStation(guess) {
@@ -4252,11 +4238,8 @@
             gameState.stations.forEach((station, index) => {
                 if (gameState.solvedStations.has(index)) return;
                 
-                const stationCn = station.station_cn.toLowerCase();
-                const stationEn = station.station_en.toLowerCase();
-                const guessLower = guess.toLowerCase();
-                
-                if (guessLower === stationCn || guessLower === stationEn) {
+                if (MetroGameLogic.compareStationNames(guess, station.station_en) ||
+                    MetroGameLogic.compareStationNames(guess, station.station_cn)) {
                     correct = true;
                     matchedIndex = index;
                     matchedStation = station;
@@ -4315,47 +4298,51 @@
         }
 
         function useHint() {
-            if (gameState.hintsLeft <= 0) {
+            if (gameState.gameWon) {
+                showToast('游戏已结束', 'error');
+                return;
+            }
+
+            const result = MetroGameLogic.useHint(gameState);
+
+            if (result.noHintsLeft) {
                 addToHistory('提示次数已用完', 'error');
                 showToast('提示次数已用完', 'error');
                 return;
             }
-            
-            const unsolvedIndices = gameState.stations
-                .map((_, index) => index)
-                .filter(index => !gameState.solvedStations.has(index));
-            
-            if (unsolvedIndices.length === 0) return;
-            
-            const randomIndex = unsolvedIndices[Math.floor(Math.random() * unsolvedIndices.length)];
-            const station = gameState.stations[randomIndex];
-            const stationLower = station.station_en.toLowerCase();
-            
-            const unrevealedLetters = stationLower
-                .split('')
-                .filter(char => /[a-z]/.test(char) && !gameState.revealedLetters[randomIndex].has(char));
-            
-            if (unrevealedLetters.length === 0) {
-                addToHistory('该站名已全部揭开', 'info');
+
+            if (result.allSolved) {
+                addToHistory('所有站名已解开', 'info');
+                showToast('所有站名已解开', 'info');
                 return;
             }
-            
-            const randomLetter = unrevealedLetters[Math.floor(Math.random() * unrevealedLetters.length)];
-            gameState.revealedLetters[randomIndex].add(randomLetter);
-            gameState.usedLetters.add(randomLetter);
-            gameState.foundLetters.add(randomLetter);
-            gameState.hintsLeft--;
-            gameState.hintsUsed++;
-            gameState.score = Math.max(0, gameState.score - 30);
-            
-            playSound('hint');
-            addToHistory(`使用提示`, 'info', `揭示字母 ${randomLetter.toUpperCase()} (-30分)`);
-            showToast(`提示：字母 ${randomLetter.toUpperCase()}`, 'info');
-            
-            renderStations();
-            renderLetterKeyboard();
-            updateScoreDisplay();
-            elements.hintsLeft.textContent = gameState.hintsLeft;
+
+            if (result.noLettersToReveal) {
+                addToHistory('该站名已全部揭开', 'info');
+                showToast('该站名已全部揭开', 'info');
+                return;
+            }
+
+            if (result.success) {
+                playSound('hint');
+
+                const hintMessages = {
+                    first_letter: `首字母 "${result.letter.toUpperCase()}"`,
+                    rare_letter: `稀有字母 "${result.letter.toUpperCase()}"`,
+                    medium_letter: `关键字母 "${result.letter.toUpperCase()}"`,
+                    common_letter: `字母 "${result.letter.toUpperCase()}"`
+                };
+                const message = hintMessages[result.hintType] || `字母 "${result.letter.toUpperCase()}"`;
+                const countText = result.revealedCount > 1 ? ` (${result.revealedCount}处)` : '';
+                addToHistory(`使用提示`, 'info', `${message}${countText} (-30分)`);
+                showToast(`提示：${message}${countText}`, 'info');
+
+                renderStations();
+                renderLetterKeyboard();
+                updateScoreDisplay();
+                elements.hintsLeft.textContent = gameState.hintsLeft;
+                checkAutoSolved();
+            }
         }
 
         function showVictoryModal(result) {

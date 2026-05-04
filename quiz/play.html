@@ -1081,95 +1081,139 @@
 
         function renderStations() {
             const container = $('stations-container');
-            container.innerHTML = '';
-            container.className = 'grid grid-cols-1 md:grid-cols-2 gap-4';
+            const currentCards = container.children;
 
-            const fragment = document.createDocumentFragment();
+            if (currentCards.length !== gameState.stations.length) {
+                container.className = 'grid grid-cols-1 md:grid-cols-2 gap-4';
+                const fragment = document.createDocumentFragment();
+                gameState.stations.forEach((station, index) => {
+                    const card = createStationCard(station, index);
+                    fragment.appendChild(card);
+                });
+                container.innerHTML = '';
+                container.appendChild(fragment);
+                updateProgress();
+                return;
+            }
 
-            gameState.stations.forEach((station, index) => {
-                const isSolved = gameState.solvedStations.has(index);
-                const revealed = gameState.revealedLetters[index] || new Set();
-                const displayText = MetroGameLogic.getDisplayText(station.station_en, revealed, isSolved, gameState.devMode, gameState.revealedSpecialChars);
-
-                const difficulty = station.calculatedDifficulty || MetroGameLogic.calculateStationDifficulty(station);
-                const difficultyLabel = MetroGameLogic.getDifficultyLabel(difficulty);
-                const difficultyClass = difficulty === 'easy' ? 'bg-green-100 text-green-700 border-green-200' :
-                                       difficulty === 'normal' ? 'bg-amber-100 text-amber-700 border-amber-200' :
-                                       'bg-red-100 text-red-700 border-red-200';
-
-                const card = createEl('div', `game-card p-4 ${isSolved ? 'solved' : ''} animate-fade-in-up`);
-                card.style.animationDelay = `${index * 0.05}s`;
-                card.id = `station-${index}`;
-                card.innerHTML = `
-                    <div class="flex items-center justify-between mb-2">
-                        <div class="flex items-center gap-2">
-                            <span class="text-xs font-bold text-slate-400 bg-slate-100 px-2 py-1 rounded-lg">#${index + 1}</span>
-                            ${gameState.devMode ? '<span class="dev-mode-badge">DEV</span>' : ''}
-                        </div>
-                        <div class="flex items-center gap-2">
-                            <span class="text-xs px-2 py-0.5 rounded-lg border font-medium ${difficultyClass}">${difficultyLabel}</span>
-                            ${isSolved ? `
-                                <span class="flex items-center gap-1 text-xs font-bold text-green-600 bg-green-100 px-2 py-0.5 rounded-lg">
-                                    <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
-                                        <polyline points="20 6 9 17 4 12"></polyline>
-                                    </svg>
-                                    已解开
-                                </span>
-                            ` : ''}
-                        </div>
-                    </div>
-                    <div class="letter-display text-lg md:text-xl font-bold text-slate-800 mb-2 text-center py-2 bg-white/60 rounded-xl border-2 border-slate-100">
-                        ${displayText}
-                    </div>
-                    ${(isSolved || gameState.devMode) ? `
-                        <div class="text-center pt-2 border-t border-slate-200/60">
-                            <p class="text-slate-800 font-bold station-cn">${escapeHtml(station.station_cn)}</p>
-                            <p class="text-slate-500 text-xs mt-0.5">${escapeHtml(station.city_cn || '')}</p>
-                        </div>
-                    ` : ''}
-                `;
-
-                fragment.appendChild(card);
+            requestAnimationFrame(() => {
+                for (let i = 0; i < gameState.stations.length; i++) {
+                    const station = gameState.stations[i];
+                    const card = currentCards[i];
+                    updateStationCard(card, station, i);
+                }
             });
-
-            container.appendChild(fragment);
             updateProgress();
+        }
+
+        function createStationCard(station, index) {
+            const isSolved = gameState.solvedStations.has(index);
+            const revealed = gameState.revealedLetters[index] || new Set();
+            const displayText = MetroGameLogic.getDisplayText(station.station_en, revealed, isSolved, gameState.devMode, gameState.revealedSpecialChars);
+            const difficulty = station.calculatedDifficulty || MetroGameLogic.calculateStationDifficulty(station);
+            const difficultyLabel = MetroGameLogic.getDifficultyLabel(difficulty);
+            const difficultyClass = difficulty === 'easy' ? 'bg-green-100 text-green-700 border-green-200' :
+                                   difficulty === 'normal' ? 'bg-amber-100 text-amber-700 border-amber-200' :
+                                   'bg-red-100 text-red-700 border-red-200';
+
+            const card = createEl('div', `game-card p-4 ${isSolved ? 'solved' : ''} animate-fade-in-up`);
+            card.style.animationDelay = `${index * 0.05}s`;
+            card.id = `station-${index}`;
+            card.innerHTML = `
+                <div class="flex items-center justify-between mb-2">
+                    <div class="flex items-center gap-2">
+                        <span class="text-xs font-bold text-slate-400 bg-slate-100 px-2 py-1 rounded-lg">#${index + 1}</span>
+                        ${gameState.devMode ? '<span class="dev-mode-badge">DEV</span>' : ''}
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="difficulty-badge text-xs px-2 py-0.5 rounded-lg border font-medium ${difficultyClass}">${difficultyLabel}</span>
+                        <span class="solved-badge ${isSolved ? '' : 'hidden'} flex items-center gap-1 text-xs font-bold text-green-600 bg-green-100 px-2 py-0.5 rounded-lg">
+                            <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                                <polyline points="20 6 9 17 4 12"></polyline>
+                            </svg>
+                            已解开
+                        </span>
+                    </div>
+                </div>
+                <div class="letter-display text-lg md:text-xl font-bold text-slate-800 mb-2 text-center py-2 bg-white/60 rounded-xl border-2 border-slate-100">
+                    ${displayText}
+                </div>
+                <div class="station-info ${isSolved || gameState.devMode ? '' : 'hidden'} text-center pt-2 border-t border-slate-200/60">
+                    <p class="text-slate-800 font-bold station-cn">${escapeHtml(station.station_cn)}</p>
+                    <p class="text-slate-500 text-xs mt-0.5">${escapeHtml(station.city_cn || '')}</p>
+                </div>
+            `;
+            return card;
+        }
+
+        function updateStationCard(card, station, index) {
+            const isSolved = gameState.solvedStations.has(index);
+            const revealed = gameState.revealedLetters[index] || new Set();
+            const displayText = MetroGameLogic.getDisplayText(station.station_en, revealed, isSolved, gameState.devMode, gameState.revealedSpecialChars);
+            const difficulty = station.calculatedDifficulty || MetroGameLogic.calculateStationDifficulty(station);
+            const difficultyLabel = MetroGameLogic.getDifficultyLabel(difficulty);
+            const difficultyClass = difficulty === 'easy' ? 'bg-green-100 text-green-700 border-green-200' :
+                                   difficulty === 'normal' ? 'bg-amber-100 text-amber-700 border-amber-200' :
+                                   'bg-red-100 text-red-700 border-red-200';
+
+            card.className = `game-card p-4 ${isSolved ? 'solved' : ''} animate-fade-in-up`;
+
+            const letterDisplay = card.querySelector('.letter-display');
+            if (letterDisplay) letterDisplay.innerHTML = displayText;
+
+            const solvedBadge = card.querySelector('.solved-badge');
+            if (solvedBadge) solvedBadge.classList.toggle('hidden', !isSolved);
+
+            const difficultyBadge = card.querySelector('.difficulty-badge');
+            if (difficultyBadge) {
+                difficultyBadge.textContent = difficultyLabel;
+                difficultyBadge.className = `difficulty-badge text-xs px-2 py-0.5 rounded-lg border font-medium ${difficultyClass}`;
+            }
+
+            const stationInfo = card.querySelector('.station-info');
+            const shouldShowInfo = isSolved || gameState.devMode;
+            if (stationInfo) {
+                stationInfo.classList.toggle('hidden', !shouldShowInfo);
+                if (shouldShowInfo) {
+                    const cnEl = stationInfo.querySelector('.station-cn');
+                    if (cnEl) cnEl.textContent = station.station_cn;
+                }
+            }
         }
 
         function renderKeyboard() {
             const container = $('letter-keyboard');
-            container.innerHTML = '';
 
-            const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
-            const fragment = document.createDocumentFragment();
+            if (container.children.length === 0) {
+                const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+                const fragment = document.createDocumentFragment();
 
-            letters.forEach(letter => {
-                const lowerLetter = letter.toLowerCase();
-                const isUsed = gameState.usedLetters.has(lowerLetter);
-                const isFound = gameState.foundLetters.has(lowerLetter);
+                letters.forEach(letter => {
+                    const key = createEl('button', 'letter-key w-9 h-10 sm:w-10 sm:h-11 font-bold text-sm sm:text-base cursor-pointer bg-slate-100 hover:bg-slate-200 text-slate-700');
+                    key.textContent = letter;
+                    key.dataset.letter = letter;
+                    key.addEventListener('click', () => handleLetterClick(letter));
+                    fragment.appendChild(key);
+                });
 
-                let className = 'letter-key w-9 h-10 sm:w-10 sm:h-11 font-bold text-sm sm:text-base cursor-pointer ';
+                container.appendChild(fragment);
+            }
 
-                if (isUsed) {
-                    className += 'used ';
-                    if (isFound) {
-                        className += 'found ';
-                    } else {
-                        className += 'not-found ';
-                    }
+            requestAnimationFrame(() => {
+                const buttons = container.children;
+                for (let i = 0; i < buttons.length; i++) {
+                    const btn = buttons[i];
+                    const letter = btn.dataset.letter;
+                    const lowerLetter = letter.toLowerCase();
+                    const isUsed = gameState.usedLetters.has(lowerLetter);
+                    const isFound = gameState.foundLetters.has(lowerLetter);
+
+                    btn.className = `letter-key w-9 h-10 sm:w-10 sm:h-11 font-bold text-sm sm:text-base cursor-pointer ${
+                        isUsed ? 'used ' + (isFound ? 'found' : 'not-found') : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
+                    }`;
+                    btn.disabled = isUsed || gameState.gameWon;
                 }
-
-                const key = createEl('button', className);
-                key.textContent = letter;
-                key.dataset.letter = letter;
-                key.disabled = isUsed || gameState.gameWon;
-
-                key.addEventListener('click', () => handleLetterClick(letter));
-
-                fragment.appendChild(key);
             });
-
-            container.appendChild(fragment);
         }
 
         function handleLetterClick(letter, fromSticky = false) {
@@ -1208,17 +1252,21 @@
         }
 
         function showFloatingScore(text, color) {
+            const container = $('floating-scores');
+            if (!container) return;
             const floatEl = createEl('div', `float-score text-${color}-600`);
             floatEl.textContent = text;
             floatEl.style.left = '50%';
             floatEl.style.top = '50%';
             floatEl.style.transform = 'translate(-50%, -50%)';
-            document.body.appendChild(floatEl);
+            container.appendChild(floatEl);
             setTimeout(() => floatEl.remove(), 1000);
         }
 
         function checkAutoSolved() {
             const autoSolved = MetroGameLogic.checkAutoSolved(gameState);
+
+            if (autoSolved.length === 0) return;
 
             autoSolved.forEach(({ index, station, scoreChange, combo }) => {
                 playSound('correct');
@@ -1231,14 +1279,13 @@
                 }
             });
 
-            if (autoSolved.length > 0) {
-                renderStations();
-                updateScore();
-                updateProgress();
+            renderStations();
+            renderKeyboard();
+            updateScore();
+            updateProgress();
 
-                if (gameState.solvedStations.size >= gameState.stations.length) {
-                    gameWon();
-                }
+            if (gameState.solvedStations.size >= gameState.stations.length) {
+                gameWon();
             }
         }
 
@@ -1410,7 +1457,10 @@
             gameState.startTime = Date.now();
 
             timerInterval = setInterval(() => {
-                if (gameState.gameWon) return;
+                if (gameState.gameWon) {
+                    stopTimer();
+                    return;
+                }
 
                 gameState.elapsedTime = Math.floor((Date.now() - gameState.startTime) / 1000);
                 $('timer').textContent = MetroGameLogic.formatTime(gameState.elapsedTime);
@@ -1582,6 +1632,8 @@
             }
             $('quiz-title').textContent = displayName;
 
+            $('stations-container').innerHTML = '';
+            $('letter-keyboard').innerHTML = '';
             renderStations();
             renderKeyboard();
             updateScore();
