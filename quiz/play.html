@@ -1309,7 +1309,7 @@
             const result = MetroGameLogic.guessStation(gameState, trimmed);
 
             if (result.correct) {
-                const points = MetroGameLogic.SCORE_CONFIG.GUESS_CORRECT_BASE + result.combo * MetroGameLogic.SCORE_CONFIG.COMBO_BONUS_PER_COMBO;
+                const points = MetroGameLogic.SCORE_CONFIG.GUESS_CORRECT_BASE + Math.max(0, result.combo - 1) * MetroGameLogic.SCORE_CONFIG.COMBO_BONUS_PER_COMBO;
                 playSound('correct');
                 showFloatingScore(`+${points}`, 'green');
 

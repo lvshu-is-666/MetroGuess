@@ -251,7 +251,6 @@ const MetroGameLogic = {
         }
 
         state.score = Math.max(0, state.score + result.scoreChange);
-        state.guessCount++;
 
         return result;
     },
@@ -290,7 +289,7 @@ const MetroGameLogic = {
             state.lastCorrectTime = now;
 
             result.combo = state.combo;
-            result.scoreChange = this.SCORE_CONFIG.GUESS_CORRECT_BASE + state.combo * this.SCORE_CONFIG.COMBO_BONUS_PER_COMBO;
+            result.scoreChange = this.SCORE_CONFIG.GUESS_CORRECT_BASE + Math.max(0, state.combo - 1) * this.SCORE_CONFIG.COMBO_BONUS_PER_COMBO;
             state.score += result.scoreChange;
         } else {
             state.combo = 0;
@@ -313,7 +312,9 @@ const MetroGameLogic = {
             const allLetters = stationLower.split('').filter(char => /[a-z]/.test(char));
             const revealedSet = state.revealedLetters[index];
 
-            if (allLetters.length > 0 && allLetters.every(char => revealedSet.has(char))) {
+            const allLettersRevealed = allLetters.length > 0 && allLetters.every(char => revealedSet.has(char));
+
+            if (allLettersRevealed) {
                 state.solvedStations.add(index);
 
                 const now = Date.now();
@@ -324,7 +325,7 @@ const MetroGameLogic = {
                 }
                 state.lastCorrectTime = now;
 
-                const comboBonus = state.combo * this.SCORE_CONFIG.COMBO_BONUS_PER_COMBO;
+                const comboBonus = Math.max(0, state.combo - 1) * this.SCORE_CONFIG.COMBO_BONUS_PER_COMBO;
                 const totalPoints = this.SCORE_CONFIG.AUTO_SOLVE_BASE + comboBonus;
                 state.score += totalPoints;
 
@@ -407,10 +408,6 @@ const MetroGameLogic = {
 
         if (overallRevealedRatio < 0.75) {
             if (hasMultiWordStation) return 'word';
-            return 'city';
-        }
-
-        if (overallRevealedRatio < 0.9) {
             return 'chinese';
         }
 
@@ -465,12 +462,14 @@ const MetroGameLogic = {
             }
             const unrevealedCityInfos = stationInfos.filter(info => !state.revealedCityStations.has(info.index));
             if (unrevealedCityInfos.length === 0) {
+                result.hintType = 'letter';
                 result.scoreChange = this.SCORE_CONFIG.HINT_PENALTY_LETTER;
                 return this._useLetterHint(state, result);
             }
             const target = unrevealedCityInfos[0];
             const cityName = target.station.city_cn;
             if (!cityName) {
+                result.hintType = 'letter';
                 result.noCityToReveal = true;
                 result.scoreChange = this.SCORE_CONFIG.HINT_PENALTY_LETTER;
                 return this._useLetterHint(state, result);
@@ -493,12 +492,14 @@ const MetroGameLogic = {
             }
             const unrevealedChineseInfos = stationInfos.filter(info => !state.revealedChineseStations.has(info.index));
             if (unrevealedChineseInfos.length === 0) {
+                result.hintType = 'letter';
                 result.scoreChange = this.SCORE_CONFIG.HINT_PENALTY_LETTER;
                 return this._useLetterHint(state, result);
             }
             const target = unrevealedChineseInfos[0];
             const chineseName = target.station.station_cn;
             if (!chineseName) {
+                result.hintType = 'letter';
                 result.noChineseToReveal = true;
                 result.scoreChange = this.SCORE_CONFIG.HINT_PENALTY_LETTER;
                 return this._useLetterHint(state, result);
@@ -541,6 +542,7 @@ const MetroGameLogic = {
             }
 
             if (!bestTarget || bestWordIdx === -1 || bestUnrevealedCount === 0) {
+                result.hintType = 'letter';
                 result.scoreChange = this.SCORE_CONFIG.HINT_PENALTY_LETTER;
                 return this._useLetterHint(state, result);
             }
@@ -560,6 +562,22 @@ const MetroGameLogic = {
                 });
                 state.usedLetters.add(letter);
                 state.foundLetters.add(letter);
+            });
+
+            const specialCharsInWord = words[bestWordIdx].split('').filter(c => !/[a-zA-Z\s]/.test(c));
+            const uniqueSpecialChars = [...new Set(specialCharsInWord)];
+            uniqueSpecialChars.forEach(char => {
+                if (!state.usedSpecialChars.has(char)) {
+                    state.usedSpecialChars.add(char);
+                    state.revealedSpecialChars.add(char);
+                    state.foundSpecialChars.add(char);
+                    state.stations.forEach((station, idx) => {
+                        if (state.solvedStations.has(idx)) return;
+                        if (station.station_en.includes(char)) {
+                            // special char revealed across stations
+                        }
+                    });
+                }
             });
 
             state.hintsLeft--;
@@ -702,12 +720,13 @@ const MetroGameLogic = {
 
             const settings = this.DIFFICULTY_SETTINGS[difficulty] || this.DIFFICULTY_SETTINGS.normal;
             const timeBonus = Math.max(0, settings.timeBonus - state.elapsedTime) * this.SCORE_CONFIG.TIME_BONUS_MULTIPLIER;
-            state.score += timeBonus;
-            state.score = Math.floor(state.score * settings.multiplier);
+            const difficultyBonus = Math.floor(state.score * (settings.multiplier - 1));
+            state.score += timeBonus + difficultyBonus;
 
             return {
                 won: true,
                 timeBonus,
+                difficultyBonus,
                 finalScore: state.score,
                 multiplier: settings.multiplier
             };
