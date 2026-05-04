@@ -1,17 +1,17 @@
 const MetroGameLogic = {
     SCORE_CONFIG: {
         REVEAL_FOUND_BASE: -5,
-        REVEAL_NOT_FOUND_BASE: -15,
+        REVEAL_NOT_FOUND_BASE: -10,
         REVEAL_FREE_THRESHOLD: 5,
-        REVEAL_PENALTY_GROWTH: 1.5,
+        REVEAL_PENALTY_GROWTH: 0.8,
         GUESS_CORRECT_BASE: 100,
-        GUESS_WRONG: 0,
-        HINT_PENALTY_LETTER: -20,
-        HINT_PENALTY_CITY: -60,
-        HINT_PENALTY_WORD: -120,
-        HINT_PENALTY_CHINESE: -200,
-        COMBO_BONUS_PER_COMBO: 5,
-        AUTO_SOLVE_BASE: 50,
+        GUESS_WRONG: -30,
+        HINT_PENALTY_LETTER: -15,
+        HINT_PENALTY_CITY: -40,
+        HINT_PENALTY_WORD: -80,
+        HINT_PENALTY_CHINESE: -120,
+        COMBO_BONUS_PER_COMBO: 10,
+        AUTO_SOLVE_BASE: 25,
         TIME_BONUS_MULTIPLIER: 2
     },
 
@@ -35,6 +35,8 @@ const MetroGameLogic = {
             stations: [],
             revealedLetters: {},
             revealedSpecialChars: new Set(),
+            revealedCityStations: new Set(),
+            revealedChineseStations: new Set(),
             solvedStations: new Set(),
             guessCount: 0,
             guessHistory: [],
@@ -292,6 +294,8 @@ const MetroGameLogic = {
             state.score += result.scoreChange;
         } else {
             state.combo = 0;
+            result.scoreChange = this.SCORE_CONFIG.GUESS_WRONG;
+            state.score = Math.max(0, state.score + result.scoreChange);
         }
 
         state.guessCount++;
@@ -459,15 +463,19 @@ const MetroGameLogic = {
                 result.allSolved = true;
                 return result;
             }
-            const target = stationInfos[0];
-            const cityName = target.station.city_cn;
-            if (!cityName) {
-                result.noCityToReveal = true;
-                state.hintsLeft--;
-                state.hintsUsed++;
+            const unrevealedCityInfos = stationInfos.filter(info => !state.revealedCityStations.has(info.index));
+            if (unrevealedCityInfos.length === 0) {
                 result.scoreChange = this.SCORE_CONFIG.HINT_PENALTY_LETTER;
                 return this._useLetterHint(state, result);
             }
+            const target = unrevealedCityInfos[0];
+            const cityName = target.station.city_cn;
+            if (!cityName) {
+                result.noCityToReveal = true;
+                result.scoreChange = this.SCORE_CONFIG.HINT_PENALTY_LETTER;
+                return this._useLetterHint(state, result);
+            }
+            state.revealedCityStations.add(target.index);
             state.hintsLeft--;
             state.hintsUsed++;
             result.success = true;
@@ -483,15 +491,19 @@ const MetroGameLogic = {
                 result.allSolved = true;
                 return result;
             }
-            const target = stationInfos[0];
-            const chineseName = target.station.station_cn;
-            if (!chineseName) {
-                result.noChineseToReveal = true;
-                state.hintsLeft--;
-                state.hintsUsed++;
+            const unrevealedChineseInfos = stationInfos.filter(info => !state.revealedChineseStations.has(info.index));
+            if (unrevealedChineseInfos.length === 0) {
                 result.scoreChange = this.SCORE_CONFIG.HINT_PENALTY_LETTER;
                 return this._useLetterHint(state, result);
             }
+            const target = unrevealedChineseInfos[0];
+            const chineseName = target.station.station_cn;
+            if (!chineseName) {
+                result.noChineseToReveal = true;
+                result.scoreChange = this.SCORE_CONFIG.HINT_PENALTY_LETTER;
+                return this._useLetterHint(state, result);
+            }
+            state.revealedChineseStations.add(target.index);
             state.hintsLeft--;
             state.hintsUsed++;
             result.success = true;
@@ -529,8 +541,6 @@ const MetroGameLogic = {
             }
 
             if (!bestTarget || bestWordIdx === -1 || bestUnrevealedCount === 0) {
-                state.hintsLeft--;
-                state.hintsUsed++;
                 result.scoreChange = this.SCORE_CONFIG.HINT_PENALTY_LETTER;
                 return this._useLetterHint(state, result);
             }

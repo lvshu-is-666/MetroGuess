@@ -578,6 +578,8 @@
             stations: [],
             revealedLetters: {},
             revealedSpecialChars: new Set(),
+            revealedCityStations: new Set(),
+            revealedChineseStations: new Set(),
             solvedStations: new Set(),
             guessCount: 0,
             guessHistory: [],
@@ -1328,9 +1330,9 @@
                 }
             } else {
                 playSound('wrong');
-                showFloatingScore('0', 'red');
+                showFloatingScore(`${result.scoreChange}`, 'red');
 
-                addGuessHistory(`猜站名 "${trimmed}"`, false);
+                addGuessHistory(`猜站名 "${trimmed}" (${result.scoreChange}分)`, false);
                 updateScore();
                 $('combo').textContent = gameState.combo;
             }

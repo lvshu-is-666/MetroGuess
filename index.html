@@ -1130,6 +1130,8 @@
             stations: [],
             revealedLetters: {},
             revealedSpecialChars: new Set(),
+            revealedCityStations: new Set(),
+            revealedChineseStations: new Set(),
             solvedStations: new Set(),
             guessCount: 0,
             guessHistory: [],
@@ -2712,9 +2714,9 @@
                 playSound('reveal-found');
                 showToast(`开 ${letter.toUpperCase()} - 在 ${matchCount} 个站名中找到 (-5分)`, 'success');
             } else {
-                mpState.score = Math.max(0, mpState.score - 15);
+                mpState.score = Math.max(0, mpState.score - 10);
                 playSound('reveal-not-found');
-                showToast(`开 ${letter.toUpperCase()} - 未找到 (-15分)`, 'error');
+                showToast(`开 ${letter.toUpperCase()} - 未找到 (-10分)`, 'error');
             }
             
             // 同步到服务器
@@ -2823,7 +2825,7 @@
                 mpState.lastCorrectTime = now;
                 
                 // 计算得分：基础分 + combo加成
-                const comboBonus = mpState.combo * 5;
+                const comboBonus = mpState.combo * 10;
                 const totalScore = 100 + comboBonus;
                 mpState.score = (mpState.score || 0) + totalScore;
                 
@@ -2845,8 +2847,9 @@
                 renderMultiplayerGame(mpState.gameData);
             } else {
                 mpState.combo = 0;
+                mpState.score = Math.max(0, (mpState.score || 0) - 30);
                 playSound('wrong');
-                showToast(`猜 ${guess} - 不正确`, 'error');
+                showToast(`猜 ${guess} - 不正确 (-30分)`, 'error');
             }
         }
 
@@ -2902,13 +2905,13 @@
             mpState.foundLetters.add(randomLetter);
             mpState.mpHintsLeft--;
             mpState.mpHintsUsed = (mpState.mpHintsUsed || 0) + 1;
-            mpState.score = Math.max(0, (mpState.score || 0) - 30);
+            mpState.score = Math.max(0, (mpState.score || 0) - 15);
             
             // 同步到服务器
             await syncMpGameState();
             
             playSound('hint');
-            showToast(`提示：字母 ${randomLetter.toUpperCase()} (-30分)`, 'info');
+            showToast(`提示：字母 ${randomLetter.toUpperCase()} (-15分)`, 'info');
             
             renderMultiplayerGame(mpState.gameData);
         }
@@ -3814,6 +3817,8 @@
                 stations: selected,
                 revealedLetters: {},
                 revealedSpecialChars: new Set(),
+                revealedCityStations: new Set(),
+                revealedChineseStations: new Set(),
                 solvedStations: new Set(),
                 guessCount: 0,
                 guessHistory: [],
@@ -4170,7 +4175,8 @@
                 gameState.combo = 0;
                 updateComboDisplay();
                 playSound('wrong');
-                addToHistory(`猜 ${guess}`, 'error', '不正确');
+                const wrongPenalty = MetroGameLogic.SCORE_CONFIG.GUESS_WRONG;
+                addToHistory(`猜 ${guess}`, 'error', `不正确 (${wrongPenalty}分)`);
                 
                 elements.stationsContainer.classList.add('shake');
                 setTimeout(() => elements.stationsContainer.classList.remove('shake'), 500);
