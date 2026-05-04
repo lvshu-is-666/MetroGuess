@@ -398,13 +398,13 @@ const MetroCommon = {
                     return `<span class="letter-reveal text-blue-600">${char}</span>`;
                 }
                 return '<span class="text-slate-400">*</span>';
-            } else if ([' ', "'", '(', ')', '.', '-', '/'].includes(char)) {
-                if (revealedSpecialChars && revealedSpecialChars.has(char)) {
-                    return char;
-                }
-                return char;
+            } else if (char === ' ') {
+                return ' ';
+            } else if (revealedSpecialChars && revealedSpecialChars.has(char)) {
+                return `<span class="letter-reveal text-blue-600">${char}</span>`;
+            } else {
+                return '<span class="text-slate-400">*</span>';
             }
-            return char;
         }).join('');
     },
     

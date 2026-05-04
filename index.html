@@ -4103,11 +4103,6 @@
                 setTimeout(() => elements.stationsContainer.classList.remove('shake'), 500);
             }
             
-            renderStations();
-            renderLetterKeyboard();
-            updateScoreDisplay();
-            updateProgressBar();
-            
             const autoSolved = MetroGameLogic.checkAutoSolved(gameState);
             if (autoSolved.length > 0) {
                 autoSolved.forEach(({ index, station, scoreChange, combo }) => {
@@ -4121,15 +4116,16 @@
                         showFloatingScore(scoreChange, rect.left + rect.width / 2, rect.top);
                     }
                 });
-                renderStations();
-                renderLetterKeyboard();
-                updateScoreDisplay();
-                updateProgressBar();
                 updateComboDisplay();
-                
-                if (gameState.solvedStations.size === gameState.stations.length) {
-                    checkWinCondition();
-                }
+            }
+            
+            renderStations();
+            renderLetterKeyboard();
+            updateScoreDisplay();
+            updateProgressBar();
+            
+            if (autoSolved.length > 0 && gameState.solvedStations.size === gameState.stations.length) {
+                checkWinCondition();
             }
         }
 
@@ -4235,16 +4231,16 @@
                             showFloatingScore(scoreChange, rect.left + rect.width / 2, rect.top);
                         }
                     });
+                    updateComboDisplay();
                 }
 
                 renderStations();
                 renderLetterKeyboard();
                 updateScoreDisplay();
                 updateProgressBar();
-                updateComboDisplay();
                 elements.hintsLeft.textContent = gameState.hintsLeft;
 
-                if (autoSolved.length > 0) {
+                if (autoSolved.length > 0 && gameState.solvedStations.size === gameState.stations.length) {
                     checkWinCondition();
                 }
             }

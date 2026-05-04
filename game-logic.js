@@ -240,16 +240,18 @@ const MetroGameLogic = {
             combo: 0
         };
 
-        state.stations.forEach((station, index) => {
-            if (state.solvedStations.has(index)) return;
+        for (let index = 0; index < state.stations.length; index++) {
+            const station = state.stations[index];
+            if (state.solvedStations.has(index)) continue;
 
             if (this.compareStationNames(guess, station.station_en) ||
                 this.compareStationNames(guess, station.station_cn)) {
                 result.correct = true;
                 result.matchedIndex = index;
                 result.matchedStation = station;
+                break;
             }
-        });
+        }
 
         if (result.correct && result.matchedIndex !== -1) {
             state.solvedStations.add(result.matchedIndex);
@@ -410,10 +412,17 @@ const MetroGameLogic = {
 
         for (let i = 0; i < targetStationLower.length; i++) {
             if (targetStationLower[i] === targetLetter) {
-                state.revealedLetters[targetIndex].add(targetLetter);
                 revealedCount++;
             }
         }
+
+        state.stations.forEach((station, idx) => {
+            if (state.solvedStations.has(idx)) return;
+            const stationLower = station.station_en.toLowerCase();
+            if (stationLower.includes(targetLetter)) {
+                state.revealedLetters[idx].add(targetLetter);
+            }
+        });
 
         state.usedLetters.add(targetLetter);
         state.foundLetters.add(targetLetter);
